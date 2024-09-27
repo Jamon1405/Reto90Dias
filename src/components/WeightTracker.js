@@ -15,7 +15,7 @@ const WeightTracker = () => {
   const [idealWeight, setIdealWeight] = useState(0); // Peso ideal calculado
   const [hasInitialData, setHasInitialData] = useState(false); // Para determinar si el usuario ha ingresado los datos iniciales
 
-  // Este useEffect carga los datos de localStorage cuando el componente está montado
+  // Cargar datos de localStorage cuando el componente está montado
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedEntries = localStorage.getItem('weightEntries');
@@ -25,7 +25,7 @@ const WeightTracker = () => {
     }
   }, []);
 
-  // Este useEffect guarda los cambios en weightEntries en localStorage cada vez que cambian
+  // Guardar cambios en weightEntries en localStorage cada vez que cambian
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('weightEntries', JSON.stringify(weightEntries));
@@ -54,8 +54,8 @@ const WeightTracker = () => {
   // Calcular el peso ideal utilizando el porcentaje de grasa corporal
   const handleCalculateIdealWeight = () => {
     if (bodyFat && height) {
-      const fatFreeMassIndex = 1 - bodyFat / 100;
-      const idealBodyWeight = (height - 100) * fatFreeMassIndex;
+      const leanBodyMass = (1 - bodyFat / 100) * currentWeight;
+      const idealBodyWeight = leanBodyMass / (1 - 0.15); // El 15% es un porcentaje de grasa corporal ideal
       setIdealWeight(idealBodyWeight.toFixed(1));
       setHasInitialData(true); // Indica que ya se calcularon los datos iniciales
     } else {
