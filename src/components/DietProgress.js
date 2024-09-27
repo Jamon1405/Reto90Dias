@@ -231,7 +231,19 @@ const DietProgress = () => {
       <h3>Gráfico de Progreso</h3>
       <Pie data={pieData} options={pieOptions} />
 
-      <button onClick={handleResetProgress} style={{ backgroundColor: '#e53935', color: '#fff', padding: '12px 20px', fontSize: '18px', borderRadius: '10px', border: 'none', cursor: 'pointer', marginTop: '20px' }}>
+      <button
+        onClick={handleResetProgress}
+        style={{
+          backgroundColor: '#e53935',
+          color: '#fff',
+          padding: '12px 20px',
+          fontSize: '18px',
+          borderRadius: '10px',
+          border: 'none',
+          cursor: 'pointer',
+          marginTop: '20px',
+        }}
+      >
         Reiniciar progreso
       </button>
     </div>
