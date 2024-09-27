@@ -1,15 +1,50 @@
-'use client';  // Esto indica que este componente solo debe renderizarse en el cliente
-
+'use client';
 import { useState, useEffect } from 'react';
 
 // Ejercicios con series y repeticiones para cada grupo muscular
 const ejerciciosPorGrupo = {
-  // (aquí va el mismo objeto ejerciciosPorGrupo)
+  pecho_triceps: [
+    { name: 'Press de banca con barra', series: 4, reps: 10 },
+    { name: 'Press inclinado con mancuernas', series: 4, reps: 10 },
+    { name: 'Aperturas con mancuernas', series: 4, reps: 12 },
+    { name: 'Fondos en paralelas', series: 4, reps: 10 },
+    { name: 'Press francés', series: 4, reps: 12 },
+    { name: 'Extensiones en polea', series: 4, reps: 12 },
+    { name: 'Kickbacks con mancuerna', series: 4, reps: 15 },
+    { name: 'Cardio (30 minutos)', series: 1, reps: '30 min' },
+  ],
+  espalda_biceps: [
+    { name: 'Dominadas', series: 4, reps: 10 },
+    { name: 'Remo con barra', series: 4, reps: 12 },
+    { name: 'Peso muerto', series: 4, reps: 10 },
+    { name: 'Curl con barra', series: 4, reps: 12 },
+    { name: 'Curl alternado con mancuernas', series: 4, reps: 12 },
+    { name: 'Curl en predicador', series: 4, reps: 10 },
+    { name: 'Remo en máquina', series: 4, reps: 12 },
+    { name: 'Cardio (30 minutos)', series: 1, reps: '30 min' },
+  ],
+  piernas: [
+    { name: 'Sentadilla', series: 4, reps: 12 },
+    { name: 'Prensa de pierna', series: 4, reps: 12 },
+    { name: 'Peso muerto rumano', series: 4, reps: 10 },
+    { name: 'Extensión de cuádriceps', series: 4, reps: 12 },
+    { name: 'Curl femoral', series: 4, reps: 12 },
+    { name: 'Elevación de talones', series: 4, reps: 15 },
+    { name: 'Cardio (30 minutos)', series: 1, reps: '30 min' },
+  ],
+  hombros_trapecios: [
+    { name: 'Press militar con barra', series: 4, reps: 10 },
+    { name: 'Elevaciones laterales', series: 4, reps: 12 },
+    { name: 'Elevaciones frontales', series: 4, reps: 12 },
+    { name: 'Encogimientos con mancuernas', series: 4, reps: 15 },
+    { name: 'Remo al mentón', series: 4, reps: 12 },
+    { name: 'Cardio (30 minutos)', series: 1, reps: '30 min' },
+  ],
 };
 
 const Calendar = () => {
   const [selectedDay, setSelectedDay] = useState(null);
-  const [days, setDays] = useState(() => 
+  const [days, setDays] = useState(() =>
     new Array(90).fill({
       completed: false,
       restDay: false,
@@ -18,70 +53,75 @@ const Calendar = () => {
     })
   );
 
-  // Este useEffect se asegura de que el acceso a localStorage ocurra solo en el cliente
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedDays = localStorage.getItem('days');
-      if (savedDays) {
-        setDays(JSON.parse(savedDays));
-      }
+    const savedDays = localStorage.getItem('days');
+    if (savedDays) {
+      setDays(JSON.parse(savedDays));
     }
-  }, []); // Solo se ejecuta una vez al montar el componente
+  }, []);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('days', JSON.stringify(days));
     }
-  }, [days]); // Actualiza localStorage cada vez que cambien los días
+  }, [days]);
 
   const handleDayClick = (index) => {
     setSelectedDay(index);
   };
 
   const handleMuscleGroupChange = (group) => {
-    setDays((prevDays) => {
-      const updatedDays = [...prevDays];
-      updatedDays[selectedDay].muscleGroup = group;
-      updatedDays[selectedDay].exercisesCompleted = new Array(
-        ejerciciosPorGrupo[group].length
-      ).fill(false);
-      return updatedDays;
-    });
+    if (selectedDay !== null) {
+      setDays((prevDays) => {
+        const updatedDays = [...prevDays];
+        updatedDays[selectedDay].muscleGroup = group;
+        updatedDays[selectedDay].exercisesCompleted = new Array(
+          ejerciciosPorGrupo[group].length
+        ).fill(false);
+        return updatedDays;
+      });
+    }
   };
 
   const toggleExerciseComplete = (exerciseIndex) => {
-    setDays((prevDays) => {
-      const updatedDays = [...prevDays];
-      const currentDay = { ...updatedDays[selectedDay] };
-      currentDay.exercisesCompleted = [...currentDay.exercisesCompleted];
-      currentDay.exercisesCompleted[exerciseIndex] =
-        !currentDay.exercisesCompleted[exerciseIndex];
-      updatedDays[selectedDay] = currentDay;
-      return updatedDays;
-    });
+    if (selectedDay !== null && days[selectedDay].muscleGroup) {
+      setDays((prevDays) => {
+        const updatedDays = [...prevDays];
+        const currentDay = { ...updatedDays[selectedDay] };
+        currentDay.exercisesCompleted = [...currentDay.exercisesCompleted];
+        currentDay.exercisesCompleted[exerciseIndex] =
+          !currentDay.exercisesCompleted[exerciseIndex];
+        updatedDays[selectedDay] = currentDay;
+        return updatedDays;
+      });
+    }
   };
 
   const handleCompleteDay = () => {
-    const completedExercises = days[selectedDay].exercisesCompleted.filter(Boolean)
-      .length;
-    const muscleGroup = days[selectedDay].muscleGroup;
-    if (completedExercises === ejerciciosPorGrupo[muscleGroup].length) {
-      setDays((prevDays) => {
-        const updatedDays = [...prevDays];
-        updatedDays[selectedDay].completed = true;
-        return updatedDays;
-      });
-    } else {
-      alert('Completa todos los ejercicios antes de marcar el día como completado.');
+    if (selectedDay !== null) {
+      const completedExercises = days[selectedDay].exercisesCompleted.filter(Boolean)
+        .length;
+      const muscleGroup = days[selectedDay].muscleGroup;
+      if (completedExercises === ejerciciosPorGrupo[muscleGroup]?.length) {
+        setDays((prevDays) => {
+          const updatedDays = [...prevDays];
+          updatedDays[selectedDay].completed = true;
+          return updatedDays;
+        });
+      } else {
+        alert('Completa todos los ejercicios antes de marcar el día como completado.');
+      }
     }
   };
 
   const handleRestDay = () => {
-    setDays((prevDays) => {
-      const updatedDays = [...prevDays];
-      updatedDays[selectedDay].restDay = true;
-      return updatedDays;
-    });
+    if (selectedDay !== null) {
+      setDays((prevDays) => {
+        const updatedDays = [...prevDays];
+        updatedDays[selectedDay].restDay = true;
+        return updatedDays;
+      });
+    }
   };
 
   const handleResetProgress = () => {
@@ -96,7 +136,6 @@ const Calendar = () => {
     setSelectedDay(null);
   };
 
-  // El código de tus estilos y el JSX permanecen igual
   const containerStyle = {
     padding: '30px',
     backgroundColor: '#f9f9f9',
@@ -191,7 +230,7 @@ const Calendar = () => {
             <div>
               <h4 style={{ marginBottom: '10px' }}>Ejercicios:</h4>
               <ul style={{ listStyleType: 'none', padding: '0' }}>
-                {ejerciciosPorGrupo[days[selectedDay].muscleGroup].map((exercise, i) => (
+                {ejerciciosPorGrupo[days[selectedDay].muscleGroup]?.map((exercise, i) => (
                   <li
                     key={i}
                     style={{
