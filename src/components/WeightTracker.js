@@ -53,13 +53,14 @@ const WeightTracker = () => {
 
   // Calcular el peso ideal utilizando el porcentaje de grasa corporal
   const handleCalculateIdealWeight = () => {
-    if (bodyFat && height) {
+    if (bodyFat && height && currentWeight) {
       const leanBodyMass = (1 - bodyFat / 100) * currentWeight;
       const idealBodyWeight = leanBodyMass / (1 - 0.15); // El 15% es un porcentaje de grasa corporal ideal
       setIdealWeight(idealBodyWeight.toFixed(1));
+      setWeightGoal(idealBodyWeight.toFixed(1)); // Actualizar el peso meta basado en el peso ideal
       setHasInitialData(true); // Indica que ya se calcularon los datos iniciales
     } else {
-      alert('Por favor, ingresa tu altura y porcentaje de grasa corporal.');
+      alert('Por favor, ingresa tu altura, porcentaje de grasa corporal y peso actual.');
     }
   };
 
@@ -149,6 +150,13 @@ const WeightTracker = () => {
         <h3>Ingresa tus datos iniciales</h3>
         <input
           type="number"
+          placeholder="Peso actual (kg)"
+          value={currentWeight}
+          onChange={(e) => setCurrentWeight(e.target.value)}
+          style={inputStyle}
+        />
+        <input
+          type="number"
           placeholder="Altura (cm)"
           value={height}
           onChange={(e) => setHeight(e.target.value)}
@@ -168,6 +176,7 @@ const WeightTracker = () => {
         {idealWeight > 0 && (
           <div style={{ marginTop: '20px' }}>
             <h4>Tu peso ideal es: {idealWeight} kg</h4>
+            <h4>Tu peso meta ha sido ajustado a: {weightGoal} kg</h4>
           </div>
         )}
       </div>

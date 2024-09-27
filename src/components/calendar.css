@@ -18,45 +18,27 @@
   
   .calendar-grid {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
     gap: 10px;
-  }
-  
-  @media (max-width: 768px) {
-    .calendar-grid {
-      grid-template-columns: repeat(4, 1fr);
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .calendar-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
   }
   
   .calendar-day-box {
     padding: 20px;
     border-radius: 10px;
     cursor: pointer;
+    background-color: #e0e0e0;
     text-align: center;
     font-size: 16px;
     transition: 0.3s;
-    margin-bottom: 10px;
-    background-color: #e0e0e0;
-    box-shadow: none;
-  }
-  
-  .calendar-day-box.completed {
-    background-color: #4caf50;
-  }
-  
-  .calendar-day-box.rest {
-    background-color: #ffeb3b;
   }
   
   .calendar-day-box.selected {
     transform: scale(1.05);
     box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2);
+  }
+  
+  .calendar-day-box.completed {
+    background-color: #4caf50;
   }
   
   .calendar-select {
@@ -82,14 +64,15 @@
   }
   
   .calendar-button {
-    margin-right: 10px;
-    padding: 10px;
     background-color: #0288d1;
     color: #fff;
+    padding: 12px 20px;
+    font-size: 18px;
+    border-radius: 10px;
     border: none;
-    border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    margin-right: 10px;
   }
   
   .calendar-button.rest {
@@ -97,10 +80,11 @@
   }
   
   .calendar-reset-button {
-    margin-top: 20px;
     color: red;
     padding: 10px;
     border: 1px solid red;
     border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
   }
   
