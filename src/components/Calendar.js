@@ -13,8 +13,35 @@ const ejerciciosPorGrupo = {
     { name: 'Kickbacks con mancuerna', series: 4, reps: 15 },
     { name: 'Cardio (30 minutos)', series: 1, reps: '30 min' },
   ],
-  // Otros grupos musculares omitidos por simplicidad
+  espalda_biceps: [
+    { name: 'Dominadas', series: 4, reps: 10 },
+    { name: 'Remo con barra', series: 4, reps: 12 },
+    { name: 'Peso muerto', series: 4, reps: 10 },
+    { name: 'Curl con barra', series: 4, reps: 12 },
+    { name: 'Curl alternado con mancuernas', series: 4, reps: 12 },
+    { name: 'Curl en predicador', series: 4, reps: 10 },
+    { name: 'Remo en máquina', series: 4, reps: 12 },
+    { name: 'Cardio (30 minutos)', series: 1, reps: '30 min' },
+  ],
+  piernas: [
+    { name: 'Sentadilla', series: 4, reps: 12 },
+    { name: 'Prensa de pierna', series: 4, reps: 12 },
+    { name: 'Peso muerto rumano', series: 4, reps: 10 },
+    { name: 'Extensión de cuádriceps', series: 4, reps: 12 },
+    { name: 'Curl femoral', series: 4, reps: 12 },
+    { name: 'Elevación de talones', series: 4, reps: 15 },
+    { name: 'Cardio (30 minutos)', series: 1, reps: '30 min' },
+  ],
+  hombros_trapecios: [
+    { name: 'Press militar con barra', series: 4, reps: 10 },
+    { name: 'Elevaciones laterales', series: 4, reps: 12 },
+    { name: 'Elevaciones frontales', series: 4, reps: 12 },
+    { name: 'Encogimientos con mancuernas', series: 4, reps: 15 },
+    { name: 'Remo al mentón', series: 4, reps: 12 },
+    { name: 'Cardio (30 minutos)', series: 1, reps: '30 min' },
+  ],
 };
+
 
 const Calendar = () => {
   const [selectedDay, setSelectedDay] = useState(null);
