@@ -180,31 +180,41 @@ const DietProgress = () => {
     color: '#333',
   };
 
-  // Ajustes para que el grid se vea bien en pantallas pequeñas
-  const dayGridStyle = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(7, 1fr)', // 7 columnas para vista en desktop
-    gap: '10px',
-    '@media (max-width: 768px)': { // Cambios para dispositivos móviles
-      gridTemplateColumns: 'repeat(3, 1fr)', // 3 columnas para pantallas medianas
+  // Estilos adicionales
+  const infoContainerStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    '@media (min-width: 768px)': {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
     },
-    '@media (max-width: 480px)': {
-      gridTemplateColumns: 'repeat(2, 1fr)', // 2 columnas para pantallas pequeñas
+    marginTop: '20px',
+  };
+
+  const infoBoxStyle = {
+    padding: '20px',
+    backgroundColor: '#ffffff',
+    borderRadius: '15px',
+    textAlign: 'center',
+    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+    marginBottom: '20px',
+    '@media (min-width: 768px)': {
+      marginBottom: '0',
     },
   };
 
-  const dayBoxStyle = (day, selected) => ({
-    padding: '20px',
-    borderRadius: '10px',
-    cursor: 'pointer',
-    textAlign: 'center',
-    fontSize: '16px',
-    transition: '0.3s',
+  const infoHeaderStyle = {
+    fontSize: '18px',
+    color: '#666',
     marginBottom: '10px',
-    backgroundColor: day.dietCompleted ? '#4caf50' : '#e0e0e0',
-    transform: selected ? 'scale(1.05)' : 'scale(1)',
-    boxShadow: selected ? '0px 0px 15px rgba(0, 0, 0, 0.2)' : 'none',
-  });
+  };
+
+  const infoValueStyle = {
+    fontSize: '28px',
+    fontWeight: 'bold',
+  };
 
   const inputStyle = {
     width: '100%',
@@ -242,101 +252,6 @@ const DietProgress = () => {
     <div style={containerStyle}>
       <h2 style={headerStyle}>Calculadora de Dieta y Progreso</h2>
 
-      <div style={dayGridStyle}>
-        {days.map((day, index) => (
-          <div
-            key={index}
-            style={dayBoxStyle(day, selectedDay === index)}
-            onClick={() => handleDayClick(index)}
-          >
-            Día {index + 1}
-          </div>
-        ))}
-      </div>
-
-      {selectedDay !== null && (
-        <div style={{ marginTop: '20px' }}>
-          <h3>Día {selectedDay + 1} - {days[selectedDay].dietCompleted ? 'Dieta cumplida' : 'Dieta no cumplida'}</h3>
-
-          <div style={{ marginTop: '20px' }}>
-            <label htmlFor="fasting">Introduce tus horas de ayuno:</label>
-            <input
-              type="number"
-              id="fasting"
-              value={fastingHours}
-              onChange={handleFastingHoursChange}
-              style={inputStyle}
-            />
-            <button onClick={handleSaveFastingHours} style={buttonStyle}>
-              Guardar Ayuno y Completar Día
-            </button>
-          </div>
-        </div>
-      )}
-
-      <div style={{ marginTop: '40px' }}>
-        <h3>Calculadora de Metabolismo Basal (BMR)</h3>
-        <div>
-          <label>Peso (kg):</label>
-          <input type="number" value={weight} onChange={(e) => setWeight(e.target.value)} style={inputStyle} />
-        </div>
-        <div>
-          <label>Altura (cm):</label>
-          <input type="number" value={height} onChange={(e) => setHeight(e.target.value)} style={inputStyle} />
-        </div>
-        <div>
-          <label>Edad:</label>
-          <input type="number" value={age} onChange={(e) => setAge(e.target.value)} style={inputStyle} />
-        </div>
-        <div>
-          <label>Género:</label>
-          <select value={gender} onChange={(e) => setGender(e.target.value)} style={selectStyle}>
-            <option value="male">Masculino</option>
-            <option value="female">Femenino</option>
-          </select>
-        </div>
-        <div>
-          <label>Nivel de Actividad:</label>
-          <select value={activityLevel} onChange={(e) => setActivityLevel(e.target.value)} style={selectStyle}>
-            <option value="1.2">Sedentario</option>
-            <option value="1.375">Ligero</option>
-            <option value="1.55">Moderado</option>
-            <option value="1.725">Activo</option>
-            <option value="1.9">Muy activo</option>
-          </select>
-        </div>
-        <div>
-          <label>Déficit Calórico:</label>
-          <select value={deficitOption} onChange={(e) => setDeficitOption(e.target.value)} style={selectStyle}>
-            <option value="mild">Leve (10%)</option>
-            <option value="moderate">Moderado (20%)</option>
-            <option value="aggressive">Agresivo (30%)</option>
-          </select>
-        </div>
-        <div>
-          <label>Tipo de Dieta:</label>
-          <select value={dietType} onChange={(e) => setDietType(e.target.value)} style={selectStyle}>
-            <option value="normal">Normal</option>
-            <option value="keto">Keto (Cetogénica)</option>
-            <option value="lowFat">Baja en Grasas</option>
-          </select>
-        </div>
-
-        <button onClick={calculateBMR} style={buttonStyle}>
-          Calcular BMR y Calorías
-        </button>
-
-        {caloricIntake > 0 && (
-          <div style={{ marginTop: '20px' }}>
-            <h4>Resultados</h4>
-            <p>BMR: {bmr} cal</p>
-            <p>Calorías Diarias: {caloricIntake} cal</p>
-            <p>Macros: Proteínas: {macros.protein}g, Carbohidratos: {macros.carbs}g, Grasas: {macros.fat}g</p>
-          </div>
-        )}
-      </div>
-
-      <h3 style={{ marginTop: '40px' }}>Indicadores de Progreso</h3>
       <div style={infoContainerStyle}>
         <div style={infoBoxStyle}>
           <p style={infoHeaderStyle}>Días cumplidos</p>
