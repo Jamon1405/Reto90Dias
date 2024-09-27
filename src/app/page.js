@@ -100,7 +100,6 @@ const indicatorStyle = {
 
 // Página principal con todos los resúmenes
 const HomePage = () => {
-  // Estilo de la página general para móviles
   const containerStyle = {
     padding: '30px',
     fontFamily: "'Poppins', sans-serif",
@@ -108,16 +107,13 @@ const HomePage = () => {
     minHeight: '100vh',
     maxWidth: '900px',
     margin: '0 auto',
+    textAlign: 'center',
   };
 
   const headerStyle = {
-    textAlign: 'center',
     color: '#0288d1',
     marginBottom: '40px',
     fontSize: '32px',
-    '@media (max-width: 768px)': { // Ajustes para pantallas móviles
-      fontSize: '28px',
-    },
   };
 
   return (

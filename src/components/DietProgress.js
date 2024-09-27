@@ -180,90 +180,17 @@ const DietProgress = () => {
     color: '#333',
   };
 
-  // Estilos adicionales
-  const infoContainerStyle = {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    '@media (min-width: 768px)': {
-      flexDirection: 'row',
-      justifyContent: 'space-around',
-    },
-    marginTop: '20px',
-  };
-
-  const infoBoxStyle = {
-    padding: '20px',
-    backgroundColor: '#ffffff',
-    borderRadius: '15px',
-    textAlign: 'center',
-    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
-    marginBottom: '20px',
-    '@media (min-width: 768px)': {
-      marginBottom: '0',
-    },
-  };
-
-  const infoHeaderStyle = {
-    fontSize: '18px',
-    color: '#666',
-    marginBottom: '10px',
-  };
-
-  const infoValueStyle = {
-    fontSize: '28px',
-    fontWeight: 'bold',
-  };
-
-  const inputStyle = {
-    width: '100%',
-    padding: '10px',
-    fontSize: '16px',
-    borderRadius: '10px',
-    border: '1px solid #ddd',
-    marginBottom: '15px',
-    boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
-  };
-
-  const selectStyle = {
-    padding: '10px',
-    fontSize: '16px',
-    borderRadius: '10px',
-    border: '1px solid #ddd',
-    marginBottom: '20px',
-    width: '100%',
-  };
-
-  const buttonStyle = {
-    backgroundColor: '#0288d1',
-    color: '#fff',
-    padding: '12px 20px',
-    fontSize: '18px',
-    borderRadius: '10px',
-    border: 'none',
-    cursor: 'pointer',
-    marginTop: '20px',
-    marginRight: '10px',
-    transition: 'background-color 0.3s ease',
-  };
+  // Se eliminaron las media queries en línea
 
   return (
     <div style={containerStyle}>
       <h2 style={headerStyle}>Calculadora de Dieta y Progreso</h2>
 
-      <div style={infoContainerStyle}>
-        <div style={infoBoxStyle}>
-          <p style={infoHeaderStyle}>Días cumplidos</p>
-          <p style={infoValueStyle}>{completedDays} / 90</p>
-        </div>
-        <div style={infoBoxStyle}>
-          <p style={infoHeaderStyle}>Porcentaje de avance</p>
-          <p style={infoValueStyle}>{dietProgressPercentage}%</p>
-        </div>
-        <div style={infoBoxStyle}>
-          <p style={infoHeaderStyle}>Horas de ayuno promedio</p>
-          <p style={infoValueStyle}>{averageFastingHours} hrs</p>
+      <div>
+        <div>
+          <p>Días cumplidos: {completedDays} / 90</p>
+          <p>Porcentaje de avance: {dietProgressPercentage}%</p>
+          <p>Horas de ayuno promedio: {averageFastingHours} hrs</p>
         </div>
       </div>
 

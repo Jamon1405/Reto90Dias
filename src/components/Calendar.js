@@ -190,12 +190,6 @@ const Calendar = () => {
     display: 'grid',
     gridTemplateColumns: 'repeat(7, 1fr)', // 7 columnas para vista en desktop
     gap: '10px',
-    '@media (max-width: 768px)': { // Cambios para dispositivos móviles
-      gridTemplateColumns: 'repeat(2, 1fr)', // 2 columnas en pantallas pequeñas
-    },
-    '@media (max-width: 480px)': {
-      gridTemplateColumns: '1fr', // 1 columna en pantallas muy pequeñas
-    },
   };
 
   return (

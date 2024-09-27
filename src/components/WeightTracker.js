@@ -115,42 +115,6 @@ const WeightTracker = () => {
     color: '#333',
   };
 
-  const weightInfoContainer = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(4, 1fr)', // 4 columnas en escritorio
-    gap: '20px',
-    marginBottom: '40px',
-    '@media (max-width: 768px)': {
-      gridTemplateColumns: 'repeat(2, 1fr)', // 2 columnas en tablets
-    },
-    '@media (max-width: 480px)': {
-      gridTemplateColumns: 'repeat(1, 1fr)', // 1 columna en móviles
-    },
-  };
-
-  const weightBoxStyle = {
-    padding: '20px',
-    backgroundColor: '#ffffff',
-    borderRadius: '15px',
-    textAlign: 'center',
-    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
-  };
-
-  const weightBoxHeader = {
-    fontSize: '18px',
-    color: '#666',
-    marginBottom: '10px',
-  };
-
-  const weightBoxValue = {
-    fontSize: '28px',
-    fontWeight: 'bold',
-  };
-
-  const inputContainerStyle = {
-    marginBottom: '20px',
-  };
-
   const inputStyle = {
     width: '100%',
     padding: '12px',
@@ -159,9 +123,6 @@ const WeightTracker = () => {
     border: '1px solid #ddd',
     marginBottom: '15px',
     boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
-    '@media (max-width: 480px)': {
-      fontSize: '14px', // Ajustar tamaño en pantallas más pequeñas
-    },
   };
 
   const buttonStyle = {
@@ -174,10 +135,6 @@ const WeightTracker = () => {
     cursor: 'pointer',
     transition: 'background-color 0.3s ease',
     marginBottom: '20px',
-    '@media (max-width: 480px)': {
-      padding: '10px 15px', // Ajuste en móviles
-      fontSize: '16px',
-    },
   };
 
   const buttonDeleteStyle = {
@@ -206,43 +163,23 @@ const WeightTracker = () => {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    '@media (max-width: 480px)': {
-      fontSize: '14px', // Ajuste de fuente para móviles
-    },
   };
 
   return (
     <div style={containerStyle}>
       <h2 style={headerStyle}>Seguimiento del Peso y Calculadora de Peso Ideal</h2>
 
-      <div style={weightInfoContainer}>
-        <div style={weightBoxStyle}>
-          <p style={weightBoxHeader}>Peso Inicial</p>
-          <p style={weightBoxValue}>{initialWeight} kg</p>
-        </div>
-        <div style={weightBoxStyle}>
-          <p style={weightBoxHeader}>Peso Actual</p>
-          <p style={weightBoxValue}>{currentWeightValue} kg</p>
-        </div>
-        <div style={weightBoxStyle}>
-          <p style={weightBoxHeader}>Peso Meta</p>
-          <p style={weightBoxValue}>{weightGoal} kg</p>
-        </div>
-        <div style={weightBoxStyle}>
-          <p style={weightBoxHeader}>Falta para Meta</p>
-          <p style={{ ...weightBoxValue, color: weightDifferenceColor }}>
-            {goalDifference} kg
-          </p>
-        </div>
-        <div style={weightBoxStyle}>
-          <p style={weightBoxHeader}>¡Has bajado!</p>
-          <p style={{ ...weightBoxValue, color: weightLostColor }}>
-            {Math.abs(weightLost)} kg
-          </p>
+      <div>
+        <div>
+          <p>Peso Inicial: {initialWeight} kg</p>
+          <p>Peso Actual: {currentWeightValue} kg</p>
+          <p>Peso Meta: {weightGoal} kg</p>
+          <p style={{ color: weightDifferenceColor }}>Falta para Meta: {goalDifference} kg</p>
+          <p style={{ color: weightLostColor }}>¡Has bajado!: {Math.abs(weightLost)} kg</p>
         </div>
       </div>
 
-      <div style={inputContainerStyle}>
+      <div>
         <label htmlFor="date">Selecciona el día: </label>
         <input
           type="date"
@@ -252,7 +189,7 @@ const WeightTracker = () => {
           style={inputStyle}
         />
       </div>
-      <div style={inputContainerStyle}>
+      <div>
         <label htmlFor="weight">Introduce tu peso (kg): </label>
         <input
           type="number"
@@ -263,12 +200,12 @@ const WeightTracker = () => {
         />
       </div>
 
-      <div style={inputContainerStyle}>
+      <div>
         <label>Altura (cm):</label>
         <input type="number" value={height} onChange={(e) => setHeight(e.target.value)} style={inputStyle} />
       </div>
 
-      <div style={inputContainerStyle}>
+      <div>
         <label>Porcentaje de Grasa Corporal (%):</label>
         <input type="number" value={bodyFat} onChange={(e) => setBodyFat(e.target.value)} style={inputStyle} />
       </div>
