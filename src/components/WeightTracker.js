@@ -1,4 +1,4 @@
-'use client';  // Esto indica que este componente solo debe ejecutarse en el cliente
+'use client';  
 import { useState, useEffect } from 'react';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
@@ -9,10 +9,11 @@ const WeightTracker = () => {
   const [weightEntries, setWeightEntries] = useState(() => []);
   const [currentWeight, setCurrentWeight] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
-  const [weightGoal, setWeightGoal] = useState(75); // Meta de peso
+  const [weightGoal, setWeightGoal] = useState(75); // Meta de peso por defecto
   const [height, setHeight] = useState(''); // Altura en cm
   const [bodyFat, setBodyFat] = useState(''); // Porcentaje de grasa corporal
   const [idealWeight, setIdealWeight] = useState(0); // Peso ideal calculado
+  const [hasInitialData, setHasInitialData] = useState(false); // Para determinar si el usuario ha ingresado los datos iniciales
 
   // Este useEffect carga los datos de localStorage cuando el componente está montado
   useEffect(() => {
@@ -31,6 +32,7 @@ const WeightTracker = () => {
     }
   }, [weightEntries]);
 
+  // Manejar la entrada del peso
   const handleAddWeight = () => {
     if (currentWeight && selectedDate) {
       setWeightEntries((prevEntries) => [
@@ -39,11 +41,26 @@ const WeightTracker = () => {
       ]);
       setCurrentWeight('');
       setSelectedDate('');
+    } else {
+      alert("Por favor, introduce una fecha y un peso.");
     }
   };
 
+  // Manejar el borrado de una entrada de peso
   const handleDeleteEntry = (index) => {
     setWeightEntries((prevEntries) => prevEntries.filter((_, i) => i !== index));
+  };
+
+  // Calcular el peso ideal utilizando el porcentaje de grasa corporal
+  const handleCalculateIdealWeight = () => {
+    if (bodyFat && height) {
+      const fatFreeMassIndex = 1 - bodyFat / 100;
+      const idealBodyWeight = (height - 100) * fatFreeMassIndex;
+      setIdealWeight(idealBodyWeight.toFixed(1));
+      setHasInitialData(true); // Indica que ya se calcularon los datos iniciales
+    } else {
+      alert('Por favor, ingresa tu altura y porcentaje de grasa corporal.');
+    }
   };
 
   const initialWeight = weightEntries.length > 0 ? weightEntries[0].weight : 0;
@@ -51,24 +68,11 @@ const WeightTracker = () => {
   const weightDifference = currentWeightValue ? (currentWeightValue - initialWeight).toFixed(1) : '0.0';
   const goalDifference = currentWeightValue ? (currentWeightValue - weightGoal).toFixed(1) : '0.0';
 
-  // Variar el color según la diferencia de peso
-  const weightDifferenceColor = goalDifference > 0 ? '#e53935' : '#4caf50'; // Rojo si falta bajar, verde si se pasó la meta
-
   // Cálculo del peso bajado
   const weightLost = (initialWeight - currentWeightValue).toFixed(1);
-  const weightLostColor = weightLost > 0 ? '#4caf50' : '#e53935'; // Verde si ha bajado peso, rojo si ha subido
+  const weightDifferenceColor = goalDifference > 0 ? '#e53935' : '#4caf50'; // Rojo si falta bajar, verde si se pasó la meta
 
-  // Cálculo del peso ideal utilizando el porcentaje de grasa corporal
-  const handleCalculateIdealWeight = () => {
-    if (bodyFat && height) {
-      const fatFreeMassIndex = 1 - bodyFat / 100;
-      const idealBodyWeight = (height - 100) * fatFreeMassIndex;
-      setIdealWeight(idealBodyWeight.toFixed(1));
-    } else {
-      alert('Por favor, ingresa tu altura y porcentaje de grasa corporal.');
-    }
-  };
-
+  // Datos del gráfico de línea
   const data = {
     labels: weightEntries.map((entry) => entry.date),
     datasets: [
@@ -137,104 +141,83 @@ const WeightTracker = () => {
     marginBottom: '20px',
   };
 
-  const buttonDeleteStyle = {
-    backgroundColor: '#e53935',
-    color: '#fff',
-    padding: '6px 12px',
-    fontSize: '14px',
-    borderRadius: '5px',
-    border: 'none',
-    cursor: 'pointer',
-    transition: 'background-color 0.3s ease',
-  };
-
-  const entryListStyle = {
-    listStyleType: 'none',
-    padding: 0,
-    margin: '20px 0',
-  };
-
-  const entryItemStyle = {
-    padding: '10px 15px',
-    backgroundColor: '#fff',
-    borderRadius: '10px',
-    boxShadow: '0 3px 10px rgba(0, 0, 0, 0.1)',
-    marginBottom: '10px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  };
-
   return (
     <div style={containerStyle}>
       <h2 style={headerStyle}>Seguimiento del Peso y Calculadora de Peso Ideal</h2>
 
       <div>
-        <div>
-          <p>Peso Inicial: {initialWeight} kg</p>
-          <p>Peso Actual: {currentWeightValue} kg</p>
-          <p>Peso Meta: {weightGoal} kg</p>
-          <p style={{ color: weightDifferenceColor }}>Falta para Meta: {goalDifference} kg</p>
-          <p style={{ color: weightLostColor }}>¡Has bajado!: {Math.abs(weightLost)} kg</p>
-        </div>
-      </div>
-
-      <div>
-        <label htmlFor="date">Selecciona el día: </label>
-        <input
-          type="date"
-          id="date"
-          value={selectedDate}
-          onChange={(e) => setSelectedDate(e.target.value)}
-          style={inputStyle}
-        />
-      </div>
-      <div>
-        <label htmlFor="weight">Introduce tu peso (kg): </label>
+        <h3>Ingresa tus datos iniciales</h3>
         <input
           type="number"
-          id="weight"
-          value={currentWeight}
-          onChange={(e) => setCurrentWeight(e.target.value)}
+          placeholder="Altura (cm)"
+          value={height}
+          onChange={(e) => setHeight(e.target.value)}
           style={inputStyle}
         />
+        <input
+          type="number"
+          placeholder="Porcentaje de grasa corporal (%)"
+          value={bodyFat}
+          onChange={(e) => setBodyFat(e.target.value)}
+          style={inputStyle}
+        />
+        <button onClick={handleCalculateIdealWeight} style={buttonStyle}>
+          Calcular Peso Ideal
+        </button>
+
+        {idealWeight > 0 && (
+          <div style={{ marginTop: '20px' }}>
+            <h4>Tu peso ideal es: {idealWeight} kg</h4>
+          </div>
+        )}
       </div>
 
-      <div>
-        <label>Altura (cm):</label>
-        <input type="number" value={height} onChange={(e) => setHeight(e.target.value)} style={inputStyle} />
-      </div>
+      {hasInitialData && (
+        <>
+          <div>
+            <h3>Registra tu peso</h3>
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              style={inputStyle}
+            />
+            <input
+              type="number"
+              placeholder="Peso (kg)"
+              value={currentWeight}
+              onChange={(e) => setCurrentWeight(e.target.value)}
+              style={inputStyle}
+            />
+            <button onClick={handleAddWeight} style={buttonStyle}>
+              Añadir entrada de peso
+            </button>
+          </div>
 
-      <div>
-        <label>Porcentaje de Grasa Corporal (%):</label>
-        <input type="number" value={bodyFat} onChange={(e) => setBodyFat(e.target.value)} style={inputStyle} />
-      </div>
+          <div>
+            <h3>Progreso</h3>
+            <p>Peso Inicial: {initialWeight} kg</p>
+            <p>Peso Actual: {currentWeightValue} kg</p>
+            <p>Peso Meta: {weightGoal} kg</p>
+            <p style={{ color: weightDifferenceColor }}>Falta para Meta: {goalDifference} kg</p>
+            <p style={{ color: weightDifferenceColor }}>¡Has bajado!: {Math.abs(weightLost)} kg</p>
+          </div>
 
-      <button onClick={handleCalculateIdealWeight} style={buttonStyle}>
-        Calcular Peso Ideal
-      </button>
+          <h3>Entradas de Peso</h3>
+          <ul>
+            {weightEntries.map((entry, index) => (
+              <li key={index}>
+                {entry.date}: {entry.weight} kg
+                <button onClick={() => handleDeleteEntry(index)} style={buttonStyle}>
+                  Borrar
+                </button>
+              </li>
+            ))}
+          </ul>
 
-      {idealWeight > 0 && (
-        <div style={{ marginTop: '20px' }}>
-          <h4>Tu peso ideal es: {idealWeight} kg</h4>
-        </div>
+          <Line data={data} options={options} />
+        </>
       )}
-
-      <button onClick={handleAddWeight} style={buttonStyle}>
-        Añadir entrada
-      </button>
-
-      <h3>Entradas de Peso</h3>
-      <ul style={entryListStyle}>
-        {weightEntries.map((entry, index) => (
-          <li key={index} style={entryItemStyle}>
-            {entry.date}: {entry.weight} kg
-            <button onClick={() => handleDeleteEntry(index)} style={buttonDeleteStyle}>Borrar</button>
-          </li>
-        ))}
-      </ul>
-
-      <Line data={data} options={options} />
     </div>
   );
 };

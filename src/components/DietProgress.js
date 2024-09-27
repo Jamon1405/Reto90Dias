@@ -1,4 +1,4 @@
-'use client';  // Componente para ejecutarse en el cliente
+'use client';
 import { useState, useEffect } from 'react';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
@@ -43,6 +43,11 @@ const DietProgress = () => {
 
   // Función para calcular el BMR y las calorías diarias
   const calculateBMR = () => {
+    if (!weight || !height || !age) {
+      alert("Por favor, ingresa todos los valores para calcular tu BMR.");
+      return;
+    }
+
     let calculatedBMR;
     if (gender === 'male') {
       calculatedBMR = 88.36 + (13.4 * weight) + (4.8 * height) - (5.7 * age);
@@ -71,7 +76,7 @@ const DietProgress = () => {
     });
   };
 
-  // Este useEffect carga los datos de localStorage cuando el componente está montado
+  // Guardar y cargar el progreso en el localStorage
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedDays = localStorage.getItem('days');
@@ -81,7 +86,6 @@ const DietProgress = () => {
     }
   }, []);
 
-  // Este useEffect guarda los cambios en days en localStorage cada vez que cambian
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('days', JSON.stringify(days));
@@ -180,39 +184,78 @@ const DietProgress = () => {
     color: '#333',
   };
 
-  // Estilos adicionales definidos correctamente
-  const infoContainerStyle = {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: '20px',
-  };
-
-  const infoBoxStyle = {
-    padding: '20px',
-    backgroundColor: '#ffffff',
-    borderRadius: '15px',
-    textAlign: 'center',
-    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
-    marginBottom: '20px',
-  };
-
-  const infoHeaderStyle = {
-    fontSize: '18px',
-    color: '#666',
-    marginBottom: '10px',
-  };
-
-  const infoValueStyle = {
-    fontSize: '28px',
-    fontWeight: 'bold',
+  const inputStyle = {
+    padding: '10px',
+    margin: '10px 0',
+    borderRadius: '5px',
+    border: '1px solid #ddd',
+    width: '100%',
   };
 
   return (
     <div style={containerStyle}>
       <h2 style={headerStyle}>Calculadora de Dieta y Progreso</h2>
 
+      <div>
+        <h3>Calculadora de BMR</h3>
+        <div>
+          <input
+            style={inputStyle}
+            type="number"
+            placeholder="Peso (kg)"
+            value={weight}
+            onChange={(e) => setWeight(e.target.value)}
+          />
+          <input
+            style={inputStyle}
+            type="number"
+            placeholder="Altura (cm)"
+            value={height}
+            onChange={(e) => setHeight(e.target.value)}
+          />
+          <input
+            style={inputStyle}
+            type="number"
+            placeholder="Edad"
+            value={age}
+            onChange={(e) => setAge(e.target.value)}
+          />
+          <select style={inputStyle} value={gender} onChange={(e) => setGender(e.target.value)}>
+            <option value="male">Hombre</option>
+            <option value="female">Mujer</option>
+          </select>
+          <select style={inputStyle} value={activityLevel} onChange={(e) => setActivityLevel(e.target.value)}>
+            <option value="1.2">Sedentario</option>
+            <option value="1.375">Actividad ligera</option>
+            <option value="1.55">Moderado</option>
+            <option value="1.725">Activo</option>
+            <option value="1.9">Muy activo</option>
+          </select>
+          <select style={inputStyle} value={deficitOption} onChange={(e) => setDeficitOption(e.target.value)}>
+            <option value="mild">Déficit leve (10%)</option>
+            <option value="moderate">Déficit moderado (20%)</option>
+            <option value="aggressive">Déficit agresivo (30%)</option>
+          </select>
+          <select style={inputStyle} value={dietType} onChange={(e) => setDietType(e.target.value)}>
+            <option value="normal">Dieta normal</option>
+            <option value="keto">Dieta cetogénica</option>
+            <option value="lowFat">Baja en grasa</option>
+          </select>
+
+          <button onClick={calculateBMR} style={inputStyle}>Calcular BMR y Macros</button>
+        </div>
+
+        {bmr > 0 && (
+          <div>
+            <h4>BMR: {bmr} kcal</h4>
+            <h4>Calorías diarias: {caloricIntake} kcal</h4>
+            <h4>Macronutrientes (gramos por día):</h4>
+            <p>Proteínas: {macros.protein}g | Carbohidratos: {macros.carbs}g | Grasas: {macros.fat}g</p>
+          </div>
+        )}
+      </div>
+
+      {/* Aquí empieza el progreso de la dieta */}
       <div style={infoContainerStyle}>
         <div style={infoBoxStyle}>
           <p style={infoHeaderStyle}>Días cumplidos</p>

@@ -53,7 +53,7 @@ const Calendar = () => {
     })
   );
 
-  // Este useEffect carga los datos de localStorage cuando el componente está montado
+  // Cargar datos desde localStorage cuando el componente está montado
   useEffect(() => {
     const savedDays = localStorage.getItem('days');
     if (savedDays) {
@@ -61,7 +61,7 @@ const Calendar = () => {
     }
   }, []);
 
-  // Este useEffect guarda los cambios en days en localStorage cada vez que cambian
+  // Guardar cambios en localStorage cuando se actualiza el estado
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('days', JSON.stringify(days));
@@ -141,66 +141,15 @@ const Calendar = () => {
     setSelectedDay(null);
   };
 
-  // Estilos
-  const containerStyle = {
-    padding: '30px',
-    backgroundColor: '#f9f9f9',
-    borderRadius: '20px',
-    boxShadow: '0 6px 20px rgba(0, 0, 0, 0.1)',
-    margin: '30px auto',
-    maxWidth: '900px',
-    textAlign: 'center',
-    fontFamily: "'Poppins', sans-serif",
-  };
-
-  const headerStyle = {
-    fontSize: '32px',
-    fontWeight: 'bold',
-    marginBottom: '30px',
-    color: '#333',
-  };
-
-  const dayBoxStyle = (day, selected) => ({
-    padding: '20px',
-    borderRadius: '10px',
-    cursor: 'pointer',
-    textAlign: 'center',
-    fontSize: '16px',
-    transition: '0.3s',
-    marginBottom: '10px',
-    backgroundColor: day.completed ? '#4caf50' : day.restDay ? '#ffeb3b' : '#e0e0e0',
-    transform: selected ? 'scale(1.05)' : 'scale(1)',
-    boxShadow: selected ? '0px 0px 15px rgba(0, 0, 0, 0.2)' : 'none',
-  });
-
-  const buttonStyle = {
-    backgroundColor: '#0288d1',
-    color: '#fff',
-    padding: '12px 20px',
-    fontSize: '18px',
-    borderRadius: '10px',
-    border: 'none',
-    cursor: 'pointer',
-    marginTop: '20px',
-    marginRight: '10px',
-    transition: 'background-color 0.3s ease',
-  };
-
-  const gridStyle = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(7, 1fr)', // 7 columnas para vista en desktop
-    gap: '10px',
-  };
-
   return (
-    <div style={containerStyle}>
-      <h2 style={headerStyle}>Calendario de 90 días</h2>
+    <div className="calendar-container">
+      <h2 className="calendar-header">Calendario de 90 días</h2>
 
-      <div style={gridStyle}>
+      <div className="calendar-grid">
         {days.map((day, index) => (
           <div
             key={index}
-            style={dayBoxStyle(day, selectedDay === index)}
+            className={`calendar-day-box ${selectedDay === index ? 'selected' : ''}`}
             onClick={() => handleDayClick(index)}
           >
             Día {index + 1}
@@ -222,13 +171,7 @@ const Calendar = () => {
             <select
               value={days[selectedDay].muscleGroup}
               onChange={(e) => handleMuscleGroupChange(e.target.value)}
-              style={{
-                padding: '10px',
-                fontSize: '14px',
-                borderRadius: '5px',
-                border: '1px solid #ccc',
-                backgroundColor: '#ffffff',
-              }}
+              className="calendar-select"
             >
               <option value="">Selecciona</option>
               <option value="pecho_triceps">Pecho y Tríceps</option>
@@ -245,17 +188,7 @@ const Calendar = () => {
                 {ejerciciosPorGrupo[days[selectedDay].muscleGroup].map((exercise, i) => (
                   <li
                     key={i}
-                    style={{
-                      backgroundColor: days[selectedDay].exercisesCompleted[i]
-                        ? '#4caf50'
-                        : '#f0f0f0',
-                      padding: '15px',
-                      marginBottom: '10px',
-                      borderRadius: '8px',
-                      boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
-                      cursor: 'pointer',
-                      transition: '0.3s',
-                    }}
+                    className={`calendar-exercise ${days[selectedDay].exercisesCompleted[i] ? 'completed' : ''}`}
                     onClick={() => toggleExerciseComplete(i)}
                   >
                     {exercise.name} - {exercise.series} series de {exercise.reps} repeticiones
@@ -266,40 +199,17 @@ const Calendar = () => {
           )}
 
           <div style={{ marginTop: '20px' }}>
-            <button
-              onClick={handleCompleteDay}
-              style={{
-                marginRight: '10px',
-                padding: '10px',
-                backgroundColor: '#0288d1',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '5px',
-                cursor: 'pointer',
-              }}
-            >
+            <button className="calendar-button" onClick={handleCompleteDay}>
               Marcar día como completado
             </button>
-            <button
-              onClick={handleRestDay}
-              style={{
-                padding: '10px',
-                backgroundColor: '#ffeb3b',
-                border: 'none',
-                borderRadius: '5px',
-                cursor: 'pointer',
-              }}
-            >
+            <button className="calendar-button rest" onClick={handleRestDay}>
               Marcar como día de descanso
             </button>
           </div>
         </div>
       )}
 
-      <button
-        onClick={handleResetProgress}
-        style={{ marginTop: '20px', color: 'red', padding: '10px', border: '1px solid red', borderRadius: '5px' }}
-      >
+      <button className="calendar-reset-button" onClick={handleResetProgress}>
         Reiniciar progreso
       </button>
     </div>
