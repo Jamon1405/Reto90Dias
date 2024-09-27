@@ -44,7 +44,7 @@ const ejerciciosPorGrupo = {
 
 const Calendar = () => {
   const [selectedDay, setSelectedDay] = useState(null);
-  const [days, setDays] = useState(() =>
+  const [days, setDays] = useState(() => 
     new Array(90).fill({
       completed: false,
       restDay: false,
@@ -53,6 +53,7 @@ const Calendar = () => {
     })
   );
 
+  // Este useEffect carga los datos de localStorage cuando el componente está montado
   useEffect(() => {
     const savedDays = localStorage.getItem('days');
     if (savedDays) {
@@ -60,6 +61,7 @@ const Calendar = () => {
     }
   }, []);
 
+  // Este useEffect guarda los cambios en days en localStorage cada vez que cambian
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('days', JSON.stringify(days));
@@ -71,20 +73,26 @@ const Calendar = () => {
   };
 
   const handleMuscleGroupChange = (group) => {
-    if (selectedDay !== null) {
+    if (selectedDay !== null && group) {
       setDays((prevDays) => {
         const updatedDays = [...prevDays];
-        updatedDays[selectedDay].muscleGroup = group;
-        updatedDays[selectedDay].exercisesCompleted = new Array(
+        const currentDay = { ...updatedDays[selectedDay] };
+        
+        currentDay.muscleGroup = group;
+        currentDay.exercisesCompleted = new Array(
           ejerciciosPorGrupo[group].length
         ).fill(false);
+        
+        updatedDays[selectedDay] = currentDay;
         return updatedDays;
       });
+    } else {
+      console.error("No se ha seleccionado un día o grupo muscular válido.");
     }
   };
 
   const toggleExerciseComplete = (exerciseIndex) => {
-    if (selectedDay !== null && days[selectedDay].muscleGroup) {
+    if (selectedDay !== null) {
       setDays((prevDays) => {
         const updatedDays = [...prevDays];
         const currentDay = { ...updatedDays[selectedDay] };
@@ -99,8 +107,7 @@ const Calendar = () => {
 
   const handleCompleteDay = () => {
     if (selectedDay !== null) {
-      const completedExercises = days[selectedDay].exercisesCompleted.filter(Boolean)
-        .length;
+      const completedExercises = days[selectedDay].exercisesCompleted.filter(Boolean).length;
       const muscleGroup = days[selectedDay].muscleGroup;
       if (completedExercises === ejerciciosPorGrupo[muscleGroup]?.length) {
         setDays((prevDays) => {
@@ -136,6 +143,7 @@ const Calendar = () => {
     setSelectedDay(null);
   };
 
+  // Estilos
   const containerStyle = {
     padding: '30px',
     backgroundColor: '#f9f9f9',
@@ -230,7 +238,7 @@ const Calendar = () => {
             <div>
               <h4 style={{ marginBottom: '10px' }}>Ejercicios:</h4>
               <ul style={{ listStyleType: 'none', padding: '0' }}>
-                {ejerciciosPorGrupo[days[selectedDay].muscleGroup]?.map((exercise, i) => (
+                {ejerciciosPorGrupo[days[selectedDay].muscleGroup].map((exercise, i) => (
                   <li
                     key={i}
                     style={{
