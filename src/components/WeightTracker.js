@@ -1,4 +1,4 @@
-'use client';
+'use client';  // Esto indica que este componente solo debe renderizarse en el cliente
 import { useState, useEffect } from 'react';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
@@ -13,9 +13,11 @@ const WeightTracker = () => {
 
   // Este useEffect carga los datos de localStorage cuando el componente está montado
   useEffect(() => {
-    const savedEntries = localStorage.getItem('weightEntries');
-    if (savedEntries) {
-      setWeightEntries(JSON.parse(savedEntries));
+    if (typeof window !== 'undefined') {
+      const savedEntries = localStorage.getItem('weightEntries');
+      if (savedEntries) {
+        setWeightEntries(JSON.parse(savedEntries));
+      }
     }
   }, []);
 

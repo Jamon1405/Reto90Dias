@@ -1,4 +1,4 @@
-'use client';
+'use client';  // Esto indica que este componente solo debe renderizarse en el cliente
 import { useState, useEffect } from 'react';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
@@ -17,9 +17,11 @@ const DietProgress = () => {
 
   // Este useEffect carga los datos de localStorage cuando el componente está montado
   useEffect(() => {
-    const savedDays = localStorage.getItem('days');
-    if (savedDays) {
-      setDays(JSON.parse(savedDays));
+    if (typeof window !== 'undefined') {
+      const savedDays = localStorage.getItem('days');
+      if (savedDays) {
+        setDays(JSON.parse(savedDays));
+      }
     }
   }, []);
 

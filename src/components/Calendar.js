@@ -1,3 +1,5 @@
+'use client';  // Esto indica que este componente solo debe renderizarse en el cliente
+
 import { useState, useEffect } from 'react';
 
 // Ejercicios con series y repeticiones para cada grupo muscular
@@ -18,9 +20,11 @@ const Calendar = () => {
 
   // Este useEffect se asegura de que el acceso a localStorage ocurra solo en el cliente
   useEffect(() => {
-    const savedDays = localStorage.getItem('days');
-    if (savedDays) {
-      setDays(JSON.parse(savedDays));
+    if (typeof window !== 'undefined') {
+      const savedDays = localStorage.getItem('days');
+      if (savedDays) {
+        setDays(JSON.parse(savedDays));
+      }
     }
   }, []); // Solo se ejecuta una vez al montar el componente
 

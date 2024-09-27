@@ -1,4 +1,4 @@
-'use client';
+'use client';  // Indica que este componente solo debe ejecutarse en el cliente
 import { useState, useEffect } from 'react';
 
 // Componente para mostrar el progreso del calendario
