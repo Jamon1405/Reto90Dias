@@ -39,6 +39,7 @@ const DietProgress = () => {
     lowFat: { protein: 0.35, carbs: 0.50, fat: 0.15 },
   };
 
+  // Cálculo del BMR y la ingesta diaria de calorías
   const calculateBMR = () => {
     let calculatedBMR;
     if (gender === 'male') {
@@ -198,9 +199,98 @@ const DietProgress = () => {
     fontWeight: 'bold',
   };
 
+  const dayBoxStyle = (day, selected) => ({
+    padding: '10px',
+    margin: '5px',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    backgroundColor: day.dietCompleted ? '#4caf50' : '#e0e0e0',
+    boxShadow: selected ? '0px 0px 15px rgba(0, 0, 0, 0.2)' : 'none',
+    transform: selected ? 'scale(1.05)' : 'scale(1)',
+    transition: 'transform 0.2s',
+  });
+
+  const gridStyle = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(4, 1fr)', 
+    gap: '10px',
+    '@media (max-width: 600px)': {
+      gridTemplateColumns: 'repeat(2, 1fr)',
+    },
+  };
+
   return (
     <div style={containerStyle}>
       <h2 style={headerStyle}>Calculadora de Dieta y Progreso</h2>
+
+      <div>
+        <h3>Datos para calcular BMR y macros</h3>
+        <input
+          type="number"
+          placeholder="Peso (kg)"
+          value={weight}
+          onChange={(e) => setWeight(e.target.value)}
+          style={{ padding: '10px', margin: '10px 0', borderRadius: '5px' }}
+        />
+        <input
+          type="number"
+          placeholder="Altura (cm)"
+          value={height}
+          onChange={(e) => setHeight(e.target.value)}
+          style={{ padding: '10px', margin: '10px 0', borderRadius: '5px' }}
+        />
+        <input
+          type="number"
+          placeholder="Edad"
+          value={age}
+          onChange={(e) => setAge(e.target.value)}
+          style={{ padding: '10px', margin: '10px 0', borderRadius: '5px' }}
+        />
+        <button onClick={calculateBMR} style={{ padding: '10px 20px', backgroundColor: '#0288d1', color: '#fff' }}>
+          Calcular BMR y Macros
+        </button>
+
+        {caloricIntake > 0 && (
+          <div style={{ marginTop: '20px' }}>
+            <h4>Ingesta calórica diaria: {caloricIntake} kcal</h4>
+            <p>Proteínas: {macros.protein}g</p>
+            <p>Carbohidratos: {macros.carbs}g</p>
+            <p>Grasas: {macros.fat}g</p>
+          </div>
+        )}
+      </div>
+
+      <h3>Progreso del calendario de dieta</h3>
+      <div style={gridStyle}>
+        {days.map((day, index) => (
+          <div
+            key={index}
+            style={dayBoxStyle(day, selectedDay === index)}
+            onClick={() => handleDayClick(index)}
+          >
+            Día {index + 1}
+          </div>
+        ))}
+      </div>
+
+      {selectedDay !== null && (
+        <div>
+          <h3>Día {selectedDay + 1}</h3>
+          <input
+            type="number"
+            placeholder="Horas de Ayuno"
+            value={fastingHours}
+            onChange={handleFastingHoursChange}
+            style={{ padding: '10px', borderRadius: '5px', margin: '10px 0' }}
+          />
+          <button
+            onClick={handleSaveFastingHours}
+            style={{ padding: '10px 20px', backgroundColor: '#4caf50', color: '#fff' }}
+          >
+            Guardar Horas de Ayuno
+          </button>
+        </div>
+      )}
 
       <div style={infoContainerStyle}>
         <div style={infoBoxStyle}>
