@@ -82,6 +82,7 @@ const WeightTracker = () => {
     },
   };
 
+  // Estilos
   const containerStyle = {
     padding: '30px',
     backgroundColor: '#f9f9f9',
@@ -90,6 +91,7 @@ const WeightTracker = () => {
     margin: '30px auto',
     maxWidth: '900px',
     textAlign: 'center',
+    fontFamily: "'Poppins', sans-serif",
   };
 
   const headerStyle = {
@@ -99,11 +101,18 @@ const WeightTracker = () => {
     color: '#333',
   };
 
+  // Responsividad para las cajas de información
   const weightInfoContainer = {
     display: 'grid',
-    gridTemplateColumns: 'repeat(4, 1fr)',
+    gridTemplateColumns: 'repeat(4, 1fr)', // 4 columnas en escritorio
     gap: '20px',
     marginBottom: '40px',
+    '@media (max-width: 768px)': {
+      gridTemplateColumns: 'repeat(2, 1fr)', // 2 columnas en tablets
+    },
+    '@media (max-width: 480px)': {
+      gridTemplateColumns: 'repeat(1, 1fr)', // 1 columna en móviles
+    },
   };
 
   const weightBoxStyle = {
@@ -137,6 +146,9 @@ const WeightTracker = () => {
     border: '1px solid #ddd',
     marginBottom: '15px',
     boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
+    '@media (max-width: 480px)': {
+      fontSize: '14px', // Ajustar tamaño en pantallas más pequeñas
+    },
   };
 
   const buttonStyle = {
@@ -149,6 +161,10 @@ const WeightTracker = () => {
     cursor: 'pointer',
     transition: 'background-color 0.3s ease',
     marginBottom: '20px',
+    '@media (max-width: 480px)': {
+      padding: '10px 15px', // Ajuste en móviles
+      fontSize: '16px',
+    },
   };
 
   const buttonDeleteStyle = {
@@ -177,6 +193,9 @@ const WeightTracker = () => {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
+    '@media (max-width: 480px)': {
+      fontSize: '14px', // Ajuste de fuente para móviles
+    },
   };
 
   return (

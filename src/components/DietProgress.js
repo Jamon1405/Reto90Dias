@@ -124,6 +124,19 @@ const DietProgress = () => {
     color: '#333',
   };
 
+  // Ajustes para que el grid se vea bien en pantallas pequeñas
+  const dayGridStyle = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(7, 1fr)', // 7 columnas para vista en desktop
+    gap: '10px',
+    '@media (max-width: 768px)': { // Cambios para dispositivos móviles
+      gridTemplateColumns: 'repeat(3, 1fr)', // 3 columnas para pantallas medianas
+    },
+    '@media (max-width: 480px)': {
+      gridTemplateColumns: 'repeat(2, 1fr)', // 2 columnas para pantallas pequeñas
+    },
+  };
+
   const dayBoxStyle = (day, selected) => ({
     padding: '20px',
     borderRadius: '10px',
@@ -156,12 +169,19 @@ const DietProgress = () => {
     borderRadius: '5px',
     border: '1px solid #ccc',
     margin: '10px 0',
-    width: '60%',
+    width: '100%', // Ajustar el input al 100% en móviles
+    maxWidth: '300px',
   };
 
   const infoContainerStyle = {
     display: 'flex',
-    justifyContent: 'space-around',
+    flexDirection: 'column', // Cambia a columna en móviles
+    alignItems: 'center',
+    justifyContent: 'center',
+    '@media (min-width: 768px)': { // Vista en pantallas más grandes
+      flexDirection: 'row', // Vuelve a fila en pantallas grandes
+      justifyContent: 'space-around',
+    },
     marginTop: '20px',
   };
 
@@ -171,6 +191,10 @@ const DietProgress = () => {
     borderRadius: '15px',
     textAlign: 'center',
     boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+    marginBottom: '20px',
+    '@media (min-width: 768px)': { // En pantallas grandes, no es necesario margin-bottom
+      marginBottom: '0',
+    },
   };
 
   const infoHeaderStyle = {
@@ -188,7 +212,7 @@ const DietProgress = () => {
     <div style={containerStyle}>
       <h2 style={headerStyle}>Progreso de la Dieta - 90 días</h2>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '10px' }}>
+      <div style={dayGridStyle}>
         {days.map((day, index) => (
           <div
             key={index}

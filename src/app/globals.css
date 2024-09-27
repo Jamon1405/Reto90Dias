@@ -1,3 +1,6 @@
+/* globals.css */
+
+/* Estilos generales */
 body {
   margin: 0;
   padding: 0;
@@ -7,4 +10,55 @@ body {
 
 h1, h2 {
   color: #0288d1;
+  text-align: center;
+}
+
+/* Asegurar que las imágenes, vídeos, etc., no se desborden fuera de su contenedor */
+img, video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Alineación de textos y elementos de bloques generales */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Botones generales */
+button {
+  background-color: #0288d1;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+/* Estilos para pantallas móviles (menores a 768px) */
+@media (max-width: 768px) {
+  body {
+    background-color: #e5e5e5; /* Opcional, por si quieres cambiar algo específico para móviles */
+  }
+
+  /* Ajustar los títulos para móviles */
+  h1, h2 {
+    font-size: 1.5rem;
+    margin: 10px 0;
+  }
+
+  /* Ajustar botones para móviles */
+  button {
+    width: 100%;
+    font-size: 14px;
+    padding: 12px;
+  }
+
+  /* Asegurar que el layout se vea bien en móviles */
+  .container {
+    padding: 0 10px;
+  }
 }

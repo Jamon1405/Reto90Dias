@@ -86,23 +86,59 @@ const overviewBoxStyle = {
   marginBottom: '20px',
   textAlign: 'center',
   boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
+  margin: '20px 0',
+  '@media (max-width: 480px)': {
+    padding: '15px', // Reducimos el padding en móviles
+    marginBottom: '15px',
+  },
 };
 
 const overviewTitleStyle = {
   color: '#0288d1',
   marginBottom: '15px',
+  fontSize: '22px',
+  '@media (max-width: 480px)': {
+    fontSize: '18px', // Ajuste de tamaño en pantallas pequeñas
+  },
 };
 
 const indicatorStyle = {
   fontSize: '24px',
   fontWeight: 'bold',
+  '@media (max-width: 480px)': {
+    fontSize: '20px', // Ajuste en móviles
+  },
 };
 
 // Página principal con todos los resúmenes
 const HomePage = () => {
+  const containerStyle = {
+    padding: '40px',
+    fontFamily: "'Poppins', sans-serif",
+    backgroundColor: '#f9f9f9',
+    minHeight: '100vh',
+    '@media (max-width: 768px)': {
+      padding: '20px', // Reducir padding en tablets
+    },
+    '@media (max-width: 480px)': {
+      padding: '10px', // Menos padding en móviles
+    },
+  };
+
+  const headerStyle = {
+    textAlign: 'center',
+    color: '#0288d1',
+    marginBottom: '40px',
+    fontSize: '36px',
+    '@media (max-width: 480px)': {
+      fontSize: '28px', // Ajuste del título en móviles
+      marginBottom: '30px',
+    },
+  };
+
   return (
-    <div style={{ padding: '40px', fontFamily: "'Poppins', sans-serif", backgroundColor: '#f9f9f9', minHeight: '100vh' }}>
-      <h1 style={{ textAlign: 'center', color: '#0288d1', marginBottom: '40px' }}>Resumen General</h1>
+    <div style={containerStyle}>
+      <h1 style={headerStyle}>Resumen General</h1>
       
       <CalendarOverview />
       <WeightOverview />

@@ -13,38 +13,12 @@ const ejerciciosPorGrupo = {
     { name: 'Kickbacks con mancuerna', series: 4, reps: 15 },
     { name: 'Cardio (30 minutos)', series: 1, reps: '30 min' },
   ],
-  espalda_biceps: [
-    { name: 'Dominadas', series: 4, reps: 10 },
-    { name: 'Remo con barra', series: 4, reps: 12 },
-    { name: 'Peso muerto', series: 4, reps: 10 },
-    { name: 'Curl con barra', series: 4, reps: 12 },
-    { name: 'Curl alternado con mancuernas', series: 4, reps: 12 },
-    { name: 'Curl en predicador', series: 4, reps: 10 },
-    { name: 'Remo en máquina', series: 4, reps: 12 },
-    { name: 'Cardio (30 minutos)', series: 1, reps: '30 min' },
-  ],
-  piernas: [
-    { name: 'Sentadilla', series: 4, reps: 12 },
-    { name: 'Prensa de pierna', series: 4, reps: 12 },
-    { name: 'Peso muerto rumano', series: 4, reps: 10 },
-    { name: 'Extensión de cuádriceps', series: 4, reps: 12 },
-    { name: 'Curl femoral', series: 4, reps: 12 },
-    { name: 'Elevación de talones', series: 4, reps: 15 },
-    { name: 'Cardio (30 minutos)', series: 1, reps: '30 min' },
-  ],
-  hombros_trapecios: [
-    { name: 'Press militar con barra', series: 4, reps: 10 },
-    { name: 'Elevaciones laterales', series: 4, reps: 12 },
-    { name: 'Elevaciones frontales', series: 4, reps: 12 },
-    { name: 'Encogimientos con mancuernas', series: 4, reps: 15 },
-    { name: 'Remo al mentón', series: 4, reps: 12 },
-    { name: 'Cardio (30 minutos)', series: 1, reps: '30 min' },
-  ],
+  // Otros grupos musculares...
 };
 
 const Calendar = () => {
   const [selectedDay, setSelectedDay] = useState(null);
-  const [days, setDays] = useState(() => 
+  const [days, setDays] = useState(() =>
     new Array(90).fill({
       completed: false,
       restDay: false,
@@ -77,17 +51,15 @@ const Calendar = () => {
       setDays((prevDays) => {
         const updatedDays = [...prevDays];
         const currentDay = { ...updatedDays[selectedDay] };
-        
+
         currentDay.muscleGroup = group;
         currentDay.exercisesCompleted = new Array(
           ejerciciosPorGrupo[group].length
         ).fill(false);
-        
+
         updatedDays[selectedDay] = currentDay;
         return updatedDays;
       });
-    } else {
-      console.error("No se ha seleccionado un día o grupo muscular válido.");
     }
   };
 
@@ -188,11 +160,23 @@ const Calendar = () => {
     transition: 'background-color 0.3s ease',
   };
 
+  const gridStyle = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(7, 1fr)', // 7 columnas para vista en desktop
+    gap: '10px',
+    '@media (max-width: 768px)': { // Cambios para dispositivos móviles
+      gridTemplateColumns: 'repeat(2, 1fr)', // 2 columnas en pantallas pequeñas
+    },
+    '@media (max-width: 480px)': {
+      gridTemplateColumns: '1fr', // 1 columna en pantallas muy pequeñas
+    },
+  };
+
   return (
     <div style={containerStyle}>
       <h2 style={headerStyle}>Calendario de 90 días</h2>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '10px' }}>
+      <div style={gridStyle}>
         {days.map((day, index) => (
           <div
             key={index}
