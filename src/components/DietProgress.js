@@ -180,24 +180,58 @@ const DietProgress = () => {
     color: '#333',
   };
 
-  // Se eliminaron las media queries en línea
+  // Estilos adicionales definidos correctamente
+  const infoContainerStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: '20px',
+  };
+
+  const infoBoxStyle = {
+    padding: '20px',
+    backgroundColor: '#ffffff',
+    borderRadius: '15px',
+    textAlign: 'center',
+    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+    marginBottom: '20px',
+  };
+
+  const infoHeaderStyle = {
+    fontSize: '18px',
+    color: '#666',
+    marginBottom: '10px',
+  };
+
+  const infoValueStyle = {
+    fontSize: '28px',
+    fontWeight: 'bold',
+  };
 
   return (
     <div style={containerStyle}>
       <h2 style={headerStyle}>Calculadora de Dieta y Progreso</h2>
 
-      <div>
-        <div>
-          <p>Días cumplidos: {completedDays} / 90</p>
-          <p>Porcentaje de avance: {dietProgressPercentage}%</p>
-          <p>Horas de ayuno promedio: {averageFastingHours} hrs</p>
+      <div style={infoContainerStyle}>
+        <div style={infoBoxStyle}>
+          <p style={infoHeaderStyle}>Días cumplidos</p>
+          <p style={infoValueStyle}>{completedDays} / 90</p>
+        </div>
+        <div style={infoBoxStyle}>
+          <p style={infoHeaderStyle}>Porcentaje de avance</p>
+          <p style={infoValueStyle}>{dietProgressPercentage}%</p>
+        </div>
+        <div style={infoBoxStyle}>
+          <p style={infoHeaderStyle}>Horas de ayuno promedio</p>
+          <p style={infoValueStyle}>{averageFastingHours} hrs</p>
         </div>
       </div>
 
       <h3>Gráfico de Progreso</h3>
       <Pie data={pieData} options={pieOptions} />
 
-      <button onClick={handleResetProgress} style={{ ...buttonStyle, backgroundColor: '#e53935' }}>
+      <button onClick={handleResetProgress} style={{ backgroundColor: '#e53935', color: '#fff', padding: '12px 20px', fontSize: '18px', borderRadius: '10px', border: 'none', cursor: 'pointer', marginTop: '20px' }}>
         Reiniciar progreso
       </button>
     </div>
