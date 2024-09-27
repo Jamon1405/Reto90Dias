@@ -20,28 +20,25 @@ const DietProgress = () => {
   const [height, setHeight] = useState('');
   const [age, setAge] = useState('');
   const [gender, setGender] = useState('male');
-  const [activityLevel, setActivityLevel] = useState('1.2');
-  const [deficitOption, setDeficitOption] = useState('moderate');
-  const [dietType, setDietType] = useState('normal');
+  const [activityLevel, setActivityLevel] = useState('1.2'); 
+  const [deficitOption, setDeficitOption] = useState('moderate'); 
+  const [dietType, setDietType] = useState('normal'); 
   const [bmr, setBmr] = useState(0);
   const [caloricIntake, setCaloricIntake] = useState(0);
   const [macros, setMacros] = useState({ protein: 0, carbs: 0, fat: 0 });
 
-  // Opciones de déficit calórico (basado en porcentaje)
   const deficitOptions = {
     mild: 0.1,
     moderate: 0.2,
     aggressive: 0.3,
   };
 
-  // Distribución de macros según el tipo de dieta
   const dietMacros = {
     normal: { protein: 0.30, carbs: 0.40, fat: 0.30 },
     keto: { protein: 0.25, carbs: 0.05, fat: 0.70 },
     lowFat: { protein: 0.35, carbs: 0.50, fat: 0.15 },
   };
 
-  // Función para calcular el BMR y las calorías diarias
   const calculateBMR = () => {
     let calculatedBMR;
     if (gender === 'male') {
@@ -57,7 +54,6 @@ const DietProgress = () => {
     calculateMacros(totalCalories);
   };
 
-  // Función para calcular la distribución de macros según el tipo de dieta
   const calculateMacros = (totalCalories) => {
     const macroSplit = dietMacros[dietType];
     const protein = (totalCalories * macroSplit.protein) / 4;
@@ -71,7 +67,6 @@ const DietProgress = () => {
     });
   };
 
-  // Este useEffect carga los datos de localStorage cuando el componente está montado
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedDays = localStorage.getItem('days');
@@ -81,7 +76,6 @@ const DietProgress = () => {
     }
   }, []);
 
-  // Este useEffect guarda los cambios en days en localStorage cada vez que cambian
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('days', JSON.stringify(days));
@@ -90,7 +84,7 @@ const DietProgress = () => {
 
   const handleDayClick = (index) => {
     setSelectedDay(index);
-    setFastingHours(days[index].fastingHours);
+    setFastingHours(days[index].fastingHours); 
   };
 
   const handleFastingHoursChange = (e) => {
@@ -158,7 +152,6 @@ const DietProgress = () => {
     },
   };
 
-  // Estilos actualizados
   const containerStyle = {
     padding: '30px',
     backgroundColor: '#f9f9f9',
