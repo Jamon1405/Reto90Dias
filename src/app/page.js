@@ -7,12 +7,14 @@ const CalendarOverview = () => {
   const [remainingDays, setRemainingDays] = useState(0);
 
   useEffect(() => {
-    const savedDays = localStorage.getItem('days');
-    if (savedDays) {
-      const days = JSON.parse(savedDays);
-      const completed = days.filter(day => day.completed).length;
-      setCompletedDays(completed);
-      setRemainingDays(90 - completed);
+    if (typeof window !== 'undefined') {
+      const savedDays = localStorage.getItem('days');
+      if (savedDays) {
+        const days = JSON.parse(savedDays);
+        const completed = days.filter(day => day.completed).length;
+        setCompletedDays(completed);
+        setRemainingDays(90 - completed);
+      }
     }
   }, []);
 
@@ -32,13 +34,15 @@ const WeightOverview = () => {
   const weightGoal = 75; // Meta de peso
 
   useEffect(() => {
-    const savedEntries = localStorage.getItem('weightEntries');
-    if (savedEntries) {
-      const weightEntries = JSON.parse(savedEntries);
-      const initialWeight = weightEntries.length > 0 ? weightEntries[0].weight : 0;
-      const currentWeight = weightEntries.length > 0 ? weightEntries[weightEntries.length - 1].weight : 0;
-      setWeightDifference((initialWeight - currentWeight).toFixed(1));
-      setWeightGoalDifference((currentWeight - weightGoal).toFixed(1)); // Diferencia con la meta
+    if (typeof window !== 'undefined') {
+      const savedEntries = localStorage.getItem('weightEntries');
+      if (savedEntries) {
+        const weightEntries = JSON.parse(savedEntries);
+        const initialWeight = weightEntries.length > 0 ? weightEntries[0].weight : 0;
+        const currentWeight = weightEntries.length > 0 ? weightEntries[weightEntries.length - 1].weight : 0;
+        setWeightDifference((initialWeight - currentWeight).toFixed(1));
+        setWeightGoalDifference((currentWeight - weightGoal).toFixed(1)); // Diferencia con la meta
+      }
     }
   }, []);
 
@@ -56,11 +60,13 @@ const DietOverview = () => {
   const [dietDaysCompleted, setDietDaysCompleted] = useState(0);
 
   useEffect(() => {
-    const savedDays = localStorage.getItem('days');
-    if (savedDays) {
-      const days = JSON.parse(savedDays);
-      const dietDays = days.filter(day => day.dietCompleted).length;
-      setDietDaysCompleted(dietDays);
+    if (typeof window !== 'undefined') {
+      const savedDays = localStorage.getItem('days');
+      if (savedDays) {
+        const days = JSON.parse(savedDays);
+        const dietDays = days.filter(day => day.dietCompleted).length;
+        setDietDaysCompleted(dietDays);
+      }
     }
   }, []);
 

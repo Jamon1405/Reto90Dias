@@ -8,18 +8,26 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 const DietProgress = () => {
   const [selectedDay, setSelectedDay] = useState(null);
   const [fastingHours, setFastingHours] = useState('');
-  const [days, setDays] = useState(() => {
-    const savedDays = localStorage.getItem('days');
-    return savedDays
-      ? JSON.parse(savedDays)
-      : new Array(90).fill({
-          dietCompleted: false,
-          fastingHours: '',
-        });
-  });
+  const [days, setDays] = useState(() => 
+    new Array(90).fill({
+      dietCompleted: false,
+      fastingHours: '',
+    })
+  );
 
+  // Este useEffect carga los datos de localStorage cuando el componente está montado
   useEffect(() => {
-    localStorage.setItem('days', JSON.stringify(days));
+    const savedDays = localStorage.getItem('days');
+    if (savedDays) {
+      setDays(JSON.parse(savedDays));
+    }
+  }, []);
+
+  // Este useEffect guarda los cambios en days en localStorage cada vez que cambian
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('days', JSON.stringify(days));
+    }
   }, [days]);
 
   const handleDayClick = (index) => {

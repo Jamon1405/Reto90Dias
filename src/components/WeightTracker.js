@@ -6,17 +6,24 @@ import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 const WeightTracker = () => {
-  const [weightEntries, setWeightEntries] = useState(() => {
-    const savedEntries = localStorage.getItem('weightEntries');
-    return savedEntries ? JSON.parse(savedEntries) : [];
-  });
-
+  const [weightEntries, setWeightEntries] = useState(() => []);
   const [currentWeight, setCurrentWeight] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [weightGoal, setWeightGoal] = useState(75); // Meta de peso
 
+  // Este useEffect carga los datos de localStorage cuando el componente está montado
   useEffect(() => {
-    localStorage.setItem('weightEntries', JSON.stringify(weightEntries));
+    const savedEntries = localStorage.getItem('weightEntries');
+    if (savedEntries) {
+      setWeightEntries(JSON.parse(savedEntries));
+    }
+  }, []);
+
+  // Este useEffect guarda los cambios en weightEntries en localStorage cada vez que cambian
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('weightEntries', JSON.stringify(weightEntries));
+    }
   }, [weightEntries]);
 
   const handleAddWeight = () => {
