@@ -20,9 +20,9 @@ const DietProgress = () => {
   const [height, setHeight] = useState('');
   const [age, setAge] = useState('');
   const [gender, setGender] = useState('male');
-  const [activityLevel, setActivityLevel] = useState('1.2'); 
-  const [deficitOption, setDeficitOption] = useState('moderate'); 
-  const [dietType, setDietType] = useState('normal'); 
+  const [activityLevel, setActivityLevel] = useState('1.2');
+  const [deficitOption, setDeficitOption] = useState('moderate');
+  const [dietType, setDietType] = useState('normal');
   const [bmr, setBmr] = useState(0);
   const [caloricIntake, setCaloricIntake] = useState(0);
   const [macros, setMacros] = useState({ protein: 0, carbs: 0, fat: 0 });
@@ -53,7 +53,6 @@ const DietProgress = () => {
     setBmr(calculatedBMR.toFixed(0));
     setCaloricIntake(totalCalories.toFixed(0));
     calculateMacros(totalCalories);
-    saveCalculatorData();
   };
 
   const calculateMacros = (totalCalories) => {
@@ -69,59 +68,24 @@ const DietProgress = () => {
     });
   };
 
-  // Guardar la información de la calculadora en localStorage
-  const saveCalculatorData = () => {
-    const calculatorData = {
-      weight,
-      height,
-      age,
-      gender,
-      activityLevel,
-      deficitOption,
-      dietType,
-      bmr,
-      caloricIntake,
-      macros,
-    };
-    localStorage.setItem('calculatorData', JSON.stringify(calculatorData));
-  };
-
-  // Cargar la información de la calculadora desde localStorage
   useEffect(() => {
-    const savedCalculatorData = localStorage.getItem('calculatorData');
-    if (savedCalculatorData) {
-      const data = JSON.parse(savedCalculatorData);
-      setWeight(data.weight);
-      setHeight(data.height);
-      setAge(data.age);
-      setGender(data.gender);
-      setActivityLevel(data.activityLevel);
-      setDeficitOption(data.deficitOption);
-      setDietType(data.dietType);
-      setBmr(data.bmr);
-      setCaloricIntake(data.caloricIntake);
-      setMacros(data.macros);
+    if (typeof window !== 'undefined') {
+      const savedDays = localStorage.getItem('days');
+      if (savedDays) {
+        setDays(JSON.parse(savedDays));
+      }
     }
   }, []);
 
-  // Reiniciar los datos de la calculadora
-  const handleResetCalculatorData = () => {
-    localStorage.removeItem('calculatorData');
-    setWeight('');
-    setHeight('');
-    setAge('');
-    setGender('male');
-    setActivityLevel('1.2');
-    setDeficitOption('moderate');
-    setDietType('normal');
-    setBmr(0);
-    setCaloricIntake(0);
-    setMacros({ protein: 0, carbs: 0, fat: 0 });
-  };
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('days', JSON.stringify(days));
+    }
+  }, [days]);
 
   const handleDayClick = (index) => {
     setSelectedDay(index);
-    setFastingHours(days[index].fastingHours); 
+    setFastingHours(days[index].fastingHours);
   };
 
   const handleFastingHoursChange = (e) => {
@@ -189,46 +153,33 @@ const DietProgress = () => {
     },
   };
 
-  const containerStyle = {
-    padding: '30px',
-    backgroundColor: '#f9f9f9',
-    borderRadius: '20px',
-    boxShadow: '0 6px 20px rgba(0, 0, 0, 0.1)',
-    margin: '30px auto',
-    maxWidth: '900px',
+  // Definimos infoContainerStyle aquí
+  const infoContainerStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: '20px',
+  };
+
+  const infoBoxStyle = {
+    padding: '20px',
+    backgroundColor: '#ffffff',
+    borderRadius: '15px',
     textAlign: 'center',
-    fontFamily: "'Poppins', sans-serif",
+    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+    marginBottom: '20px',
   };
 
-  const headerStyle = {
-    fontSize: '32px',
+  const infoHeaderStyle = {
+    fontSize: '18px',
+    color: '#666',
+    marginBottom: '10px',
+  };
+
+  const infoValueStyle = {
+    fontSize: '28px',
     fontWeight: 'bold',
-    marginBottom: '30px',
-    color: '#333',
-  };
-
-  const inputStyle = {
-    padding: '10px',
-    margin: '10px 0',
-    borderRadius: '5px',
-    width: '100%',
-  };
-
-  const dayBoxStyle = (day, selected) => ({
-    padding: '10px',
-    margin: '5px',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    backgroundColor: day.dietCompleted ? '#4caf50' : '#e0e0e0',
-    boxShadow: selected ? '0px 0px 15px rgba(0, 0, 0, 0.2)' : 'none',
-    transform: selected ? 'scale(1.05)' : 'scale(1)',
-    transition: 'transform 0.2s',
-  });
-
-  const gridStyle = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(4, 1fr)', 
-    gap: '10px',
   };
 
   return (
@@ -242,27 +193,22 @@ const DietProgress = () => {
           placeholder="Peso (kg)"
           value={weight}
           onChange={(e) => setWeight(e.target.value)}
-          style={inputStyle}
+          style={{ padding: '10px', margin: '10px 0', borderRadius: '5px' }}
         />
         <input
           type="number"
           placeholder="Altura (cm)"
           value={height}
           onChange={(e) => setHeight(e.target.value)}
-          style={inputStyle}
+          style={{ padding: '10px', margin: '10px 0', borderRadius: '5px' }}
         />
         <input
           type="number"
           placeholder="Edad"
           value={age}
           onChange={(e) => setAge(e.target.value)}
-          style={inputStyle}
+          style={{ padding: '10px', margin: '10px 0', borderRadius: '5px' }}
         />
-        <select value={dietType} onChange={(e) => setDietType(e.target.value)} style={inputStyle}>
-          <option value="normal">Normal</option>
-          <option value="keto">Keto</option>
-          <option value="lowFat">Low Fat</option>
-        </select>
         <button onClick={calculateBMR} style={{ padding: '10px 20px', backgroundColor: '#0288d1', color: '#fff' }}>
           Calcular BMR y Macros
         </button>
@@ -275,53 +221,9 @@ const DietProgress = () => {
             <p>Grasas: {macros.fat}g</p>
           </div>
         )}
-        <button
-          onClick={handleResetCalculatorData}
-          style={{
-            backgroundColor: '#e53935',
-            color: '#fff',
-            padding: '10px 20px',
-            marginTop: '10px',
-            borderRadius: '5px',
-            cursor: 'pointer',
-          }}
-        >
-          Borrar Información de la Calculadora
-        </button>
       </div>
 
       <h3>Progreso del calendario de dieta</h3>
-      <div style={gridStyle}>
-        {days.map((day, index) => (
-          <div
-            key={index}
-            style={dayBoxStyle(day, selectedDay === index)}
-            onClick={() => handleDayClick(index)}
-          >
-            Día {index + 1}
-          </div>
-        ))}
-      </div>
-
-      {selectedDay !== null && (
-        <div>
-          <h3>Día {selectedDay + 1}</h3>
-          <input
-            type="number"
-            placeholder="Horas de Ayuno"
-            value={fastingHours}
-            onChange={handleFastingHoursChange}
-            style={{ padding: '10px', borderRadius: '5px', margin: '10px 0' }}
-          />
-          <button
-            onClick={handleSaveFastingHours}
-            style={{ padding: '10px 20px', backgroundColor: '#4caf50', color: '#fff' }}
-          >
-            Guardar Horas de Ayuno
-          </button>
-        </div>
-      )}
-
       <div style={infoContainerStyle}>
         <div style={infoBoxStyle}>
           <p style={infoHeaderStyle}>Días cumplidos</p>
