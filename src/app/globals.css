@@ -1,6 +1,4 @@
-/* globals.css */
-
-/* Estilos generales */
+/* Estilos globales por defecto (para pantallas grandes) */
 body {
   margin: 0;
   padding: 0;
@@ -10,55 +8,57 @@ body {
 
 h1, h2 {
   color: #0288d1;
-  text-align: center;
+  font-size: 32px; /* Tamaño grande para pantallas grandes */
 }
 
-/* Asegurar que las imágenes, vídeos, etc., no se desborden fuera de su contenedor */
-img, video {
-  max-width: 100%;
-  height: auto;
-}
-
-/* Alineación de textos y elementos de bloques generales */
+/* Ajustes para contenedores generales */
 .container {
-  width: 100%;
-  max-width: 1200px;
+  padding: 30px;
   margin: 0 auto;
-  padding: 0 20px;
+  max-width: 900px; /* Para centrar y limitar el ancho en pantallas grandes */
 }
 
-/* Botones generales */
-button {
-  background-color: #0288d1;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-/* Estilos para pantallas móviles (menores a 768px) */
+/* Media Queries para pantallas más pequeñas (móviles y tablets) */
 @media (max-width: 768px) {
   body {
-    background-color: #e5e5e5; /* Opcional, por si quieres cambiar algo específico para móviles */
+    font-size: 16px;
   }
 
-  /* Ajustar los títulos para móviles */
   h1, h2 {
-    font-size: 1.5rem;
-    margin: 10px 0;
+    font-size: 24px;  /* Reducir tamaño de los encabezados en dispositivos móviles */
   }
 
-  /* Ajustar botones para móviles */
-  button {
-    width: 100%;
-    font-size: 14px;
-    padding: 12px;
-  }
-
-  /* Asegurar que el layout se vea bien en móviles */
   .container {
-    padding: 0 10px;
+    padding: 15px;  /* Ajustar padding en pantallas más pequeñas */
+  }
+
+  /* Ajustar los inputs */
+  input, select, button {
+    font-size: 16px; /* Reducir el tamaño de las fuentes en móviles */
+    padding: 10px; /* Ajustar el padding */
+  }
+}
+
+/* Media Queries para pantallas aún más pequeñas (como smartphones pequeños) */
+@media (max-width: 480px) {
+  h1, h2 {
+    font-size: 20px;  /* Reducir aún más el tamaño de los encabezados en pantallas muy pequeñas */
+  }
+
+  .container {
+    padding: 10px;
+  }
+
+  /* Ajustar aún más los inputs */
+  input, select, button {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  /* Ajustar los botones */
+  button {
+    font-size: 14px;
+    padding: 10px;
+    width: 100%; /* Botones a ancho completo en pantallas muy pequeñas */
   }
 }

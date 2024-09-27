@@ -1,4 +1,4 @@
-'use client';  // Esto indica que este componente solo debe renderizarse en el cliente
+'use client';  // Esto indica que este componente solo debe ejecutarse en el cliente
 import { useState, useEffect } from 'react';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
@@ -10,6 +10,9 @@ const WeightTracker = () => {
   const [currentWeight, setCurrentWeight] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [weightGoal, setWeightGoal] = useState(75); // Meta de peso
+  const [height, setHeight] = useState(''); // Altura en cm
+  const [bodyFat, setBodyFat] = useState(''); // Porcentaje de grasa corporal
+  const [idealWeight, setIdealWeight] = useState(0); // Peso ideal calculado
 
   // Este useEffect carga los datos de localStorage cuando el componente está montado
   useEffect(() => {
@@ -54,6 +57,17 @@ const WeightTracker = () => {
   // Cálculo del peso bajado
   const weightLost = (initialWeight - currentWeightValue).toFixed(1);
   const weightLostColor = weightLost > 0 ? '#4caf50' : '#e53935'; // Verde si ha bajado peso, rojo si ha subido
+
+  // Cálculo del peso ideal utilizando el porcentaje de grasa corporal
+  const handleCalculateIdealWeight = () => {
+    if (bodyFat && height) {
+      const fatFreeMassIndex = 1 - bodyFat / 100;
+      const idealBodyWeight = (height - 100) * fatFreeMassIndex;
+      setIdealWeight(idealBodyWeight.toFixed(1));
+    } else {
+      alert('Por favor, ingresa tu altura y porcentaje de grasa corporal.');
+    }
+  };
 
   const data = {
     labels: weightEntries.map((entry) => entry.date),
@@ -101,7 +115,6 @@ const WeightTracker = () => {
     color: '#333',
   };
 
-  // Responsividad para las cajas de información
   const weightInfoContainer = {
     display: 'grid',
     gridTemplateColumns: 'repeat(4, 1fr)', // 4 columnas en escritorio
@@ -200,7 +213,7 @@ const WeightTracker = () => {
 
   return (
     <div style={containerStyle}>
-      <h2 style={headerStyle}>Seguimiento del Peso</h2>
+      <h2 style={headerStyle}>Seguimiento del Peso y Calculadora de Peso Ideal</h2>
 
       <div style={weightInfoContainer}>
         <div style={weightBoxStyle}>
@@ -249,6 +262,27 @@ const WeightTracker = () => {
           style={inputStyle}
         />
       </div>
+
+      <div style={inputContainerStyle}>
+        <label>Altura (cm):</label>
+        <input type="number" value={height} onChange={(e) => setHeight(e.target.value)} style={inputStyle} />
+      </div>
+
+      <div style={inputContainerStyle}>
+        <label>Porcentaje de Grasa Corporal (%):</label>
+        <input type="number" value={bodyFat} onChange={(e) => setBodyFat(e.target.value)} style={inputStyle} />
+      </div>
+
+      <button onClick={handleCalculateIdealWeight} style={buttonStyle}>
+        Calcular Peso Ideal
+      </button>
+
+      {idealWeight > 0 && (
+        <div style={{ marginTop: '20px' }}>
+          <h4>Tu peso ideal es: {idealWeight} kg</h4>
+        </div>
+      )}
+
       <button onClick={handleAddWeight} style={buttonStyle}>
         Añadir entrada
       </button>

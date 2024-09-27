@@ -86,60 +86,44 @@ const overviewBoxStyle = {
   marginBottom: '20px',
   textAlign: 'center',
   boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
-  margin: '20px 0',
-  '@media (max-width: 480px)': {
-    padding: '15px', // Reducimos el padding en móviles
-    marginBottom: '15px',
-  },
 };
 
 const overviewTitleStyle = {
   color: '#0288d1',
   marginBottom: '15px',
-  fontSize: '22px',
-  '@media (max-width: 480px)': {
-    fontSize: '18px', // Ajuste de tamaño en pantallas pequeñas
-  },
 };
 
 const indicatorStyle = {
   fontSize: '24px',
   fontWeight: 'bold',
-  '@media (max-width: 480px)': {
-    fontSize: '20px', // Ajuste en móviles
-  },
 };
 
 // Página principal con todos los resúmenes
 const HomePage = () => {
+  // Estilo de la página general para móviles
   const containerStyle = {
-    padding: '40px',
+    padding: '30px',
     fontFamily: "'Poppins', sans-serif",
     backgroundColor: '#f9f9f9',
     minHeight: '100vh',
-    '@media (max-width: 768px)': {
-      padding: '20px', // Reducir padding en tablets
-    },
-    '@media (max-width: 480px)': {
-      padding: '10px', // Menos padding en móviles
-    },
+    maxWidth: '900px',
+    margin: '0 auto',
   };
 
   const headerStyle = {
     textAlign: 'center',
     color: '#0288d1',
     marginBottom: '40px',
-    fontSize: '36px',
-    '@media (max-width: 480px)': {
-      fontSize: '28px', // Ajuste del título en móviles
-      marginBottom: '30px',
+    fontSize: '32px',
+    '@media (max-width: 768px)': { // Ajustes para pantallas móviles
+      fontSize: '28px',
     },
   };
 
   return (
     <div style={containerStyle}>
       <h1 style={headerStyle}>Resumen General</h1>
-      
+
       <CalendarOverview />
       <WeightOverview />
       <DietOverview />

@@ -1,4 +1,4 @@
-'use client';  // Esto indica que este componente solo debe renderizarse en el cliente
+'use client';  // Componente para ejecutarse en el cliente
 import { useState, useEffect } from 'react';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
@@ -8,12 +8,68 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 const DietProgress = () => {
   const [selectedDay, setSelectedDay] = useState(null);
   const [fastingHours, setFastingHours] = useState('');
-  const [days, setDays] = useState(() => 
+  const [days, setDays] = useState(() =>
     new Array(90).fill({
       dietCompleted: false,
       fastingHours: '',
     })
   );
+
+  // Variables para calculadora BMR y macros
+  const [weight, setWeight] = useState('');
+  const [height, setHeight] = useState('');
+  const [age, setAge] = useState('');
+  const [gender, setGender] = useState('male');
+  const [activityLevel, setActivityLevel] = useState('1.2'); // Actividad sedentaria por defecto
+  const [deficitOption, setDeficitOption] = useState('moderate'); // Déficit moderado por defecto
+  const [dietType, setDietType] = useState('normal'); // Tipo de dieta por defecto
+  const [bmr, setBmr] = useState(0);
+  const [caloricIntake, setCaloricIntake] = useState(0);
+  const [macros, setMacros] = useState({ protein: 0, carbs: 0, fat: 0 });
+
+  // Opciones de déficit calórico (basado en porcentaje)
+  const deficitOptions = {
+    mild: 0.1, // 10%
+    moderate: 0.2, // 20%
+    aggressive: 0.3, // 30%
+  };
+
+  // Distribución de macros según el tipo de dieta
+  const dietMacros = {
+    normal: { protein: 0.30, carbs: 0.40, fat: 0.30 },
+    keto: { protein: 0.25, carbs: 0.05, fat: 0.70 },
+    lowFat: { protein: 0.35, carbs: 0.50, fat: 0.15 },
+  };
+
+  // Función para calcular el BMR y las calorías diarias
+  const calculateBMR = () => {
+    let calculatedBMR;
+    if (gender === 'male') {
+      calculatedBMR = 88.36 + (13.4 * weight) + (4.8 * height) - (5.7 * age);
+    } else {
+      calculatedBMR = 447.6 + (9.2 * weight) + (3.1 * height) - (4.3 * age);
+    }
+    const dailyCalories = calculatedBMR * parseFloat(activityLevel);
+    const totalCalories = dailyCalories * (1 - deficitOptions[deficitOption]);
+
+    setBmr(calculatedBMR.toFixed(0));
+    setCaloricIntake(totalCalories.toFixed(0));
+    calculateMacros(totalCalories);
+  };
+
+  // Función para calcular la distribución de macros según el tipo de dieta
+  const calculateMacros = (totalCalories) => {
+    const macroSplit = dietMacros[dietType];
+    const protein = (totalCalories * macroSplit.protein) / 4; // Proteínas (cal/4)
+    const carbs = (totalCalories * macroSplit.carbs) / 4; // Carbohidratos (cal/4)
+    const fat = (totalCalories * macroSplit.fat) / 9; // Grasas (cal/9)
+
+    setMacros({
+      protein: protein.toFixed(1),
+      carbs: carbs.toFixed(1),
+      fat: fat.toFixed(1),
+    });
+  };
 
   // Este useEffect carga los datos de localStorage cuando el componente está montado
   useEffect(() => {
@@ -150,6 +206,25 @@ const DietProgress = () => {
     boxShadow: selected ? '0px 0px 15px rgba(0, 0, 0, 0.2)' : 'none',
   });
 
+  const inputStyle = {
+    width: '100%',
+    padding: '10px',
+    fontSize: '16px',
+    borderRadius: '10px',
+    border: '1px solid #ddd',
+    marginBottom: '15px',
+    boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
+  };
+
+  const selectStyle = {
+    padding: '10px',
+    fontSize: '16px',
+    borderRadius: '10px',
+    border: '1px solid #ddd',
+    marginBottom: '20px',
+    width: '100%',
+  };
+
   const buttonStyle = {
     backgroundColor: '#0288d1',
     color: '#fff',
@@ -163,54 +238,9 @@ const DietProgress = () => {
     transition: 'background-color 0.3s ease',
   };
 
-  const fastingInputStyle = {
-    padding: '10px',
-    fontSize: '14px',
-    borderRadius: '5px',
-    border: '1px solid #ccc',
-    margin: '10px 0',
-    width: '100%', // Ajustar el input al 100% en móviles
-    maxWidth: '300px',
-  };
-
-  const infoContainerStyle = {
-    display: 'flex',
-    flexDirection: 'column', // Cambia a columna en móviles
-    alignItems: 'center',
-    justifyContent: 'center',
-    '@media (min-width: 768px)': { // Vista en pantallas más grandes
-      flexDirection: 'row', // Vuelve a fila en pantallas grandes
-      justifyContent: 'space-around',
-    },
-    marginTop: '20px',
-  };
-
-  const infoBoxStyle = {
-    padding: '20px',
-    backgroundColor: '#ffffff',
-    borderRadius: '15px',
-    textAlign: 'center',
-    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
-    marginBottom: '20px',
-    '@media (min-width: 768px)': { // En pantallas grandes, no es necesario margin-bottom
-      marginBottom: '0',
-    },
-  };
-
-  const infoHeaderStyle = {
-    fontSize: '18px',
-    color: '#666',
-    marginBottom: '10px',
-  };
-
-  const infoValueStyle = {
-    fontSize: '28px',
-    fontWeight: 'bold',
-  };
-
   return (
     <div style={containerStyle}>
-      <h2 style={headerStyle}>Progreso de la Dieta - 90 días</h2>
+      <h2 style={headerStyle}>Calculadora de Dieta y Progreso</h2>
 
       <div style={dayGridStyle}>
         {days.map((day, index) => (
@@ -226,9 +256,7 @@ const DietProgress = () => {
 
       {selectedDay !== null && (
         <div style={{ marginTop: '20px' }}>
-          <h3>
-            Día {selectedDay + 1} - {days[selectedDay].dietCompleted ? 'Dieta cumplida' : 'Dieta no cumplida'}
-          </h3>
+          <h3>Día {selectedDay + 1} - {days[selectedDay].dietCompleted ? 'Dieta cumplida' : 'Dieta no cumplida'}</h3>
 
           <div style={{ marginTop: '20px' }}>
             <label htmlFor="fasting">Introduce tus horas de ayuno:</label>
@@ -237,7 +265,7 @@ const DietProgress = () => {
               id="fasting"
               value={fastingHours}
               onChange={handleFastingHoursChange}
-              style={fastingInputStyle}
+              style={inputStyle}
             />
             <button onClick={handleSaveFastingHours} style={buttonStyle}>
               Guardar Ayuno y Completar Día
@@ -246,7 +274,69 @@ const DietProgress = () => {
         </div>
       )}
 
-      <h3>Indicadores</h3>
+      <div style={{ marginTop: '40px' }}>
+        <h3>Calculadora de Metabolismo Basal (BMR)</h3>
+        <div>
+          <label>Peso (kg):</label>
+          <input type="number" value={weight} onChange={(e) => setWeight(e.target.value)} style={inputStyle} />
+        </div>
+        <div>
+          <label>Altura (cm):</label>
+          <input type="number" value={height} onChange={(e) => setHeight(e.target.value)} style={inputStyle} />
+        </div>
+        <div>
+          <label>Edad:</label>
+          <input type="number" value={age} onChange={(e) => setAge(e.target.value)} style={inputStyle} />
+        </div>
+        <div>
+          <label>Género:</label>
+          <select value={gender} onChange={(e) => setGender(e.target.value)} style={selectStyle}>
+            <option value="male">Masculino</option>
+            <option value="female">Femenino</option>
+          </select>
+        </div>
+        <div>
+          <label>Nivel de Actividad:</label>
+          <select value={activityLevel} onChange={(e) => setActivityLevel(e.target.value)} style={selectStyle}>
+            <option value="1.2">Sedentario</option>
+            <option value="1.375">Ligero</option>
+            <option value="1.55">Moderado</option>
+            <option value="1.725">Activo</option>
+            <option value="1.9">Muy activo</option>
+          </select>
+        </div>
+        <div>
+          <label>Déficit Calórico:</label>
+          <select value={deficitOption} onChange={(e) => setDeficitOption(e.target.value)} style={selectStyle}>
+            <option value="mild">Leve (10%)</option>
+            <option value="moderate">Moderado (20%)</option>
+            <option value="aggressive">Agresivo (30%)</option>
+          </select>
+        </div>
+        <div>
+          <label>Tipo de Dieta:</label>
+          <select value={dietType} onChange={(e) => setDietType(e.target.value)} style={selectStyle}>
+            <option value="normal">Normal</option>
+            <option value="keto">Keto (Cetogénica)</option>
+            <option value="lowFat">Baja en Grasas</option>
+          </select>
+        </div>
+
+        <button onClick={calculateBMR} style={buttonStyle}>
+          Calcular BMR y Calorías
+        </button>
+
+        {caloricIntake > 0 && (
+          <div style={{ marginTop: '20px' }}>
+            <h4>Resultados</h4>
+            <p>BMR: {bmr} cal</p>
+            <p>Calorías Diarias: {caloricIntake} cal</p>
+            <p>Macros: Proteínas: {macros.protein}g, Carbohidratos: {macros.carbs}g, Grasas: {macros.fat}g</p>
+          </div>
+        )}
+      </div>
+
+      <h3 style={{ marginTop: '40px' }}>Indicadores de Progreso</h3>
       <div style={infoContainerStyle}>
         <div style={infoBoxStyle}>
           <p style={infoHeaderStyle}>Días cumplidos</p>
