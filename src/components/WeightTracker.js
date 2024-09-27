@@ -22,6 +22,16 @@ const WeightTracker = () => {
       if (savedEntries) {
         setWeightEntries(JSON.parse(savedEntries));
       }
+      const savedInitialData = localStorage.getItem('initialData');
+      if (savedInitialData) {
+        const data = JSON.parse(savedInitialData);
+        setHeight(data.height);
+        setBodyFat(data.bodyFat);
+        setCurrentWeight(data.currentWeight);
+        setIdealWeight(data.idealWeight);
+        setWeightGoal(data.weightGoal);
+        setHasInitialData(true); // Mostrar los datos si ya fueron ingresados
+      }
     }
   }, []);
 
@@ -31,6 +41,11 @@ const WeightTracker = () => {
       localStorage.setItem('weightEntries', JSON.stringify(weightEntries));
     }
   }, [weightEntries]);
+
+  // Guardar los datos iniciales en localStorage
+  const saveInitialData = (data) => {
+    localStorage.setItem('initialData', JSON.stringify(data));
+  };
 
   // Manejar la entrada del peso
   const handleAddWeight = () => {
@@ -59,9 +74,31 @@ const WeightTracker = () => {
       setIdealWeight(idealBodyWeight.toFixed(1));
       setWeightGoal(idealBodyWeight.toFixed(1)); // Actualizar el peso meta basado en el peso ideal
       setHasInitialData(true); // Indica que ya se calcularon los datos iniciales
+
+      // Guardar los datos iniciales en localStorage
+      saveInitialData({
+        height,
+        bodyFat,
+        currentWeight,
+        idealWeight: idealBodyWeight.toFixed(1),
+        weightGoal: idealBodyWeight.toFixed(1),
+      });
     } else {
       alert('Por favor, ingresa tu altura, porcentaje de grasa corporal y peso actual.');
     }
+  };
+
+  // Reiniciar los datos iniciales y peso guardados en localStorage
+  const handleResetData = () => {
+    localStorage.removeItem('initialData');
+    localStorage.removeItem('weightEntries');
+    setHeight('');
+    setBodyFat('');
+    setCurrentWeight('');
+    setIdealWeight(0);
+    setWeightGoal(75);
+    setWeightEntries([]);
+    setHasInitialData(false);
   };
 
   const initialWeight = weightEntries.length > 0 ? weightEntries[0].weight : 0;
@@ -179,6 +216,10 @@ const WeightTracker = () => {
             <h4>Tu peso meta ha sido ajustado a: {weightGoal} kg</h4>
           </div>
         )}
+
+        <button onClick={handleResetData} style={{ ...buttonStyle, backgroundColor: '#e53935' }}>
+          Reiniciar Datos
+        </button>
       </div>
 
       {hasInitialData && (
