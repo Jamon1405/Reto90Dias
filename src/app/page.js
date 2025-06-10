@@ -5,7 +5,8 @@ import useCurrentUser from '../hooks/useCurrentUser';
 
 // Componente para mostrar el progreso del calendario
 const CalendarOverview = () => {
-  const [completedDays, setCompletedDays] = useState(0);
+  const [routineDoneDays, setRoutineDoneDays] = useState(0);
+  const [routineMissedDays, setRoutineMissedDays] = useState(0);
   const [remainingDays, setRemainingDays] = useState(0);
   const user = useCurrentUser();
 
@@ -14,8 +15,11 @@ const CalendarOverview = () => {
       const savedDays = localStorage.getItem(`calendarDays_${user}`);
       if (savedDays) {
         const days = JSON.parse(savedDays);
-        const completed = days.filter(day => day.completed).length;
-        setCompletedDays(completed);
+        const done = days.filter((day) => day.didRoutine).length;
+        const missed = days.filter((day) => day.completed && !day.didRoutine).length;
+        const completed = done + missed;
+        setRoutineDoneDays(done);
+        setRoutineMissedDays(missed);
         setRemainingDays(TOTAL_DAYS - completed);
       } else {
         setRemainingDays(TOTAL_DAYS);
@@ -26,8 +30,15 @@ const CalendarOverview = () => {
   return (
     <div style={overviewBoxStyle}>
       <h3 style={overviewTitleStyle}>Progreso del Calendario</h3>
-      <p><strong style={{ ...indicatorStyle, color: '#4caf50' }}>{completedDays}</strong> días completados</p>
-      <p><strong style={{ ...indicatorStyle, color: '#e53935' }}>{remainingDays}</strong> días restantes</p>
+      <p>
+        <strong style={{ ...indicatorStyle, color: '#4caf50' }}>{routineDoneDays}</strong> días con rutina
+      </p>
+      <p>
+        <strong style={{ ...indicatorStyle, color: '#e57373' }}>{routineMissedDays}</strong> días sin rutina
+      </p>
+      <p>
+        <strong style={{ ...indicatorStyle, color: '#0288d1' }}>{remainingDays}</strong> días restantes
+      </p>
     </div>
   );
 };

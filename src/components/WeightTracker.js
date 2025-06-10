@@ -9,6 +9,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 const WeightTracker = () => {
   const [weightEntries, setWeightEntries] = useState(() => []);
   const [currentWeight, setCurrentWeight] = useState('');
+  const [entryWeight, setEntryWeight] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [weightGoal, setWeightGoal] = useState(75); // Meta de peso por defecto
   const [height, setHeight] = useState(''); // Altura en cm
@@ -55,12 +56,12 @@ const WeightTracker = () => {
 
   // Manejar la entrada del peso
   const handleAddWeight = () => {
-    if (currentWeight && selectedDate) {
+    if (entryWeight && selectedDate) {
       setWeightEntries((prevEntries) => [
         ...prevEntries,
-        { date: selectedDate, weight: parseFloat(currentWeight) },
+        { date: selectedDate, weight: parseFloat(entryWeight) },
       ]);
-      setCurrentWeight('');
+      setEntryWeight('');
       setSelectedDate('');
     } else {
       alert("Por favor, introduce una fecha y un peso.");
@@ -101,6 +102,7 @@ const WeightTracker = () => {
     setHeight('');
     setBodyFat('');
     setCurrentWeight('');
+    setEntryWeight('');
     setIdealWeight(0);
     setWeightGoal(75);
     setWeightEntries([]);
@@ -241,8 +243,8 @@ const WeightTracker = () => {
             <input
               type="number"
               placeholder="Peso (kg)"
-              value={currentWeight}
-              onChange={(e) => setCurrentWeight(e.target.value)}
+              value={entryWeight}
+              onChange={(e) => setEntryWeight(e.target.value)}
               style={inputStyle}
             />
             <button onClick={handleAddWeight} style={buttonStyle}>

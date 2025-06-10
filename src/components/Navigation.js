@@ -49,11 +49,13 @@ export default function Navigation() {
 // Estilos para la barra de navegación
 const navStyle = {
   display: 'flex',
-  justifyContent: 'space-around',
+  justifyContent: 'space-between',
+  alignItems: 'center',
   background: 'linear-gradient(90deg, #0288d1, #26c6da)',
-  padding: '10px',
-  borderBottom: '2px solid #01579b',
-  marginBottom: '20px',
+  padding: '12px 20px',
+  borderRadius: '0 0 10px 10px',
+  boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+  marginBottom: '30px',
 };
 
 // Estilos para los enlaces
@@ -63,6 +65,7 @@ const linkStyle = {
   fontSize: '18px',
   cursor: 'pointer',
   fontWeight: 600,
+  padding: '0 10px',
 };
 
 const selectStyle = {

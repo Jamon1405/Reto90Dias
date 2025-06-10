@@ -9,7 +9,7 @@ const Calendar = () => {
   const user = useCurrentUser();
   const [selectedDay, setSelectedDay] = useState(null);
   const createEmptyDays = () =>
-    Array.from({ length: TOTAL_DAYS }, () => ({ completed: false }));
+    Array.from({ length: TOTAL_DAYS }, () => ({ completed: false, didRoutine: null }));
   const [days, setDays] = useState(createEmptyDays());
   const [weeklyRoutines, setWeeklyRoutines] = useState({});
   const startDate = new Date(START_DATE);
@@ -34,11 +34,11 @@ const Calendar = () => {
     localStorage.setItem(`calendarDays_${user}`, JSON.stringify(days));
   }, [days, user]);
 
-  const handleCompleteDay = () => {
+  const handleCompleteDay = (didRoutine) => {
     if (selectedDay !== null) {
       setDays((prev) => {
         const updated = [...prev];
-        updated[selectedDay].completed = true;
+        updated[selectedDay] = { completed: true, didRoutine };
         return updated;
       });
       if (selectedDay === 29 || selectedDay === 59) {
@@ -89,10 +89,23 @@ const Calendar = () => {
       {selectedDay !== null && (
         <div style={{ marginTop: '20px' }}>
           {renderRoutine(new Date(startDate.getTime() + selectedDay * 86400000))}
-          {!days[selectedDay].completed && (
-            <button style={buttonStyle} onClick={handleCompleteDay}>
-              Marcar día completado
-            </button>
+          {!days[selectedDay].completed ? (
+            <div>
+              <p>¿Completaste la rutina?</p>
+              <button style={buttonStyle} onClick={() => handleCompleteDay(true)}>
+                Sí
+              </button>
+              <button
+                style={{ ...buttonStyle, backgroundColor: '#e53935' }}
+                onClick={() => handleCompleteDay(false)}
+              >
+                No
+              </button>
+            </div>
+          ) : (
+            <p>
+              Rutina completada: {days[selectedDay].didRoutine ? 'Sí' : 'No'}
+            </p>
           )}
         </div>
       )}
@@ -124,7 +137,11 @@ const dayBoxStyle = (day, selected) => ({
   margin: '5px',
   borderRadius: '8px',
   cursor: 'pointer',
-  backgroundColor: day.completed ? '#4caf50' : '#f1f1f1',
+  backgroundColor: day.completed
+    ? day.didRoutine
+      ? '#4caf50'
+      : '#e57373'
+    : '#f1f1f1',
   boxShadow: selected ? '0px 0px 15px rgba(0, 0, 0, 0.2)' : '0 2px 4px rgba(0,0,0,0.1)',
 });
 
