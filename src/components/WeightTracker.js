@@ -15,14 +15,20 @@ const WeightTracker = () => {
   const [idealWeight, setIdealWeight] = useState(0); // Peso ideal calculado
   const [hasInitialData, setHasInitialData] = useState(false); // Para determinar si el usuario ha ingresado los datos iniciales
 
+  const getUser = () =>
+    (typeof window !== 'undefined' && localStorage.getItem('selectedUser')) ||
+    'ximena';
+
+  const user = getUser();
+
   // Cargar datos de localStorage cuando el componente está montado
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const savedEntries = localStorage.getItem('weightEntries');
+      const savedEntries = localStorage.getItem(`weightEntries_${user}`);
       if (savedEntries) {
         setWeightEntries(JSON.parse(savedEntries));
       }
-      const savedInitialData = localStorage.getItem('initialData');
+      const savedInitialData = localStorage.getItem(`initialData_${user}`);
       if (savedInitialData) {
         const data = JSON.parse(savedInitialData);
         setHeight(data.height);
@@ -33,18 +39,21 @@ const WeightTracker = () => {
         setHasInitialData(true); // Mostrar los datos si ya fueron ingresados
       }
     }
-  }, []);
+  }, [user]);
 
   // Guardar cambios en weightEntries en localStorage cada vez que cambian
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('weightEntries', JSON.stringify(weightEntries));
+      localStorage.setItem(
+        `weightEntries_${user}`,
+        JSON.stringify(weightEntries)
+      );
     }
-  }, [weightEntries]);
+  }, [weightEntries, user]);
 
   // Guardar los datos iniciales en localStorage
   const saveInitialData = (data) => {
-    localStorage.setItem('initialData', JSON.stringify(data));
+    localStorage.setItem(`initialData_${user}`, JSON.stringify(data));
   };
 
   // Manejar la entrada del peso
@@ -90,8 +99,8 @@ const WeightTracker = () => {
 
   // Reiniciar los datos iniciales y peso guardados en localStorage
   const handleResetData = () => {
-    localStorage.removeItem('initialData');
-    localStorage.removeItem('weightEntries');
+    localStorage.removeItem(`initialData_${user}`);
+    localStorage.removeItem(`weightEntries_${user}`);
     setHeight('');
     setBodyFat('');
     setCurrentWeight('');

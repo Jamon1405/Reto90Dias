@@ -1,22 +1,29 @@
 'use client';  // Indica que este componente solo debe ejecutarse en el cliente
 import { useState, useEffect } from 'react';
+import { TOTAL_DAYS } from '../constants';
 
 // Componente para mostrar el progreso del calendario
 const CalendarOverview = () => {
   const [completedDays, setCompletedDays] = useState(0);
   const [remainingDays, setRemainingDays] = useState(0);
+  const user =
+    typeof window !== 'undefined'
+      ? localStorage.getItem('selectedUser') || 'ximena'
+      : 'ximena';
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const savedDays = localStorage.getItem('days');
+      const savedDays = localStorage.getItem(`calendarDays_${user}`);
       if (savedDays) {
         const days = JSON.parse(savedDays);
         const completed = days.filter(day => day.completed).length;
         setCompletedDays(completed);
-        setRemainingDays(90 - completed);
+        setRemainingDays(TOTAL_DAYS - completed);
+      } else {
+        setRemainingDays(TOTAL_DAYS);
       }
     }
-  }, []);
+  }, [user]);
 
   return (
     <div style={overviewBoxStyle}>
@@ -32,10 +39,14 @@ const WeightOverview = () => {
   const [weightDifference, setWeightDifference] = useState(0);
   const [weightGoalDifference, setWeightGoalDifference] = useState(0);
   const weightGoal = 75; // Meta de peso
+  const user =
+    typeof window !== 'undefined'
+      ? localStorage.getItem('selectedUser') || 'ximena'
+      : 'ximena';
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const savedEntries = localStorage.getItem('weightEntries');
+      const savedEntries = localStorage.getItem(`weightEntries_${user}`);
       if (savedEntries) {
         const weightEntries = JSON.parse(savedEntries);
         const initialWeight = weightEntries.length > 0 ? weightEntries[0].weight : 0;
@@ -44,7 +55,7 @@ const WeightOverview = () => {
         setWeightGoalDifference((currentWeight - weightGoal).toFixed(1)); // Diferencia con la meta
       }
     }
-  }, []);
+  }, [user]);
 
   return (
     <div style={overviewBoxStyle}>
@@ -58,17 +69,21 @@ const WeightOverview = () => {
 // Componente para mostrar el progreso de la dieta
 const DietOverview = () => {
   const [dietDaysCompleted, setDietDaysCompleted] = useState(0);
+  const user =
+    typeof window !== 'undefined'
+      ? localStorage.getItem('selectedUser') || 'ximena'
+      : 'ximena';
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const savedDays = localStorage.getItem('days');
+      const savedDays = localStorage.getItem(`dietDays_${user}`);
       if (savedDays) {
         const days = JSON.parse(savedDays);
         const dietDays = days.filter(day => day.dietCompleted).length;
         setDietDaysCompleted(dietDays);
       }
     }
-  }, []);
+  }, [user]);
 
   return (
     <div style={overviewBoxStyle}>
