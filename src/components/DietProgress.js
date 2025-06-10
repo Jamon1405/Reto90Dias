@@ -35,6 +35,14 @@ const DietProgress = () => {
     aggressive: 0.3, // 30%
   };
 
+  const activityLabels = {
+    '1.2': 'Sedentario',
+    '1.375': 'Ligero',
+    '1.55': 'Moderado',
+    '1.725': 'Intenso',
+    '1.9': 'Muy intenso',
+  };
+
   const dietMacros = {
     normal: { protein: 0.30, carbs: 0.40, fat: 0.30 },
     keto: { protein: 0.25, carbs: 0.05, fat: 0.70 },
@@ -59,10 +67,26 @@ const DietProgress = () => {
 
   // Función para calcular la distribución de macros según el tipo de dieta
   const calculateMacros = (totalCalories) => {
-    const macroSplit = dietMacros[dietType];
-    const protein = (totalCalories * macroSplit.protein) / 4; // Proteínas (cal/4)
-    const carbs = (totalCalories * macroSplit.carbs) / 4; // Carbohidratos (cal/4)
-    const fat = (totalCalories * macroSplit.fat) / 9; // Grasas (cal/9)
+    let macroSplit = { ...dietMacros[dietType] };
+    // Ajustes por sexo
+    if (gender === 'male') {
+      macroSplit.protein += 0.05;
+      macroSplit.carbs -= 0.05;
+    } else {
+      macroSplit.fat += 0.05;
+    }
+    // Ajuste por nivel de actividad
+    if (parseFloat(activityLevel) >= 1.55) {
+      macroSplit.carbs += 0.05;
+      macroSplit.fat -= 0.05;
+    }
+    const total = macroSplit.protein + macroSplit.carbs + macroSplit.fat;
+    if (total !== 1) {
+      macroSplit.fat += 1 - total; // Normalizar
+    }
+    const protein = (totalCalories * macroSplit.protein) / 4;
+    const carbs = (totalCalories * macroSplit.carbs) / 4;
+    const fat = (totalCalories * macroSplit.fat) / 9;
 
     setMacros({
       protein: protein.toFixed(1),
@@ -84,7 +108,8 @@ const DietProgress = () => {
 
   useEffect(() => {
     localStorage.setItem(`dietDays_${user}`, JSON.stringify(days));
-  }, [days, user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [days]);
 
   const handleDayClick = (index) => {
     setSelectedDay(index);
@@ -218,6 +243,34 @@ const DietProgress = () => {
           onChange={(e) => setAge(e.target.value)}
           style={{ padding: '10px', margin: '10px 0', borderRadius: '5px' }}
         />
+        <select
+          value={gender}
+          onChange={(e) => setGender(e.target.value)}
+          style={{ padding: '10px', margin: '10px 0', borderRadius: '5px' }}
+        >
+          <option value="male">Hombre</option>
+          <option value="female">Mujer</option>
+        </select>
+        <select
+          value={activityLevel}
+          onChange={(e) => setActivityLevel(e.target.value)}
+          style={{ padding: '10px', margin: '10px 0', borderRadius: '5px' }}
+        >
+          {Object.entries(activityLabels).map(([val, label]) => (
+            <option key={val} value={val}>
+              {label}
+            </option>
+          ))}
+        </select>
+        <select
+          value={deficitOption}
+          onChange={(e) => setDeficitOption(e.target.value)}
+          style={{ padding: '10px', margin: '10px 0', borderRadius: '5px' }}
+        >
+          <option value="mild">Déficit Ligero</option>
+          <option value="moderate">Déficit Moderado</option>
+          <option value="aggressive">Déficit Agresivo</option>
+        </select>
 
         {/* Selector de tipo de dieta */}
         <select
@@ -236,6 +289,7 @@ const DietProgress = () => {
 
         {caloricIntake > 0 && (
           <div style={{ marginTop: '20px' }}>
+            <h4>BMR: {bmr} kcal</h4>
             <h4>Ingesta calórica diaria: {caloricIntake} kcal</h4>
             <p>Proteínas: {macros.protein}g</p>
             <p>Carbohidratos: {macros.carbs}g</p>

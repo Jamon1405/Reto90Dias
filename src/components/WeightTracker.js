@@ -15,6 +15,7 @@ const WeightTracker = () => {
   const [height, setHeight] = useState(''); // Altura en cm
   const [bodyFat, setBodyFat] = useState(''); // Porcentaje de grasa corporal
   const [idealWeight, setIdealWeight] = useState(0); // Peso ideal calculado
+  const [gender, setGender] = useState('male'); // Sexo del usuario
   const [hasInitialData, setHasInitialData] = useState(false); // Para determinar si el usuario ha ingresado los datos iniciales
 
   const user = useCurrentUser();
@@ -34,6 +35,7 @@ const WeightTracker = () => {
         setCurrentWeight(data.currentWeight);
         setIdealWeight(data.idealWeight);
         setWeightGoal(data.weightGoal);
+        setGender(data.gender || 'male');
         setHasInitialData(true); // Mostrar los datos si ya fueron ingresados
       }
     }
@@ -47,7 +49,8 @@ const WeightTracker = () => {
         JSON.stringify(weightEntries)
       );
     }
-  }, [weightEntries, user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [weightEntries]);
 
   // Guardar los datos iniciales en localStorage
   const saveInitialData = (data) => {
@@ -77,7 +80,8 @@ const WeightTracker = () => {
   const handleCalculateIdealWeight = () => {
     if (bodyFat && height && currentWeight) {
       const leanBodyMass = (1 - bodyFat / 100) * currentWeight;
-      const idealBodyWeight = leanBodyMass / (1 - 0.15); // El 15% es un porcentaje de grasa corporal ideal
+      const idealFat = gender === 'male' ? 15 : 22; // Porcentaje de grasa ideal según sexo
+      const idealBodyWeight = leanBodyMass / (1 - idealFat / 100);
       setIdealWeight(idealBodyWeight.toFixed(1));
       setWeightGoal(idealBodyWeight.toFixed(1)); // Actualizar el peso meta basado en el peso ideal
       setHasInitialData(true); // Indica que ya se calcularon los datos iniciales
@@ -87,6 +91,7 @@ const WeightTracker = () => {
         height,
         bodyFat,
         currentWeight,
+        gender,
         idealWeight: idealBodyWeight.toFixed(1),
         weightGoal: idealBodyWeight.toFixed(1),
       });
@@ -105,6 +110,7 @@ const WeightTracker = () => {
     setEntryWeight('');
     setIdealWeight(0);
     setWeightGoal(75);
+    setGender('male');
     setWeightEntries([]);
     setHasInitialData(false);
   };
@@ -214,6 +220,10 @@ const WeightTracker = () => {
           onChange={(e) => setBodyFat(e.target.value)}
           style={inputStyle}
         />
+        <select value={gender} onChange={(e) => setGender(e.target.value)} style={inputStyle}>
+          <option value="male">Hombre</option>
+          <option value="female">Mujer</option>
+        </select>
         <button onClick={handleCalculateIdealWeight} style={buttonStyle}>
           Calcular Peso Ideal
         </button>

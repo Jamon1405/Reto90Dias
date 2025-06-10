@@ -32,7 +32,8 @@ const Calendar = () => {
 
   useEffect(() => {
     localStorage.setItem(`calendarDays_${user}`, JSON.stringify(days));
-  }, [days, user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [days]);
 
   const handleCompleteDay = (didRoutine) => {
     if (selectedDay !== null) {
