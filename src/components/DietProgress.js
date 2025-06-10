@@ -70,14 +70,14 @@ const DietProgress = () => {
   };
 
   useEffect(() => {
-    const savedDays = localStorage.getItem('days');
+    const savedDays = localStorage.getItem('dietDays');
     if (savedDays) {
       setDays(JSON.parse(savedDays));
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('days', JSON.stringify(days));
+    localStorage.setItem('dietDays', JSON.stringify(days));
   }, [days]);
 
   const handleDayClick = (index) => {
@@ -112,7 +112,7 @@ const DietProgress = () => {
       fastingHours: '',
     });
     setDays(resetDays);
-    localStorage.removeItem('days');
+    localStorage.removeItem('dietDays');
     setSelectedDay(null);
   };
 
