@@ -1,5 +1,6 @@
 'use client';  // Indica que este componente solo debe ejecutarse en el cliente
 import { useState, useEffect } from 'react';
+import { TOTAL_DAYS } from '../constants';
 
 // Componente para mostrar el progreso del calendario
 const CalendarOverview = () => {
@@ -8,12 +9,15 @@ const CalendarOverview = () => {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const savedDays = localStorage.getItem('calendarDays');
+      const user = localStorage.getItem('selectedUser') || 'ximena';
+      const savedDays = localStorage.getItem(`calendarDays_${user}`);
       if (savedDays) {
         const days = JSON.parse(savedDays);
         const completed = days.filter(day => day.completed).length;
         setCompletedDays(completed);
-        setRemainingDays(90 - completed);
+        setRemainingDays(TOTAL_DAYS - completed);
+      } else {
+        setRemainingDays(TOTAL_DAYS);
       }
     }
   }, []);

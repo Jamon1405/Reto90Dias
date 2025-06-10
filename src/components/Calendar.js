@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { TOTAL_DAYS } from '../constants';
 
 // Ejercicios con series y repeticiones para cada grupo muscular
 const ejerciciosPorGrupo = {
@@ -46,7 +47,7 @@ const ejerciciosPorGrupo = {
 const Calendar = () => {
   const [selectedDay, setSelectedDay] = useState(null);
   const [days, setDays] = useState(() =>
-    new Array(90).fill({
+    new Array(TOTAL_DAYS).fill({
       completed: false,
       restDay: false,
       exercisesCompleted: [],
@@ -54,9 +55,13 @@ const Calendar = () => {
     })
   );
 
+  const getUser = () =>
+    (typeof window !== 'undefined' && localStorage.getItem('selectedUser')) ||
+    'ximena';
+
   // Cargar datos desde localStorage cuando el componente está montado
   useEffect(() => {
-    const savedDays = localStorage.getItem('calendarDays');
+    const savedDays = localStorage.getItem(`calendarDays_${getUser()}`);
     if (savedDays) {
       setDays(JSON.parse(savedDays));
     }
@@ -65,7 +70,7 @@ const Calendar = () => {
   // Guardar cambios en localStorage cuando se actualiza el estado
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('calendarDays', JSON.stringify(days));
+      localStorage.setItem(`calendarDays_${getUser()}`, JSON.stringify(days));
     }
   }, [days]);
 
@@ -131,14 +136,14 @@ const Calendar = () => {
   };
 
   const handleResetProgress = () => {
-    const resetDays = new Array(90).fill({
+    const resetDays = new Array(TOTAL_DAYS).fill({
       completed: false,
       restDay: false,
       exercisesCompleted: [],
       muscleGroup: '',
     });
     setDays(resetDays);
-    localStorage.removeItem('calendarDays');
+    localStorage.removeItem(`calendarDays_${getUser()}`);
     setSelectedDay(null);
   };
 
@@ -198,7 +203,7 @@ const Calendar = () => {
 
   return (
     <div style={containerStyle}>
-      <h2 style={headerStyle}>Calendario de 90 días</h2>
+      <h2 style={headerStyle}>Calendario de 60 días</h2>
       <div style={gridStyle}>
         {days.map((day, index) => (
           <div
