@@ -200,9 +200,6 @@ const DietProgress = () => {
     display: 'grid',
     gridTemplateColumns: 'repeat(4, 1fr)',
     gap: '10px',
-    '@media (max-width: 600px)': {
-      gridTemplateColumns: 'repeat(2, 1fr)',
-    },
   };
 
   const dayBoxStyle = (day, selected) => ({
@@ -312,7 +309,7 @@ const DietProgress = () => {
       </div>
 
       <h3>Progreso del calendario de dieta</h3>
-      <div style={gridStyle}>
+      <div className="diet-grid" style={gridStyle}>
         {days.map((day, index) => (
           <div
             key={index}

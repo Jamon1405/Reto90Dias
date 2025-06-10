@@ -63,9 +63,22 @@ h1, h2 {
   }
 
   /* Ajustar los botones */
-  button {
+button {
     font-size: 14px;
     padding: 10px;
     width: 100%; /* Botones a ancho completo en pantallas muy pequeñas */
+  }
+}
+
+/* Estilos específicos para el componente de dieta */
+.diet-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 600px) {
+  .diet-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
