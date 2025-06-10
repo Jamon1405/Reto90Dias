@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { TOTAL_DAYS } from '../constants';
+import useCurrentUser from '../hooks/useCurrentUser';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 
@@ -70,20 +71,20 @@ const DietProgress = () => {
     });
   };
 
-  const getUser = () =>
-    (typeof window !== 'undefined' && localStorage.getItem('selectedUser')) ||
-    'ximena';
+  const user = useCurrentUser();
 
   useEffect(() => {
-    const savedDays = localStorage.getItem(`dietDays_${getUser()}`);
+    const savedDays = localStorage.getItem(`dietDays_${user}`);
     if (savedDays) {
       setDays(JSON.parse(savedDays));
+    } else {
+      setDays(new Array(TOTAL_DAYS).fill({ dietCompleted: false, fastingHours: '' }));
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
-    localStorage.setItem(`dietDays_${getUser()}`, JSON.stringify(days));
-  }, [days]);
+    localStorage.setItem(`dietDays_${user}`, JSON.stringify(days));
+  }, [days, user]);
 
   const handleDayClick = (index) => {
     setSelectedDay(index);
@@ -112,12 +113,9 @@ const DietProgress = () => {
   };
 
   const handleResetProgress = () => {
-    const resetDays = new Array(TOTAL_DAYS).fill({
-      dietCompleted: false,
-      fastingHours: '',
-    });
+    const resetDays = new Array(TOTAL_DAYS).fill({ dietCompleted: false, fastingHours: '' });
     setDays(resetDays);
-    localStorage.removeItem(`dietDays_${getUser()}`);
+    localStorage.removeItem(`dietDays_${user}`);
     setSelectedDay(null);
   };
 

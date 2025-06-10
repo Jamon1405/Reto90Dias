@@ -1,284 +1,143 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { TOTAL_DAYS } from '../constants';
+import { TOTAL_DAYS, START_DATE } from '../constants';
+import useCurrentUser from '../hooks/useCurrentUser';
 
-// Ejercicios con series y repeticiones para cada grupo muscular
-const ejerciciosPorGrupo = {
-  pecho_triceps: [
-    { name: 'Press de banca con barra', series: 4, reps: 10 },
-    { name: 'Press inclinado con mancuernas', series: 4, reps: 10 },
-    { name: 'Aperturas con mancuernas', series: 4, reps: 12 },
-    { name: 'Fondos en paralelas', series: 4, reps: 10 },
-    { name: 'Press francés', series: 4, reps: 12 },
-    { name: 'Extensiones en polea', series: 4, reps: 12 },
-    { name: 'Kickbacks con mancuerna', series: 4, reps: 15 },
-    { name: 'Cardio (30 minutos)', series: 1, reps: '30 min' },
-  ],
-  espalda_biceps: [
-    { name: 'Dominadas', series: 4, reps: 10 },
-    { name: 'Remo con barra', series: 4, reps: 12 },
-    { name: 'Peso muerto', series: 4, reps: 10 },
-    { name: 'Curl con barra', series: 4, reps: 12 },
-    { name: 'Curl alternado con mancuernas', series: 4, reps: 12 },
-    { name: 'Curl en predicador', series: 4, reps: 10 },
-    { name: 'Remo en máquina', series: 4, reps: 12 },
-    { name: 'Cardio (30 minutos)', series: 1, reps: '30 min' },
-  ],
-  piernas: [
-    { name: 'Sentadilla', series: 4, reps: 12 },
-    { name: 'Prensa de pierna', series: 4, reps: 12 },
-    { name: 'Peso muerto rumano', series: 4, reps: 10 },
-    { name: 'Extensión de cuádriceps', series: 4, reps: 12 },
-    { name: 'Curl femoral', series: 4, reps: 12 },
-    { name: 'Elevación de talones', series: 4, reps: 15 },
-    { name: 'Cardio (30 minutos)', series: 1, reps: '30 min' },
-  ],
-  hombros_trapecios: [
-    { name: 'Press militar con barra', series: 4, reps: 10 },
-    { name: 'Elevaciones laterales', series: 4, reps: 12 },
-    { name: 'Elevaciones frontales', series: 4, reps: 12 },
-    { name: 'Encogimientos con mancuernas', series: 4, reps: 15 },
-    { name: 'Remo al mentón', series: 4, reps: 12 },
-    { name: 'Cardio (30 minutos)', series: 1, reps: '30 min' },
-  ],
-};
-
+const weekdays = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
 
 const Calendar = () => {
+  const user = useCurrentUser();
   const [selectedDay, setSelectedDay] = useState(null);
   const [days, setDays] = useState(() =>
-    new Array(TOTAL_DAYS).fill({
-      completed: false,
-      restDay: false,
-      exercisesCompleted: [],
-      muscleGroup: '',
-    })
+    new Array(TOTAL_DAYS).fill({ completed: false })
   );
+  const [weeklyRoutines, setWeeklyRoutines] = useState({});
+  const startDate = new Date(START_DATE);
 
-  const getUser = () =>
-    (typeof window !== 'undefined' && localStorage.getItem('selectedUser')) ||
-    'ximena';
-
-  // Cargar datos desde localStorage cuando el componente está montado
   useEffect(() => {
-    const savedDays = localStorage.getItem(`calendarDays_${getUser()}`);
-    if (savedDays) {
-      setDays(JSON.parse(savedDays));
-    }
-  }, []);
+    const savedDays = localStorage.getItem(`calendarDays_${user}`);
+    setDays(savedDays ? JSON.parse(savedDays) : new Array(TOTAL_DAYS).fill({ completed: false }));
+    const routines = localStorage.getItem(`weeklyRoutines_${user}`);
+    setWeeklyRoutines(routines ? JSON.parse(routines) : {});
+  }, [user]);
 
-  // Guardar cambios en localStorage cuando se actualiza el estado
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(`calendarDays_${getUser()}`, JSON.stringify(days));
-    }
-  }, [days]);
+    const handler = () => {
+      const routines = localStorage.getItem(`weeklyRoutines_${user}`);
+      setWeeklyRoutines(routines ? JSON.parse(routines) : {});
+    };
+    window.addEventListener('routinesUpdated', handler);
+    return () => window.removeEventListener('routinesUpdated', handler);
+  }, [user]);
 
-  const handleDayClick = (index) => {
-    setSelectedDay(index);
-  };
-
-  const handleMuscleGroupChange = (group) => {
-    if (selectedDay !== null && group) {
-      setDays((prevDays) => {
-        const updatedDays = [...prevDays];
-        const currentDay = { ...updatedDays[selectedDay] };
-
-        currentDay.muscleGroup = group;
-        currentDay.exercisesCompleted = new Array(
-          ejerciciosPorGrupo[group].length
-        ).fill(false);
-
-        updatedDays[selectedDay] = currentDay;
-        return updatedDays;
-      });
-    }
-  };
-
-  const toggleExerciseComplete = (exerciseIndex) => {
-    if (selectedDay !== null) {
-      setDays((prevDays) => {
-        const updatedDays = [...prevDays];
-        const currentDay = { ...updatedDays[selectedDay] };
-        currentDay.exercisesCompleted = [...currentDay.exercisesCompleted];
-        currentDay.exercisesCompleted[exerciseIndex] =
-          !currentDay.exercisesCompleted[exerciseIndex];
-        updatedDays[selectedDay] = currentDay;
-        return updatedDays;
-      });
-    }
-  };
+  useEffect(() => {
+    localStorage.setItem(`calendarDays_${user}`, JSON.stringify(days));
+  }, [days, user]);
 
   const handleCompleteDay = () => {
     if (selectedDay !== null) {
-      const completedExercises = days[selectedDay].exercisesCompleted.filter(Boolean).length;
-      const muscleGroup = days[selectedDay].muscleGroup;
-      if (completedExercises === ejerciciosPorGrupo[muscleGroup]?.length) {
-        setDays((prevDays) => {
-          const updatedDays = [...prevDays];
-          updatedDays[selectedDay].completed = true;
-          return updatedDays;
-        });
-      } else {
-        alert('Completa todos los ejercicios antes de marcar el día como completado.');
-      }
-    }
-  };
-
-  const handleRestDay = () => {
-    if (selectedDay !== null) {
-      setDays((prevDays) => {
-        const updatedDays = [...prevDays];
-        updatedDays[selectedDay].restDay = true;
-        return updatedDays;
+      setDays((prev) => {
+        const updated = [...prev];
+        updated[selectedDay].completed = true;
+        return updated;
       });
     }
   };
 
   const handleResetProgress = () => {
-    const resetDays = new Array(TOTAL_DAYS).fill({
-      completed: false,
-      restDay: false,
-      exercisesCompleted: [],
-      muscleGroup: '',
-    });
-    setDays(resetDays);
-    localStorage.removeItem(`calendarDays_${getUser()}`);
+    const reset = new Array(TOTAL_DAYS).fill({ completed: false });
+    setDays(reset);
+    localStorage.removeItem(`calendarDays_${user}`);
     setSelectedDay(null);
   };
 
-  // Estilos en línea para diseño moderno y adaptado a móviles
-  const containerStyle = {
-    padding: '20px',
-    backgroundColor: '#f0f0f0',
-    borderRadius: '15px',
-    margin: 'auto',
-    textAlign: 'center',
-    maxWidth: '1000px',
+  const renderRoutine = (date) => {
+    const dayName = weekdays[date.getDay()];
+    const routine = weeklyRoutines[dayName];
+    if (!routine) return <p>No hay rutina para este día</p>;
+    return (
+      <div>
+        <h4>{routine.name}</h4>
+        <p>{routine.exercises}</p>
+      </div>
+    );
   };
-
-  const headerStyle = {
-    fontSize: '24px',
-    fontWeight: 'bold',
-    marginBottom: '20px',
-  };
-
-  const dayBoxStyle = (day, selected) => ({
-    padding: '10px',
-    margin: '5px',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    backgroundColor: day.completed ? '#4caf50' : day.restDay ? '#ffeb3b' : '#e0e0e0',
-    boxShadow: selected ? '0px 0px 15px rgba(0, 0, 0, 0.2)' : 'none',
-    transform: selected ? 'scale(1.05)' : 'scale(1)',
-    transition: 'transform 0.2s',
-  });
-
-  const buttonStyle = {
-    backgroundColor: '#0288d1',
-    color: '#fff',
-    padding: '12px',
-    borderRadius: '8px',
-    border: 'none',
-    cursor: 'pointer',
-    margin: '10px 5px',
-  };
-
-  const gridStyle = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(4, 1fr)', // Ajustado para móviles
-    gap: '10px',
-    '@media (max-width: 600px)': {
-      gridTemplateColumns: 'repeat(2, 1fr)',
-    },
-  };
-
-  const exerciseStyle = (completed) => ({
-    padding: '10px',
-    backgroundColor: completed ? '#4caf50' : '#f0f0f0',
-    borderRadius: '8px',
-    marginBottom: '10px',
-    cursor: 'pointer',
-  });
 
   return (
     <div style={containerStyle}>
       <h2 style={headerStyle}>Calendario de 60 días</h2>
       <div style={gridStyle}>
-        {days.map((day, index) => (
-          <div
-            key={index}
-            style={dayBoxStyle(day, selectedDay === index)}
-            onClick={() => handleDayClick(index)}
-          >
-            Día {index + 1}
-          </div>
-        ))}
+        {days.map((day, index) => {
+          const date = new Date(startDate);
+          date.setDate(startDate.getDate() + index);
+          return (
+            <div
+              key={index}
+              style={dayBoxStyle(day, selectedDay === index)}
+              onClick={() => setSelectedDay(index)}
+            >
+              {date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
+              <br />
+              {weekdays[date.getDay()]}
+            </div>
+          );
+        })}
       </div>
-
       {selectedDay !== null && (
         <div style={{ marginTop: '20px' }}>
-          <h3>
-            Día {selectedDay + 1} -{' '}
-            {days[selectedDay].muscleGroup
-              ? 'Grupo muscular: ' + days[selectedDay].muscleGroup
-              : 'Elige tu grupo muscular'}
-          </h3>
-
-          <div style={{ marginBottom: '15px' }}>
-            <label style={{ marginRight: '10px' }}>Selecciona un grupo muscular:</label>
-            <select
-              value={days[selectedDay].muscleGroup}
-              onChange={(e) => handleMuscleGroupChange(e.target.value)}
-              style={{
-                padding: '10px',
-                fontSize: '14px',
-                borderRadius: '5px',
-                border: '1px solid #ccc',
-                backgroundColor: '#fff',
-              }}
-            >
-              <option value="">Selecciona</option>
-              <option value="pecho_triceps">Pecho y Tríceps</option>
-              <option value="espalda_biceps">Espalda y Bíceps</option>
-              <option value="piernas">Piernas</option>
-              <option value="hombros_trapecios">Hombros y Trapecios</option>
-            </select>
-          </div>
-
-          {days[selectedDay].muscleGroup && (
-            <div>
-              <h4 style={{ marginBottom: '10px' }}>Ejercicios:</h4>
-              <ul style={{ listStyleType: 'none', padding: 0 }}>
-                {ejerciciosPorGrupo[days[selectedDay].muscleGroup].map((exercise, i) => (
-                  <li
-                    key={i}
-                    style={exerciseStyle(days[selectedDay].exercisesCompleted[i])}
-                    onClick={() => toggleExerciseComplete(i)}
-                  >
-                    {exercise.name} - {exercise.series} series de {exercise.reps} repeticiones
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          <div style={{ marginTop: '20px' }}>
+          {renderRoutine(new Date(startDate.getTime() + selectedDay * 86400000))}
+          {!days[selectedDay].completed && (
             <button style={buttonStyle} onClick={handleCompleteDay}>
-              Marcar día como completado
+              Marcar día completado
             </button>
-            <button style={{ ...buttonStyle, backgroundColor: '#ffeb3b', color: '#000' }} onClick={handleRestDay}>
-              Marcar como día de descanso
-            </button>
-          </div>
+          )}
         </div>
       )}
-
-      <button style={{ ...buttonStyle, color: 'red', borderColor: 'red' }} onClick={handleResetProgress}>
+      <button style={{ ...buttonStyle, marginTop: '20px' }} onClick={handleResetProgress}>
         Reiniciar progreso
       </button>
     </div>
   );
+};
+
+const containerStyle = {
+  padding: '20px',
+  backgroundColor: '#f0f0f0',
+  borderRadius: '15px',
+  margin: 'auto',
+  textAlign: 'center',
+  maxWidth: '1000px',
+};
+
+const headerStyle = {
+  fontSize: '24px',
+  fontWeight: 'bold',
+  marginBottom: '20px',
+};
+
+const dayBoxStyle = (day, selected) => ({
+  padding: '10px',
+  margin: '5px',
+  borderRadius: '8px',
+  cursor: 'pointer',
+  backgroundColor: day.completed ? '#4caf50' : '#e0e0e0',
+  boxShadow: selected ? '0px 0px 15px rgba(0, 0, 0, 0.2)' : 'none',
+});
+
+const buttonStyle = {
+  backgroundColor: '#0288d1',
+  color: '#fff',
+  padding: '12px',
+  borderRadius: '8px',
+  border: 'none',
+  cursor: 'pointer',
+  margin: '10px 5px',
+};
+
+const gridStyle = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(4, 1fr)',
+  gap: '10px',
 };
 
 export default Calendar;

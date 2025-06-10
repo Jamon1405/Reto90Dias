@@ -1,15 +1,13 @@
 'use client';  // Indica que este componente solo debe ejecutarse en el cliente
 import { useState, useEffect } from 'react';
 import { TOTAL_DAYS } from '../constants';
+import useCurrentUser from '../hooks/useCurrentUser';
 
 // Componente para mostrar el progreso del calendario
 const CalendarOverview = () => {
   const [completedDays, setCompletedDays] = useState(0);
   const [remainingDays, setRemainingDays] = useState(0);
-  const user =
-    typeof window !== 'undefined'
-      ? localStorage.getItem('selectedUser') || 'ximena'
-      : 'ximena';
+  const user = useCurrentUser();
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -39,10 +37,7 @@ const WeightOverview = () => {
   const [weightDifference, setWeightDifference] = useState(0);
   const [weightGoalDifference, setWeightGoalDifference] = useState(0);
   const weightGoal = 75; // Meta de peso
-  const user =
-    typeof window !== 'undefined'
-      ? localStorage.getItem('selectedUser') || 'ximena'
-      : 'ximena';
+  const user = useCurrentUser();
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -69,10 +64,7 @@ const WeightOverview = () => {
 // Componente para mostrar el progreso de la dieta
 const DietOverview = () => {
   const [dietDaysCompleted, setDietDaysCompleted] = useState(0);
-  const user =
-    typeof window !== 'undefined'
-      ? localStorage.getItem('selectedUser') || 'ximena'
-      : 'ximena';
+  const user = useCurrentUser();
 
   useEffect(() => {
     if (typeof window !== 'undefined') {

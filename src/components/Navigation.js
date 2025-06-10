@@ -16,6 +16,7 @@ export default function Navigation() {
     const value = e.target.value;
     setUser(value);
     localStorage.setItem('selectedUser', value);
+    window.dispatchEvent(new Event('userchange'));
   };
 
   return (

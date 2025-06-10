@@ -1,5 +1,6 @@
 'use client';  
 import { useState, useEffect } from 'react';
+import useCurrentUser from '../hooks/useCurrentUser';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 
@@ -15,11 +16,7 @@ const WeightTracker = () => {
   const [idealWeight, setIdealWeight] = useState(0); // Peso ideal calculado
   const [hasInitialData, setHasInitialData] = useState(false); // Para determinar si el usuario ha ingresado los datos iniciales
 
-  const getUser = () =>
-    (typeof window !== 'undefined' && localStorage.getItem('selectedUser')) ||
-    'ximena';
-
-  const user = getUser();
+  const user = useCurrentUser();
 
   // Cargar datos de localStorage cuando el componente está montado
   useEffect(() => {

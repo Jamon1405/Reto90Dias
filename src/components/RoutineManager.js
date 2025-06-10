@@ -1,49 +1,51 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { TOTAL_DAYS } from '../constants';
+import useCurrentUser from '../hooks/useCurrentUser';
+
+const weekdays = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
 
 const RoutineManager = () => {
+  const user = useCurrentUser();
+  const [weekday, setWeekday] = useState('lunes');
   const [routineName, setRoutineName] = useState('');
   const [exercises, setExercises] = useState('');
-  const [routines, setRoutines] = useState([]);
-  const [day, setDay] = useState('');
-
-  const getUser = () =>
-    (typeof window !== 'undefined' && localStorage.getItem('selectedUser')) ||
-    'ximena';
+  const [routines, setRoutines] = useState({});
 
   useEffect(() => {
-    const saved = localStorage.getItem(`routines_${getUser()}`);
-    if (saved) {
-      setRoutines(JSON.parse(saved));
-    }
-  }, []);
+    const saved = localStorage.getItem(`weeklyRoutines_${user}`);
+    setRoutines(saved ? JSON.parse(saved) : {});
+  }, [user]);
 
-  const handleAdd = () => {
-    if (routineName.trim() && day) {
-      const updated = [
-        ...routines,
-        { name: routineName, exercises, day: parseInt(day, 10), completed: false }
-      ];
+  useEffect(() => {
+    const handler = () => {
+      const saved = localStorage.getItem(`weeklyRoutines_${user}`);
+      setRoutines(saved ? JSON.parse(saved) : {});
+    };
+    window.addEventListener('routinesUpdated', handler);
+    return () => window.removeEventListener('routinesUpdated', handler);
+  }, [user]);
+
+  const handleSave = () => {
+    if (routineName.trim()) {
+      const updated = { ...routines, [weekday]: { name: routineName, exercises } };
       setRoutines(updated);
       setRoutineName('');
       setExercises('');
-      setDay('');
-      localStorage.setItem(`routines_${getUser()}`, JSON.stringify(updated));
+      localStorage.setItem(`weeklyRoutines_${user}`, JSON.stringify(updated));
+      window.dispatchEvent(new Event('routinesUpdated'));
     }
-  };
-
-  const toggleCompleted = (index) => {
-    const updated = routines.map((rt, i) =>
-      i === index ? { ...rt, completed: !rt.completed } : rt
-    );
-    setRoutines(updated);
-    localStorage.setItem(`routines_${getUser()}`, JSON.stringify(updated));
   };
 
   return (
     <div style={containerStyle}>
-      <h2 style={headerStyle}>Agregar Rutina</h2>
+      <h2 style={headerStyle}>Agregar Rutina Semanal</h2>
+      <select value={weekday} onChange={(e) => setWeekday(e.target.value)} style={inputStyle}>
+        {weekdays.map((day) => (
+          <option key={day} value={day}>
+            {day.charAt(0).toUpperCase() + day.slice(1)}
+          </option>
+        ))}
+      </select>
       <input
         style={inputStyle}
         value={routineName}
@@ -56,33 +58,22 @@ const RoutineManager = () => {
         onChange={(e) => setExercises(e.target.value)}
         placeholder="Ejercicios"
       />
-      <input
-        type="number"
-        min="1"
-        max={TOTAL_DAYS}
-        style={inputStyle}
-        value={day}
-        onChange={(e) => setDay(e.target.value)}
-        placeholder="Día del programa"
-      />
-      <button style={buttonStyle} onClick={handleAdd}>Guardar Rutina</button>
-      <h3 style={{ marginTop: '20px' }}>Tus Rutinas</h3>
+      <button style={buttonStyle} onClick={handleSave}>
+        Guardar Rutina
+      </button>
+      <h3 style={{ marginTop: '20px' }}>Rutinas Guardadas</h3>
       <ul style={{ listStyle: 'none', padding: 0 }}>
-        {routines.map((rt, index) => (
-          <li key={index} style={routineStyle}>
-            <strong>{rt.name}</strong>
-            <p>{rt.exercises}</p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span>Día {rt.day}</span>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={rt.completed}
-                  onChange={() => toggleCompleted(index)}
-                />{' '}
-                Completado
-              </label>
-            </div>
+        {weekdays.map((day) => (
+          <li key={day} style={routineStyle}>
+            <strong>{day.charAt(0).toUpperCase() + day.slice(1)}:</strong>{' '}
+            {routines[day] ? (
+              <>
+                <span>{routines[day].name}</span>
+                <p>{routines[day].exercises}</p>
+              </>
+            ) : (
+              <span>Sin rutina</span>
+            )}
           </li>
         ))}
       </ul>
