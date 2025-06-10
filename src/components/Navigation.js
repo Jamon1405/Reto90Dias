@@ -50,9 +50,9 @@ export default function Navigation() {
 const navStyle = {
   display: 'flex',
   justifyContent: 'space-around',
-  backgroundColor: '#333',
+  background: 'linear-gradient(90deg, #0288d1, #26c6da)',
   padding: '10px',
-  borderBottom: '2px solid #0288d1',
+  borderBottom: '2px solid #01579b',
   marginBottom: '20px',
 };
 
@@ -62,9 +62,12 @@ const linkStyle = {
   textDecoration: 'none',
   fontSize: '18px',
   cursor: 'pointer',
+  fontWeight: 600,
 };
 
 const selectStyle = {
   padding: '6px',
   borderRadius: '4px',
+  border: 'none',
+  backgroundColor: '#fff',
 };

@@ -8,15 +8,15 @@ const weekdays = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes'
 const Calendar = () => {
   const user = useCurrentUser();
   const [selectedDay, setSelectedDay] = useState(null);
-  const [days, setDays] = useState(() =>
-    new Array(TOTAL_DAYS).fill({ completed: false })
-  );
+  const createEmptyDays = () =>
+    Array.from({ length: TOTAL_DAYS }, () => ({ completed: false }));
+  const [days, setDays] = useState(createEmptyDays());
   const [weeklyRoutines, setWeeklyRoutines] = useState({});
   const startDate = new Date(START_DATE);
 
   useEffect(() => {
     const savedDays = localStorage.getItem(`calendarDays_${user}`);
-    setDays(savedDays ? JSON.parse(savedDays) : new Array(TOTAL_DAYS).fill({ completed: false }));
+    setDays(savedDays ? JSON.parse(savedDays) : createEmptyDays());
     const routines = localStorage.getItem(`weeklyRoutines_${user}`);
     setWeeklyRoutines(routines ? JSON.parse(routines) : {});
   }, [user]);
@@ -41,11 +41,14 @@ const Calendar = () => {
         updated[selectedDay].completed = true;
         return updated;
       });
+      if (selectedDay === 29 || selectedDay === 59) {
+        alert('¡Recuerda actualizar tu peso y grasa corporal en la sección Peso!');
+      }
     }
   };
 
   const handleResetProgress = () => {
-    const reset = new Array(TOTAL_DAYS).fill({ completed: false });
+    const reset = createEmptyDays();
     setDays(reset);
     localStorage.removeItem(`calendarDays_${user}`);
     setSelectedDay(null);
@@ -76,9 +79,9 @@ const Calendar = () => {
               style={dayBoxStyle(day, selectedDay === index)}
               onClick={() => setSelectedDay(index)}
             >
-              {date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
+              Dia {index + 1}
               <br />
-              {weekdays[date.getDay()]}
+              {date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })} - {weekdays[date.getDay()]}
             </div>
           );
         })}
@@ -102,11 +105,12 @@ const Calendar = () => {
 
 const containerStyle = {
   padding: '20px',
-  backgroundColor: '#f0f0f0',
+  backgroundColor: '#ffffff',
   borderRadius: '15px',
   margin: 'auto',
   textAlign: 'center',
   maxWidth: '1000px',
+  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
 };
 
 const headerStyle = {
@@ -120,8 +124,8 @@ const dayBoxStyle = (day, selected) => ({
   margin: '5px',
   borderRadius: '8px',
   cursor: 'pointer',
-  backgroundColor: day.completed ? '#4caf50' : '#e0e0e0',
-  boxShadow: selected ? '0px 0px 15px rgba(0, 0, 0, 0.2)' : 'none',
+  backgroundColor: day.completed ? '#4caf50' : '#f1f1f1',
+  boxShadow: selected ? '0px 0px 15px rgba(0, 0, 0, 0.2)' : '0 2px 4px rgba(0,0,0,0.1)',
 });
 
 const buttonStyle = {
@@ -132,6 +136,7 @@ const buttonStyle = {
   border: 'none',
   cursor: 'pointer',
   margin: '10px 5px',
+  boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
 };
 
 const gridStyle = {
