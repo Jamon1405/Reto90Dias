@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { TOTAL_DAYS } from '../constants';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 
@@ -9,7 +10,7 @@ const DietProgress = () => {
   const [selectedDay, setSelectedDay] = useState(null);
   const [fastingHours, setFastingHours] = useState('');
   const [days, setDays] = useState(() =>
-    new Array(90).fill({
+    new Array(TOTAL_DAYS).fill({
       dietCompleted: false,
       fastingHours: '',
     })
@@ -69,15 +70,19 @@ const DietProgress = () => {
     });
   };
 
+  const getUser = () =>
+    (typeof window !== 'undefined' && localStorage.getItem('selectedUser')) ||
+    'ximena';
+
   useEffect(() => {
-    const savedDays = localStorage.getItem('days');
+    const savedDays = localStorage.getItem(`dietDays_${getUser()}`);
     if (savedDays) {
       setDays(JSON.parse(savedDays));
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('days', JSON.stringify(days));
+    localStorage.setItem(`dietDays_${getUser()}`, JSON.stringify(days));
   }, [days]);
 
   const handleDayClick = (index) => {
@@ -107,12 +112,12 @@ const DietProgress = () => {
   };
 
   const handleResetProgress = () => {
-    const resetDays = new Array(90).fill({
+    const resetDays = new Array(TOTAL_DAYS).fill({
       dietCompleted: false,
       fastingHours: '',
     });
     setDays(resetDays);
-    localStorage.removeItem('days');
+    localStorage.removeItem(`dietDays_${getUser()}`);
     setSelectedDay(null);
   };
 
@@ -127,7 +132,7 @@ const DietProgress = () => {
     labels: ['Días cumplidos', 'Días restantes'],
     datasets: [
       {
-        data: [completedDays, 90 - completedDays],
+        data: [completedDays, TOTAL_DAYS - completedDays],
         backgroundColor: ['#4caf50', '#e0e0e0'],
         hoverBackgroundColor: ['#66bb6a', '#bdbdbd'],
         borderColor: '#fff',
@@ -287,7 +292,7 @@ const DietProgress = () => {
       )}
 
       <div style={{ marginTop: '30px' }}>
-        <h4>Días cumplidos: {completedDays} / 90</h4>
+        <h4>Días cumplidos: {completedDays} / {TOTAL_DAYS}</h4>
         <h4>Porcentaje de avance: {dietProgressPercentage}%</h4>
         <h4>Horas de ayuno promedio: {averageFastingHours} hrs</h4>
       </div>
