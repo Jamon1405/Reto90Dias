@@ -1,5 +1,6 @@
 'use client';  
 import { useState, useEffect } from 'react';
+import useCurrentUser from '../hooks/useCurrentUser';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 
@@ -8,21 +9,25 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 const WeightTracker = () => {
   const [weightEntries, setWeightEntries] = useState(() => []);
   const [currentWeight, setCurrentWeight] = useState('');
+  const [entryWeight, setEntryWeight] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [weightGoal, setWeightGoal] = useState(75); // Meta de peso por defecto
   const [height, setHeight] = useState(''); // Altura en cm
   const [bodyFat, setBodyFat] = useState(''); // Porcentaje de grasa corporal
   const [idealWeight, setIdealWeight] = useState(0); // Peso ideal calculado
+  const [gender, setGender] = useState('male'); // Sexo del usuario
   const [hasInitialData, setHasInitialData] = useState(false); // Para determinar si el usuario ha ingresado los datos iniciales
+
+  const user = useCurrentUser();
 
   // Cargar datos de localStorage cuando el componente está montado
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const savedEntries = localStorage.getItem('weightEntries');
+      const savedEntries = localStorage.getItem(`weightEntries_${user}`);
       if (savedEntries) {
         setWeightEntries(JSON.parse(savedEntries));
       }
-      const savedInitialData = localStorage.getItem('initialData');
+      const savedInitialData = localStorage.getItem(`initialData_${user}`);
       if (savedInitialData) {
         const data = JSON.parse(savedInitialData);
         setHeight(data.height);
@@ -30,31 +35,36 @@ const WeightTracker = () => {
         setCurrentWeight(data.currentWeight);
         setIdealWeight(data.idealWeight);
         setWeightGoal(data.weightGoal);
+        setGender(data.gender || 'male');
         setHasInitialData(true); // Mostrar los datos si ya fueron ingresados
       }
     }
-  }, []);
+  }, [user]);
 
   // Guardar cambios en weightEntries en localStorage cada vez que cambian
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('weightEntries', JSON.stringify(weightEntries));
+      localStorage.setItem(
+        `weightEntries_${user}`,
+        JSON.stringify(weightEntries)
+      );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [weightEntries]);
 
   // Guardar los datos iniciales en localStorage
   const saveInitialData = (data) => {
-    localStorage.setItem('initialData', JSON.stringify(data));
+    localStorage.setItem(`initialData_${user}`, JSON.stringify(data));
   };
 
   // Manejar la entrada del peso
   const handleAddWeight = () => {
-    if (currentWeight && selectedDate) {
+    if (entryWeight && selectedDate) {
       setWeightEntries((prevEntries) => [
         ...prevEntries,
-        { date: selectedDate, weight: parseFloat(currentWeight) },
+        { date: selectedDate, weight: parseFloat(entryWeight) },
       ]);
-      setCurrentWeight('');
+      setEntryWeight('');
       setSelectedDate('');
     } else {
       alert("Por favor, introduce una fecha y un peso.");
@@ -70,7 +80,8 @@ const WeightTracker = () => {
   const handleCalculateIdealWeight = () => {
     if (bodyFat && height && currentWeight) {
       const leanBodyMass = (1 - bodyFat / 100) * currentWeight;
-      const idealBodyWeight = leanBodyMass / (1 - 0.15); // El 15% es un porcentaje de grasa corporal ideal
+      const idealFat = gender === 'male' ? 15 : 22; // Porcentaje de grasa ideal según sexo
+      const idealBodyWeight = leanBodyMass / (1 - idealFat / 100);
       setIdealWeight(idealBodyWeight.toFixed(1));
       setWeightGoal(idealBodyWeight.toFixed(1)); // Actualizar el peso meta basado en el peso ideal
       setHasInitialData(true); // Indica que ya se calcularon los datos iniciales
@@ -80,6 +91,7 @@ const WeightTracker = () => {
         height,
         bodyFat,
         currentWeight,
+        gender,
         idealWeight: idealBodyWeight.toFixed(1),
         weightGoal: idealBodyWeight.toFixed(1),
       });
@@ -90,13 +102,15 @@ const WeightTracker = () => {
 
   // Reiniciar los datos iniciales y peso guardados en localStorage
   const handleResetData = () => {
-    localStorage.removeItem('initialData');
-    localStorage.removeItem('weightEntries');
+    localStorage.removeItem(`initialData_${user}`);
+    localStorage.removeItem(`weightEntries_${user}`);
     setHeight('');
     setBodyFat('');
     setCurrentWeight('');
+    setEntryWeight('');
     setIdealWeight(0);
     setWeightGoal(75);
+    setGender('male');
     setWeightEntries([]);
     setHasInitialData(false);
   };
@@ -206,6 +220,10 @@ const WeightTracker = () => {
           onChange={(e) => setBodyFat(e.target.value)}
           style={inputStyle}
         />
+        <select value={gender} onChange={(e) => setGender(e.target.value)} style={inputStyle}>
+          <option value="male">Hombre</option>
+          <option value="female">Mujer</option>
+        </select>
         <button onClick={handleCalculateIdealWeight} style={buttonStyle}>
           Calcular Peso Ideal
         </button>
@@ -235,8 +253,8 @@ const WeightTracker = () => {
             <input
               type="number"
               placeholder="Peso (kg)"
-              value={currentWeight}
-              onChange={(e) => setCurrentWeight(e.target.value)}
+              value={entryWeight}
+              onChange={(e) => setEntryWeight(e.target.value)}
               style={inputStyle}
             />
             <button onClick={handleAddWeight} style={buttonStyle}>

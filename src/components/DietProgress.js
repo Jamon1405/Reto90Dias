@@ -1,5 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { TOTAL_DAYS } from '../constants';
+import useCurrentUser from '../hooks/useCurrentUser';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 
@@ -9,7 +11,7 @@ const DietProgress = () => {
   const [selectedDay, setSelectedDay] = useState(null);
   const [fastingHours, setFastingHours] = useState('');
   const [days, setDays] = useState(() =>
-    new Array(90).fill({
+    new Array(TOTAL_DAYS).fill({
       dietCompleted: false,
       fastingHours: '',
     })
@@ -31,6 +33,14 @@ const DietProgress = () => {
     mild: 0.1, // 10%
     moderate: 0.2, // 20%
     aggressive: 0.3, // 30%
+  };
+
+  const activityLabels = {
+    '1.2': 'Sedentario',
+    '1.375': 'Ligero',
+    '1.55': 'Moderado',
+    '1.725': 'Intenso',
+    '1.9': 'Muy intenso',
   };
 
   const dietMacros = {
@@ -57,10 +67,26 @@ const DietProgress = () => {
 
   // Función para calcular la distribución de macros según el tipo de dieta
   const calculateMacros = (totalCalories) => {
-    const macroSplit = dietMacros[dietType];
-    const protein = (totalCalories * macroSplit.protein) / 4; // Proteínas (cal/4)
-    const carbs = (totalCalories * macroSplit.carbs) / 4; // Carbohidratos (cal/4)
-    const fat = (totalCalories * macroSplit.fat) / 9; // Grasas (cal/9)
+    let macroSplit = { ...dietMacros[dietType] };
+    // Ajustes por sexo
+    if (gender === 'male') {
+      macroSplit.protein += 0.05;
+      macroSplit.carbs -= 0.05;
+    } else {
+      macroSplit.fat += 0.05;
+    }
+    // Ajuste por nivel de actividad
+    if (parseFloat(activityLevel) >= 1.55) {
+      macroSplit.carbs += 0.05;
+      macroSplit.fat -= 0.05;
+    }
+    const total = macroSplit.protein + macroSplit.carbs + macroSplit.fat;
+    if (total !== 1) {
+      macroSplit.fat += 1 - total; // Normalizar
+    }
+    const protein = (totalCalories * macroSplit.protein) / 4;
+    const carbs = (totalCalories * macroSplit.carbs) / 4;
+    const fat = (totalCalories * macroSplit.fat) / 9;
 
     setMacros({
       protein: protein.toFixed(1),
@@ -69,15 +95,20 @@ const DietProgress = () => {
     });
   };
 
-  useEffect(() => {
-    const savedDays = localStorage.getItem('days');
-    if (savedDays) {
-      setDays(JSON.parse(savedDays));
-    }
-  }, []);
+  const user = useCurrentUser();
 
   useEffect(() => {
-    localStorage.setItem('days', JSON.stringify(days));
+    const savedDays = localStorage.getItem(`dietDays_${user}`);
+    if (savedDays) {
+      setDays(JSON.parse(savedDays));
+    } else {
+      setDays(new Array(TOTAL_DAYS).fill({ dietCompleted: false, fastingHours: '' }));
+    }
+  }, [user]);
+
+  useEffect(() => {
+    localStorage.setItem(`dietDays_${user}`, JSON.stringify(days));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [days]);
 
   const handleDayClick = (index) => {
@@ -107,12 +138,9 @@ const DietProgress = () => {
   };
 
   const handleResetProgress = () => {
-    const resetDays = new Array(90).fill({
-      dietCompleted: false,
-      fastingHours: '',
-    });
+    const resetDays = new Array(TOTAL_DAYS).fill({ dietCompleted: false, fastingHours: '' });
     setDays(resetDays);
-    localStorage.removeItem('days');
+    localStorage.removeItem(`dietDays_${user}`);
     setSelectedDay(null);
   };
 
@@ -127,7 +155,7 @@ const DietProgress = () => {
     labels: ['Días cumplidos', 'Días restantes'],
     datasets: [
       {
-        data: [completedDays, 90 - completedDays],
+        data: [completedDays, TOTAL_DAYS - completedDays],
         backgroundColor: ['#4caf50', '#e0e0e0'],
         hoverBackgroundColor: ['#66bb6a', '#bdbdbd'],
         borderColor: '#fff',
@@ -172,9 +200,6 @@ const DietProgress = () => {
     display: 'grid',
     gridTemplateColumns: 'repeat(4, 1fr)',
     gap: '10px',
-    '@media (max-width: 600px)': {
-      gridTemplateColumns: 'repeat(2, 1fr)',
-    },
   };
 
   const dayBoxStyle = (day, selected) => ({
@@ -215,6 +240,34 @@ const DietProgress = () => {
           onChange={(e) => setAge(e.target.value)}
           style={{ padding: '10px', margin: '10px 0', borderRadius: '5px' }}
         />
+        <select
+          value={gender}
+          onChange={(e) => setGender(e.target.value)}
+          style={{ padding: '10px', margin: '10px 0', borderRadius: '5px' }}
+        >
+          <option value="male">Hombre</option>
+          <option value="female">Mujer</option>
+        </select>
+        <select
+          value={activityLevel}
+          onChange={(e) => setActivityLevel(e.target.value)}
+          style={{ padding: '10px', margin: '10px 0', borderRadius: '5px' }}
+        >
+          {Object.entries(activityLabels).map(([val, label]) => (
+            <option key={val} value={val}>
+              {label}
+            </option>
+          ))}
+        </select>
+        <select
+          value={deficitOption}
+          onChange={(e) => setDeficitOption(e.target.value)}
+          style={{ padding: '10px', margin: '10px 0', borderRadius: '5px' }}
+        >
+          <option value="mild">Déficit Ligero</option>
+          <option value="moderate">Déficit Moderado</option>
+          <option value="aggressive">Déficit Agresivo</option>
+        </select>
 
         {/* Selector de tipo de dieta */}
         <select
@@ -233,6 +286,7 @@ const DietProgress = () => {
 
         {caloricIntake > 0 && (
           <div style={{ marginTop: '20px' }}>
+            <h4>BMR: {bmr} kcal</h4>
             <h4>Ingesta calórica diaria: {caloricIntake} kcal</h4>
             <p>Proteínas: {macros.protein}g</p>
             <p>Carbohidratos: {macros.carbs}g</p>
@@ -255,7 +309,7 @@ const DietProgress = () => {
       </div>
 
       <h3>Progreso del calendario de dieta</h3>
-      <div style={gridStyle}>
+      <div className="diet-grid" style={gridStyle}>
         {days.map((day, index) => (
           <div
             key={index}
@@ -287,7 +341,7 @@ const DietProgress = () => {
       )}
 
       <div style={{ marginTop: '30px' }}>
-        <h4>Días cumplidos: {completedDays} / 90</h4>
+        <h4>Días cumplidos: {completedDays} / {TOTAL_DAYS}</h4>
         <h4>Porcentaje de avance: {dietProgressPercentage}%</h4>
         <h4>Horas de ayuno promedio: {averageFastingHours} hrs</h4>
       </div>

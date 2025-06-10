@@ -1,28 +1,44 @@
 'use client';  // Indica que este componente solo debe ejecutarse en el cliente
 import { useState, useEffect } from 'react';
+import { TOTAL_DAYS } from '../constants';
+import useCurrentUser from '../hooks/useCurrentUser';
 
 // Componente para mostrar el progreso del calendario
 const CalendarOverview = () => {
-  const [completedDays, setCompletedDays] = useState(0);
+  const [routineDoneDays, setRoutineDoneDays] = useState(0);
+  const [routineMissedDays, setRoutineMissedDays] = useState(0);
   const [remainingDays, setRemainingDays] = useState(0);
+  const user = useCurrentUser();
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const savedDays = localStorage.getItem('days');
+      const savedDays = localStorage.getItem(`calendarDays_${user}`);
       if (savedDays) {
         const days = JSON.parse(savedDays);
-        const completed = days.filter(day => day.completed).length;
-        setCompletedDays(completed);
-        setRemainingDays(90 - completed);
+        const done = days.filter((day) => day.didRoutine).length;
+        const missed = days.filter((day) => day.completed && !day.didRoutine).length;
+        const completed = done + missed;
+        setRoutineDoneDays(done);
+        setRoutineMissedDays(missed);
+        setRemainingDays(TOTAL_DAYS - completed);
+      } else {
+        setRemainingDays(TOTAL_DAYS);
       }
     }
-  }, []);
+  }, [user]);
 
   return (
     <div style={overviewBoxStyle}>
       <h3 style={overviewTitleStyle}>Progreso del Calendario</h3>
-      <p><strong style={{ ...indicatorStyle, color: '#4caf50' }}>{completedDays}</strong> días completados</p>
-      <p><strong style={{ ...indicatorStyle, color: '#e53935' }}>{remainingDays}</strong> días restantes</p>
+      <p>
+        <strong style={{ ...indicatorStyle, color: '#4caf50' }}>{routineDoneDays}</strong> días con rutina
+      </p>
+      <p>
+        <strong style={{ ...indicatorStyle, color: '#e57373' }}>{routineMissedDays}</strong> días sin rutina
+      </p>
+      <p>
+        <strong style={{ ...indicatorStyle, color: '#0288d1' }}>{remainingDays}</strong> días restantes
+      </p>
     </div>
   );
 };
@@ -32,10 +48,11 @@ const WeightOverview = () => {
   const [weightDifference, setWeightDifference] = useState(0);
   const [weightGoalDifference, setWeightGoalDifference] = useState(0);
   const weightGoal = 75; // Meta de peso
+  const user = useCurrentUser();
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const savedEntries = localStorage.getItem('weightEntries');
+      const savedEntries = localStorage.getItem(`weightEntries_${user}`);
       if (savedEntries) {
         const weightEntries = JSON.parse(savedEntries);
         const initialWeight = weightEntries.length > 0 ? weightEntries[0].weight : 0;
@@ -44,7 +61,7 @@ const WeightOverview = () => {
         setWeightGoalDifference((currentWeight - weightGoal).toFixed(1)); // Diferencia con la meta
       }
     }
-  }, []);
+  }, [user]);
 
   return (
     <div style={overviewBoxStyle}>
@@ -58,17 +75,18 @@ const WeightOverview = () => {
 // Componente para mostrar el progreso de la dieta
 const DietOverview = () => {
   const [dietDaysCompleted, setDietDaysCompleted] = useState(0);
+  const user = useCurrentUser();
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const savedDays = localStorage.getItem('days');
+      const savedDays = localStorage.getItem(`dietDays_${user}`);
       if (savedDays) {
         const days = JSON.parse(savedDays);
         const dietDays = days.filter(day => day.dietCompleted).length;
         setDietDaysCompleted(dietDays);
       }
     }
-  }, []);
+  }, [user]);
 
   return (
     <div style={overviewBoxStyle}>
