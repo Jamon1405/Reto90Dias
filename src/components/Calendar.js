@@ -70,7 +70,7 @@ const Calendar = () => {
   return (
     <div style={containerStyle}>
       <h2 style={headerStyle}>Calendario de 60 días</h2>
-      <div style={gridStyle}>
+      <div className="calendar-grid">
         {days.map((day, index) => {
           const date = new Date(startDate);
           date.setDate(startDate.getDate() + index);
@@ -155,12 +155,6 @@ const buttonStyle = {
   cursor: 'pointer',
   margin: '10px 5px',
   boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-};
-
-const gridStyle = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(4, 1fr)',
-  gap: '10px',
 };
 
 export default Calendar;
