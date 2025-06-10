@@ -8,7 +8,7 @@ const CalendarOverview = () => {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const savedDays = localStorage.getItem('days');
+      const savedDays = localStorage.getItem('calendarDays');
       if (savedDays) {
         const days = JSON.parse(savedDays);
         const completed = days.filter(day => day.completed).length;
@@ -61,7 +61,7 @@ const DietOverview = () => {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const savedDays = localStorage.getItem('days');
+      const savedDays = localStorage.getItem('dietDays');
       if (savedDays) {
         const days = JSON.parse(savedDays);
         const dietDays = days.filter(day => day.dietCompleted).length;

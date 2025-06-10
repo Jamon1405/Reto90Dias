@@ -56,7 +56,7 @@ const Calendar = () => {
 
   // Cargar datos desde localStorage cuando el componente está montado
   useEffect(() => {
-    const savedDays = localStorage.getItem('days');
+    const savedDays = localStorage.getItem('calendarDays');
     if (savedDays) {
       setDays(JSON.parse(savedDays));
     }
@@ -65,7 +65,7 @@ const Calendar = () => {
   // Guardar cambios en localStorage cuando se actualiza el estado
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('days', JSON.stringify(days));
+      localStorage.setItem('calendarDays', JSON.stringify(days));
     }
   }, [days]);
 
@@ -138,7 +138,7 @@ const Calendar = () => {
       muscleGroup: '',
     });
     setDays(resetDays);
-    localStorage.removeItem('days');
+    localStorage.removeItem('calendarDays');
     setSelectedDay(null);
   };
 

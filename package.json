@@ -17,5 +17,9 @@
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18",
     "style-loader": "^4.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^15.3.3"
   }
 }
