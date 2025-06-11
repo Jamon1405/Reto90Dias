@@ -12,6 +12,7 @@ const RoutineManager = () => {
   const muscleGroups = Object.keys(exercisesData);
   const [selectedGroup, setSelectedGroup] = useState(muscleGroups[0]);
   const [selectedExercise, setSelectedExercise] = useState('');
+  const [customExercise, setCustomExercise] = useState('');
   const [sets, setSets] = useState('');
   const [reps, setReps] = useState('');
   const [routineExercises, setRoutineExercises] = useState([]);
@@ -32,13 +33,15 @@ const RoutineManager = () => {
   }, [user]);
 
   const addExercise = () => {
-    if (selectedExercise && sets && reps) {
+    const name = customExercise.trim() || selectedExercise;
+    if (name && sets && reps) {
       setRoutineExercises((prev) => [
         ...prev,
-        { group: selectedGroup, name: selectedExercise, sets, reps },
+        { group: selectedGroup, name, sets, reps },
       ]);
       setSets('');
       setReps('');
+      setCustomExercise('');
     }
   };
 
@@ -54,6 +57,14 @@ const RoutineManager = () => {
       localStorage.setItem(`weeklyRoutines_${user}`, JSON.stringify(updated));
       window.dispatchEvent(new Event('routinesUpdated'));
     }
+  };
+
+  const handleDelete = (day) => {
+    const updated = { ...routines };
+    delete updated[day];
+    setRoutines(updated);
+    localStorage.setItem(`weeklyRoutines_${user}`, JSON.stringify(updated));
+    window.dispatchEvent(new Event('routinesUpdated'));
   };
 
   return (
@@ -78,6 +89,7 @@ const RoutineManager = () => {
           onChange={(e) => {
             setSelectedGroup(e.target.value);
             setSelectedExercise('');
+            setCustomExercise('');
           }}
           style={inputStyle}
         >
@@ -101,6 +113,12 @@ const RoutineManager = () => {
             </option>
           ))}
         </select>
+        <input
+          style={inputStyle}
+          value={customExercise}
+          onChange={(e) => setCustomExercise(e.target.value)}
+          placeholder="Ejercicio personalizado"
+        />
       </div>
       <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
         <input
@@ -150,6 +168,13 @@ const RoutineManager = () => {
                       ))
                     : <li>{routines[day].exercises}</li>}
                 </ul>
+                <button
+                  type="button"
+                  style={{ ...buttonStyle, backgroundColor: '#e53935' }}
+                  onClick={() => handleDelete(day)}
+                >
+                  Eliminar
+                </button>
               </>
             ) : (
               <span>Sin rutina</span>

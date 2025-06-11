@@ -52,6 +52,9 @@ const Calendar = () => {
     const reset = createEmptyDays();
     setDays(reset);
     localStorage.removeItem(`calendarDays_${user}`);
+    localStorage.removeItem(`weeklyRoutines_${user}`);
+    setWeeklyRoutines({});
+    window.dispatchEvent(new Event('routinesUpdated'));
     setSelectedDay(null);
   };
 
@@ -118,6 +121,24 @@ const Calendar = () => {
               Rutina completada: {days[selectedDay].didRoutine ? 'Sí' : 'No'}
             </p>
           )}
+          <button
+            style={{ ...buttonStyle, marginTop: '10px', backgroundColor: '#e53935' }}
+            onClick={() => {
+              const dayName = weekdays[
+                new Date(startDate.getTime() + selectedDay * 86400000).getDay()
+              ];
+              const updated = { ...weeklyRoutines };
+              delete updated[dayName];
+              setWeeklyRoutines(updated);
+              localStorage.setItem(
+                `weeklyRoutines_${user}`,
+                JSON.stringify(updated)
+              );
+              window.dispatchEvent(new Event('routinesUpdated'));
+            }}
+          >
+            Borrar rutina del día
+          </button>
         </div>
       )}
       <button style={{ ...buttonStyle, marginTop: '20px' }} onClick={handleResetProgress}>
