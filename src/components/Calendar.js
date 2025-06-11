@@ -46,12 +46,12 @@ const ejerciciosPorGrupo = {
 const Calendar = () => {
   const [selectedDay, setSelectedDay] = useState(null);
   const [days, setDays] = useState(() =>
-    new Array(90).fill({
+    Array.from({ length: 90 }, () => ({
       completed: false,
       restDay: false,
       exercisesCompleted: [],
       muscleGroup: '',
-    })
+    }))
   );
 
   // Cargar datos desde localStorage cuando el componente está montado
@@ -80,9 +80,10 @@ const Calendar = () => {
         const currentDay = { ...updatedDays[selectedDay] };
 
         currentDay.muscleGroup = group;
-        currentDay.exercisesCompleted = new Array(
-          ejerciciosPorGrupo[group].length
-        ).fill(false);
+        currentDay.exercisesCompleted = Array.from(
+          { length: ejerciciosPorGrupo[group].length },
+          () => false
+        );
 
         updatedDays[selectedDay] = currentDay;
         return updatedDays;
@@ -131,12 +132,12 @@ const Calendar = () => {
   };
 
   const handleResetProgress = () => {
-    const resetDays = new Array(90).fill({
+    const resetDays = Array.from({ length: 90 }, () => ({
       completed: false,
       restDay: false,
       exercisesCompleted: [],
       muscleGroup: '',
-    });
+    }));
     setDays(resetDays);
     localStorage.removeItem('days');
     setSelectedDay(null);
