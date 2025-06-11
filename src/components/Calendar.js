@@ -62,7 +62,17 @@ const Calendar = () => {
     return (
       <div>
         <h4>{routine.name}</h4>
-        <p>{routine.exercises}</p>
+        {Array.isArray(routine.exercises) ? (
+          <ul>
+            {routine.exercises.map((ex, idx) => (
+              <li key={idx}>
+                {ex.name} - {ex.sets}x{ex.reps}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>{routine.exercises}</p>
+        )}
       </div>
     );
   };

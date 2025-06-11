@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import useCurrentUser from '../hooks/useCurrentUser';
+import exercisesData from '../data/exercises';
 
 const weekdays = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
 
@@ -8,7 +9,12 @@ const RoutineManager = () => {
   const user = useCurrentUser();
   const [weekday, setWeekday] = useState('lunes');
   const [routineName, setRoutineName] = useState('');
-  const [exercises, setExercises] = useState('');
+  const muscleGroups = Object.keys(exercisesData);
+  const [selectedGroup, setSelectedGroup] = useState(muscleGroups[0]);
+  const [selectedExercise, setSelectedExercise] = useState('');
+  const [sets, setSets] = useState('');
+  const [reps, setReps] = useState('');
+  const [routineExercises, setRoutineExercises] = useState([]);
   const [routines, setRoutines] = useState({});
 
   useEffect(() => {
@@ -25,12 +31,26 @@ const RoutineManager = () => {
     return () => window.removeEventListener('routinesUpdated', handler);
   }, [user]);
 
+  const addExercise = () => {
+    if (selectedExercise && sets && reps) {
+      setRoutineExercises((prev) => [
+        ...prev,
+        { group: selectedGroup, name: selectedExercise, sets, reps },
+      ]);
+      setSets('');
+      setReps('');
+    }
+  };
+
   const handleSave = () => {
-    if (routineName.trim()) {
-      const updated = { ...routines, [weekday]: { name: routineName, exercises } };
+    if (routineName.trim() && routineExercises.length > 0) {
+      const updated = {
+        ...routines,
+        [weekday]: { name: routineName, exercises: routineExercises },
+      };
       setRoutines(updated);
       setRoutineName('');
-      setExercises('');
+      setRoutineExercises([]);
       localStorage.setItem(`weeklyRoutines_${user}`, JSON.stringify(updated));
       window.dispatchEvent(new Event('routinesUpdated'));
     }
@@ -52,12 +72,64 @@ const RoutineManager = () => {
         onChange={(e) => setRoutineName(e.target.value)}
         placeholder="Nombre de la rutina"
       />
-      <textarea
-        style={{ ...inputStyle, height: '100px' }}
-        value={exercises}
-        onChange={(e) => setExercises(e.target.value)}
-        placeholder="Ejercicios"
-      />
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+        <select
+          value={selectedGroup}
+          onChange={(e) => {
+            setSelectedGroup(e.target.value);
+            setSelectedExercise('');
+          }}
+          style={inputStyle}
+        >
+          {muscleGroups.map((group) => (
+            <option key={group} value={group}>
+              {group}
+            </option>
+          ))}
+        </select>
+        <select
+          value={selectedExercise}
+          onChange={(e) => setSelectedExercise(e.target.value)}
+          style={inputStyle}
+        >
+          <option value="" disabled>
+            Selecciona ejercicio
+          </option>
+          {exercisesData[selectedGroup].map((ex) => (
+            <option key={ex.name} value={ex.name}>
+              {ex.name}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+        <input
+          style={{ ...inputStyle, flex: 1 }}
+          type="number"
+          value={sets}
+          onChange={(e) => setSets(e.target.value)}
+          placeholder="Series"
+        />
+        <input
+          style={{ ...inputStyle, flex: 1 }}
+          type="number"
+          value={reps}
+          onChange={(e) => setReps(e.target.value)}
+          placeholder="Repeticiones"
+        />
+        <button type="button" style={buttonStyle} onClick={addExercise}>
+          Añadir
+        </button>
+      </div>
+      {routineExercises.length > 0 && (
+        <ul style={{ listStyle: 'none', padding: 0 }}>
+          {routineExercises.map((ex, idx) => (
+            <li key={idx} style={routineStyle}>
+              {ex.name} - {ex.sets}x{ex.reps}
+            </li>
+          ))}
+        </ul>
+      )}
       <button style={buttonStyle} onClick={handleSave}>
         Guardar Rutina
       </button>
@@ -69,7 +141,15 @@ const RoutineManager = () => {
             {routines[day] ? (
               <>
                 <span>{routines[day].name}</span>
-                <p>{routines[day].exercises}</p>
+                <ul style={{ listStyle: 'disc', marginLeft: '20px' }}>
+                  {Array.isArray(routines[day].exercises)
+                    ? routines[day].exercises.map((ex, i) => (
+                        <li key={i}>
+                          {ex.name} - {ex.sets}x{ex.reps}
+                        </li>
+                      ))
+                    : <li>{routines[day].exercises}</li>}
+                </ul>
               </>
             ) : (
               <span>Sin rutina</span>
