@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { DAYS_COUNT } from '@/lib/constants';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 
@@ -9,7 +10,7 @@ const DietProgress = () => {
   const [selectedDay, setSelectedDay] = useState(null);
   const [fastingHours, setFastingHours] = useState('');
   const [days, setDays] = useState(() =>
-    new Array(90).fill({
+    new Array(DAYS_COUNT).fill({
       dietCompleted: false,
       fastingHours: '',
     })
@@ -107,7 +108,7 @@ const DietProgress = () => {
   };
 
   const handleResetProgress = () => {
-    const resetDays = new Array(90).fill({
+    const resetDays = new Array(DAYS_COUNT).fill({
       dietCompleted: false,
       fastingHours: '',
     });
@@ -127,7 +128,7 @@ const DietProgress = () => {
     labels: ['Días cumplidos', 'Días restantes'],
     datasets: [
       {
-        data: [completedDays, 90 - completedDays],
+        data: [completedDays, DAYS_COUNT - completedDays],
         backgroundColor: ['#4caf50', '#e0e0e0'],
         hoverBackgroundColor: ['#66bb6a', '#bdbdbd'],
         borderColor: '#fff',
@@ -287,7 +288,7 @@ const DietProgress = () => {
       )}
 
       <div style={{ marginTop: '30px' }}>
-        <h4>Días cumplidos: {completedDays} / 90</h4>
+        <h4>Días cumplidos: {completedDays} / {DAYS_COUNT}</h4>
         <h4>Porcentaje de avance: {dietProgressPercentage}%</h4>
         <h4>Horas de ayuno promedio: {averageFastingHours} hrs</h4>
       </div>
