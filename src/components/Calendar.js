@@ -52,21 +52,23 @@ const Calendar = () => {
 
     if (routine) {
       const logs = {};
-      const progress = JSON.parse(localStorage.getItem(`exerciseProgress_${user}`) || '{}');
+      const progress = JSON.parse(
+        localStorage.getItem(`exerciseProgress_${user}`) || '{}'
+      );
       routine.exercises.forEach((ex) => {
-        logs[ex.name] = {
-          sets: setInputs[ex.name] || ex.sets,
-          reps: repInputs[ex.name] || ex.reps,
-          weight: weightInputs[ex.name] || ex.weight || '',
+        logs[ex] = {
+          sets: setInputs[ex] || '',
+          reps: repInputs[ex] || '',
+          weight: weightInputs[ex] || '',
         };
-        const entry = { date, weight: parseFloat(logs[ex.name].weight || 0) };
-        if (!progress[ex.name]) progress[ex.name] = [];
-        progress[ex.name].push(entry);
-        const history = progress[ex.name];
+        const entry = { date, weight: parseFloat(logs[ex].weight || 0) };
+        if (!progress[ex]) progress[ex] = [];
+        progress[ex].push(entry);
+        const history = progress[ex];
         if (history.length >= 3) {
           const last = history.slice(-3);
           if (last[0].weight === last[1].weight && last[1].weight === last[2].weight) {
-            alert(`Considera subir peso en ${ex.name}`);
+            alert(`Considera subir peso en ${ex}`);
           }
         }
       });
@@ -126,9 +128,7 @@ const Calendar = () => {
         {Array.isArray(routine.exercises) ? (
           <ul>
             {routine.exercises.map((ex, idx) => (
-              <li key={idx}>
-                {ex.name} - {ex.sets}x{ex.reps}
-              </li>
+              <li key={idx}>{ex}</li>
             ))}
           </ul>
         ) : (
@@ -154,15 +154,17 @@ const Calendar = () => {
                 const routineKey = days[index].routine || weekdays[date.getDay()];
                 const routine = savedRoutines[routineKey];
                 if (routine) {
-                  const progress = JSON.parse(localStorage.getItem(`exerciseProgress_${user}`) || '{}');
+                  const progress = JSON.parse(
+                    localStorage.getItem(`exerciseProgress_${user}`) || '{}'
+                  );
                   const weightMap = {};
                   const setMap = {};
                   const repMap = {};
                   routine.exercises.forEach((ex) => {
-                    const hist = progress[ex.name] || [];
-                    weightMap[ex.name] = hist.length > 0 ? hist[hist.length - 1].weight : ex.weight || '';
-                    setMap[ex.name] = ex.sets;
-                    repMap[ex.name] = ex.reps;
+                    const hist = progress[ex] || [];
+                    weightMap[ex] = hist.length > 0 ? hist[hist.length - 1].weight : '';
+                    setMap[ex] = '';
+                    repMap[ex] = '';
                   });
                   const dayLogs = days[index].logs || {};
                   Object.entries(dayLogs).forEach(([name, log]) => {
@@ -184,7 +186,14 @@ const Calendar = () => {
         })}
       </div>
       {selectedDay !== null && (
-        <div style={{ marginTop: '20px' }}>
+        <div
+          style={{
+            marginTop: '20px',
+            overflow: 'hidden',
+            maxHeight: '1000px',
+            transition: 'max-height 0.3s ease',
+          }}
+        >
           {renderRoutine(new Date(startDate.getTime() + selectedDay * 86400000))}
 
           {!days[selectedDay].routine && Object.keys(savedRoutines).length === 0 && (
@@ -221,31 +230,31 @@ const Calendar = () => {
               {days[selectedDay].routine && (
                 <div>
                   {savedRoutines[days[selectedDay].routine]?.exercises.map((ex) => (
-                    <div key={ex.name} style={{ marginBottom: '5px' }}>
-                      <label>{ex.name}</label>
+                    <div key={ex} style={{ marginBottom: '5px' }}>
+                      <label>{ex}</label>
                       <input
                         type="number"
-                        value={setInputs[ex.name] || ''}
+                        value={setInputs[ex] || ''}
                         onChange={(e) =>
-                          setSetInputs((p) => ({ ...p, [ex.name]: e.target.value }))
+                          setSetInputs((p) => ({ ...p, [ex]: e.target.value }))
                         }
                         placeholder="Series"
                         style={{ ...inputStyle, width: '60px', marginLeft: '10px' }}
                       />
                       <input
                         type="number"
-                        value={repInputs[ex.name] || ''}
+                        value={repInputs[ex] || ''}
                         onChange={(e) =>
-                          setRepInputs((p) => ({ ...p, [ex.name]: e.target.value }))
+                          setRepInputs((p) => ({ ...p, [ex]: e.target.value }))
                         }
                         placeholder="Reps"
                         style={{ ...inputStyle, width: '60px', marginLeft: '10px' }}
                       />
                       <input
                         type="number"
-                        value={weightInputs[ex.name] || ''}
+                        value={weightInputs[ex] || ''}
                         onChange={(e) =>
-                          setWeightInputs((p) => ({ ...p, [ex.name]: e.target.value }))
+                          setWeightInputs((p) => ({ ...p, [ex]: e.target.value }))
                         }
                         placeholder="Kg"
                         style={{ ...inputStyle, width: '80px', marginLeft: '10px' }}
@@ -318,6 +327,7 @@ const dayBoxStyle = (day, selected) => ({
       : '#e57373'
     : '#f1f1f1',
   boxShadow: selected ? '0px 0px 15px rgba(0, 0, 0, 0.2)' : '0 2px 4px rgba(0,0,0,0.1)',
+  transition: 'background-color 0.3s, box-shadow 0.3s',
 });
 
 const buttonStyle = {

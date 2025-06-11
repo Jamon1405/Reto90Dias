@@ -10,12 +10,8 @@ const RoutineManager = () => {
   const [weekday, setWeekday] = useState('lunes');
   const [routineName, setRoutineName] = useState('');
   const muscleGroups = Object.keys(exercisesData);
-  const [selectedGroup, setSelectedGroup] = useState(muscleGroups[0]);
-  const [selectedExercise, setSelectedExercise] = useState('');
+  const [openGroup, setOpenGroup] = useState(null);
   const [customExercise, setCustomExercise] = useState('');
-  const [sets, setSets] = useState('');
-  const [reps, setReps] = useState('');
-  const [weight, setWeight] = useState('');
   const [routineExercises, setRoutineExercises] = useState([]);
   const [routines, setRoutines] = useState({});
 
@@ -33,17 +29,9 @@ const RoutineManager = () => {
     return () => window.removeEventListener('routinesUpdated', handler);
   }, [user]);
 
-  const addExercise = () => {
-    const name = customExercise.trim() || selectedExercise;
-    if (name && sets && reps) {
-      setRoutineExercises((prev) => [
-        ...prev,
-        { group: selectedGroup, name, sets, reps, weight },
-      ]);
-      setSets('');
-      setReps('');
-      setWeight('');
-      setCustomExercise('');
+  const addExercise = (name) => {
+    if (name) {
+      setRoutineExercises((prev) => [...prev, name]);
     }
   };
 
@@ -85,74 +73,57 @@ const RoutineManager = () => {
         onChange={(e) => setRoutineName(e.target.value)}
         placeholder="Nombre de la rutina"
       />
+      {muscleGroups.map((group) => (
+        <div key={group} style={{ marginBottom: '10px' }}>
+          <div
+            style={groupHeaderStyle}
+            onClick={() => setOpenGroup(openGroup === group ? null : group)}
+          >
+            {group}
+          </div>
+          <div
+            style={{
+              overflow: 'hidden',
+              maxHeight: openGroup === group ? '500px' : '0',
+              transition: 'max-height 0.3s ease',
+            }}
+          >
+            {exercisesData[group].map((ex) => (
+              <button
+                key={ex.name}
+                type="button"
+                style={exerciseButtonStyle}
+                onClick={() => addExercise(ex.name)}
+              >
+                {ex.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
+      <input
+        style={inputStyle}
+        value={customExercise}
+        onChange={(e) => setCustomExercise(e.target.value)}
+        placeholder="Ejercicio personalizado"
+      />
       <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-        <select
-          value={selectedGroup}
-          onChange={(e) => {
-            setSelectedGroup(e.target.value);
-            setSelectedExercise('');
+        <button
+          type="button"
+          style={buttonStyle}
+          onClick={() => {
+            addExercise(customExercise.trim());
             setCustomExercise('');
           }}
-          style={inputStyle}
         >
-          {muscleGroups.map((group) => (
-            <option key={group} value={group}>
-              {group}
-            </option>
-          ))}
-        </select>
-        <select
-          value={selectedExercise}
-          onChange={(e) => setSelectedExercise(e.target.value)}
-          style={inputStyle}
-        >
-          <option value="" disabled>
-            Selecciona ejercicio
-          </option>
-          {exercisesData[selectedGroup].map((ex) => (
-            <option key={ex.name} value={ex.name}>
-              {ex.name}
-            </option>
-          ))}
-        </select>
-        <input
-          style={inputStyle}
-          value={customExercise}
-          onChange={(e) => setCustomExercise(e.target.value)}
-          placeholder="Ejercicio personalizado"
-        />
-      </div>
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-        <input
-          style={{ ...inputStyle, flex: 1 }}
-          type="number"
-          value={sets}
-          onChange={(e) => setSets(e.target.value)}
-          placeholder="Series"
-        />
-        <input
-          style={{ ...inputStyle, flex: 1 }}
-          type="number"
-          value={reps}
-          onChange={(e) => setReps(e.target.value)}
-          placeholder="Repeticiones"
-        />
-        <input
-          style={{ ...inputStyle, flex: 1 }}
-          type="number"
-          value={weight}
-          onChange={(e) => setWeight(e.target.value)}
-          placeholder="Peso (kg)"
-        />
-        <button type="button" style={buttonStyle} onClick={addExercise}>
-          Añadir
+          Añadir Personalizado
         </button>
       </div>
       {routineExercises.length > 0 && (
         <ul style={{ listStyle: 'none', padding: 0 }}>
           {routineExercises.map((ex, idx) => (
             <li key={idx} style={routineStyle}>
-              {ex.name} - {ex.sets}x{ex.reps} - {ex.weight || 0}kg
+              {ex}
             </li>
           ))}
         </ul>
@@ -171,9 +142,7 @@ const RoutineManager = () => {
                 <ul style={{ listStyle: 'disc', marginLeft: '20px' }}>
                   {Array.isArray(routines[day].exercises)
                     ? routines[day].exercises.map((ex, i) => (
-                        <li key={i}>
-                          {ex.name} - {ex.sets}x{ex.reps} - {ex.weight || 0}kg
-                        </li>
+                        <li key={i}>{ex}</li>
                       ))
                     : <li>{routines[day].exercises}</li>}
                 </ul>
@@ -220,6 +189,7 @@ const buttonStyle = {
   border: 'none',
   borderRadius: '5px',
   cursor: 'pointer',
+  transition: 'background-color 0.3s',
 };
 
 const routineStyle = {
@@ -228,6 +198,29 @@ const routineStyle = {
   marginBottom: '10px',
   borderRadius: '5px',
   boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+};
+
+const groupHeaderStyle = {
+  backgroundColor: '#0288d1',
+  color: '#fff',
+  padding: '8px',
+  borderRadius: '5px',
+  cursor: 'pointer',
+  marginBottom: '5px',
+  transition: 'background-color 0.3s',
+};
+
+const exerciseButtonStyle = {
+  backgroundColor: '#0288d1',
+  color: '#fff',
+  padding: '8px',
+  border: 'none',
+  borderRadius: '5px',
+  cursor: 'pointer',
+  display: 'block',
+  width: '100%',
+  marginBottom: '5px',
+  transition: 'background-color 0.3s',
 };
 
 export default RoutineManager;
