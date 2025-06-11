@@ -1,8 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { TOTAL_DAYS } from '../constants';
-import { MUSCLE_GROUPS, EXERCISES_BY_GROUP } from '../data/exercises';
-
+import { MUSCLE_GROUPS, DEFAULT_ROUTINES } from '../data/exercises';
 
 const Calendar = () => {
   const [selectedDay, setSelectedDay] = useState(null);
@@ -10,14 +9,10 @@ const Calendar = () => {
     new Array(TOTAL_DAYS).fill({
       completed: false,
       restDay: false,
+      exercisesCompleted: [],
       muscleGroup: '',
-      exercises: [], // { name, series, reps, completed }
     })
   );
-  const [selectedGroup, setSelectedGroup] = useState('');
-  const [selectedExercise, setSelectedExercise] = useState('');
-  const [series, setSeries] = useState('');
-  const [reps, setReps] = useState('');
 
   const getUser = () =>
     (typeof window !== 'undefined' && localStorage.getItem('selectedUser')) ||
@@ -40,44 +35,44 @@ const Calendar = () => {
 
   const handleDayClick = (index) => {
     setSelectedDay(index);
-    const day = days[index];
-    setSelectedGroup(day.muscleGroup || '');
-    setSelectedExercise('');
-    setSeries('');
-    setReps('');
   };
 
   const handleMuscleGroupChange = (group) => {
-    setSelectedGroup(group);
-    if (selectedDay !== null) {
+    if (selectedDay !== null && group) {
       setDays((prevDays) => {
         const updatedDays = [...prevDays];
-        updatedDays[selectedDay] = {
-          ...updatedDays[selectedDay],
-          muscleGroup: group,
-          exercises: [],
-        };
+        const currentDay = { ...updatedDays[selectedDay] };
+
+        currentDay.muscleGroup = group;
+        currentDay.exercisesCompleted = new Array(
+          DEFAULT_ROUTINES[group].length
+        ).fill(false);
+
+        updatedDays[selectedDay] = currentDay;
         return updatedDays;
       });
     }
   };
 
-  const handleAddExercise = () => {
-    if (selectedDay !== null && selectedExercise && series && reps) {
-      setDays((prevDays) => {
-        const updatedDays = [...prevDays];
-        const currentDay = { ...updatedDays[selectedDay] };
-        currentDay.exercises = [
-          ...currentDay.exercises,
-          { name: selectedExercise, series, reps, completed: false },
-        ];
-        updatedDays[selectedDay] = currentDay;
-        return updatedDays;
-      });
-      setSelectedExercise('');
-      setSeries('');
-      setReps('');
-    }
+  const applyRoutineToWeeks = () => {
+    if (selectedDay === null) return;
+    const group = days[selectedDay].muscleGroup;
+    if (!group) return;
+
+    setDays((prev) => {
+      const updated = [...prev];
+      const start = selectedDay % 7;
+      for (let i = start; i < TOTAL_DAYS; i += 7) {
+        updated[i] = {
+          ...updated[i],
+          muscleGroup: group,
+          exercisesCompleted: new Array(DEFAULT_ROUTINES[group].length).fill(
+            false
+          ),
+        };
+      }
+      return updated;
+    });
   };
 
   const toggleExerciseComplete = (exerciseIndex) => {
@@ -85,9 +80,9 @@ const Calendar = () => {
       setDays((prevDays) => {
         const updatedDays = [...prevDays];
         const currentDay = { ...updatedDays[selectedDay] };
-        currentDay.exercises = currentDay.exercises.map((ex, idx) =>
-          idx === exerciseIndex ? { ...ex, completed: !ex.completed } : ex
-        );
+        currentDay.exercisesCompleted = [...currentDay.exercisesCompleted];
+        currentDay.exercisesCompleted[exerciseIndex] =
+          !currentDay.exercisesCompleted[exerciseIndex];
         updatedDays[selectedDay] = currentDay;
         return updatedDays;
       });
@@ -96,9 +91,9 @@ const Calendar = () => {
 
   const handleCompleteDay = () => {
     if (selectedDay !== null) {
-      const exercises = days[selectedDay].exercises;
-      const allDone = exercises.length > 0 && exercises.every((ex) => ex.completed);
-      if (allDone) {
+      const completedExercises = days[selectedDay].exercisesCompleted.filter(Boolean).length;
+      const muscleGroup = days[selectedDay].muscleGroup;
+      if (completedExercises === DEFAULT_ROUTINES[muscleGroup]?.length) {
         setDays((prevDays) => {
           const updatedDays = [...prevDays];
           updatedDays[selectedDay].completed = true;
@@ -124,8 +119,8 @@ const Calendar = () => {
     const resetDays = new Array(TOTAL_DAYS).fill({
       completed: false,
       restDay: false,
+      exercisesCompleted: [],
       muscleGroup: '',
-      exercises: [],
     });
     setDays(resetDays);
     localStorage.removeItem(`calendarDays_${getUser()}`);
@@ -171,7 +166,7 @@ const Calendar = () => {
 
   const gridStyle = {
     display: 'grid',
-    gridTemplateColumns: 'repeat(4, 1fr)', // Ajustado para móviles
+    gridTemplateColumns: 'repeat(4, 1fr)',
     gap: '10px',
     '@media (max-width: 600px)': {
       gridTemplateColumns: 'repeat(2, 1fr)',
@@ -213,7 +208,7 @@ const Calendar = () => {
           <div style={{ marginBottom: '15px' }}>
             <label style={{ marginRight: '10px' }}>Selecciona un grupo muscular:</label>
             <select
-              value={selectedGroup}
+              value={days[selectedDay].muscleGroup}
               onChange={(e) => handleMuscleGroupChange(e.target.value)}
               style={{
                 padding: '10px',
@@ -230,50 +225,21 @@ const Calendar = () => {
                 </option>
               ))}
             </select>
+            {days[selectedDay].muscleGroup && (
+              <button style={buttonStyle} onClick={applyRoutineToWeeks}>
+                Guardar para todas las semanas
+              </button>
+            )}
           </div>
 
-          {selectedGroup && (
-            <div style={{ marginBottom: '15px' }}>
-              <select
-                value={selectedExercise}
-                onChange={(e) => setSelectedExercise(e.target.value)}
-                style={{ padding: '10px', marginRight: '10px', borderRadius: '5px' }}
-              >
-                <option value="">Ejercicio</option>
-                {EXERCISES_BY_GROUP[selectedGroup].map((ex) => (
-                  <option key={ex.name} value={ex.name}>
-                    {ex.name}
-                  </option>
-                ))}
-              </select>
-              <input
-                type="number"
-                placeholder="Series"
-                value={series}
-                onChange={(e) => setSeries(e.target.value)}
-                style={{ width: '80px', marginRight: '10px', padding: '10px', borderRadius: '5px' }}
-              />
-              <input
-                type="number"
-                placeholder="Reps"
-                value={reps}
-                onChange={(e) => setReps(e.target.value)}
-                style={{ width: '80px', marginRight: '10px', padding: '10px', borderRadius: '5px' }}
-              />
-              <button style={buttonStyle} onClick={handleAddExercise}>
-                Añadir ejercicio
-              </button>
-            </div>
-          )}
-
-          {days[selectedDay].exercises.length > 0 && (
+          {days[selectedDay].muscleGroup && (
             <div>
               <h4 style={{ marginBottom: '10px' }}>Ejercicios:</h4>
               <ul style={{ listStyleType: 'none', padding: 0 }}>
-                {days[selectedDay].exercises.map((exercise, i) => (
+                {DEFAULT_ROUTINES[days[selectedDay].muscleGroup].map((exercise, i) => (
                   <li
                     key={i}
-                    style={exerciseStyle(exercise.completed)}
+                    style={exerciseStyle(days[selectedDay].exercisesCompleted[i])}
                     onClick={() => toggleExerciseComplete(i)}
                   >
                     {exercise.name} - {exercise.series} series de {exercise.reps} repeticiones

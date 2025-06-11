@@ -1,12 +1,51 @@
+// Opciones principales de grupo muscular para seleccionar en el calendario
 export const MUSCLE_GROUPS = [
-  { key: 'PECHO', label: 'Pecho' },
-  { key: 'ESPALDA', label: 'Espalda' },
-  { key: 'PIERNA', label: 'Pierna' },
-  { key: 'HOMBRO', label: 'Hombro' },
-  { key: 'BICEPS', label: 'Bíceps' },
-  { key: 'TRICEPS', label: 'Tríceps' },
-  { key: 'ABDOMEN', label: 'Abdomen' },
+  { key: 'pecho_triceps', label: 'Pecho y Tríceps' },
+  { key: 'espalda_biceps', label: 'Espalda y Bíceps' },
+  { key: 'piernas', label: 'Piernas' },
+  { key: 'hombros_trapecios', label: 'Hombros y Trapecios' },
 ];
+
+// Rutinas por defecto con series y repeticiones para cada grupo
+export const DEFAULT_ROUTINES = {
+  pecho_triceps: [
+    { name: 'Press de banca con barra', series: 4, reps: 10 },
+    { name: 'Press inclinado con mancuernas', series: 4, reps: 10 },
+    { name: 'Aperturas con mancuernas', series: 4, reps: 12 },
+    { name: 'Fondos en paralelas', series: 4, reps: 10 },
+    { name: 'Press francés', series: 4, reps: 12 },
+    { name: 'Extensiones en polea', series: 4, reps: 12 },
+    { name: 'Kickbacks con mancuerna', series: 4, reps: 15 },
+    { name: 'Cardio (30 minutos)', series: 1, reps: '30 min' },
+  ],
+  espalda_biceps: [
+    { name: 'Dominadas', series: 4, reps: 10 },
+    { name: 'Remo con barra', series: 4, reps: 12 },
+    { name: 'Peso muerto', series: 4, reps: 10 },
+    { name: 'Curl con barra', series: 4, reps: 12 },
+    { name: 'Curl alternado con mancuernas', series: 4, reps: 12 },
+    { name: 'Curl en predicador', series: 4, reps: 10 },
+    { name: 'Remo en máquina', series: 4, reps: 12 },
+    { name: 'Cardio (30 minutos)', series: 1, reps: '30 min' },
+  ],
+  piernas: [
+    { name: 'Sentadilla', series: 4, reps: 12 },
+    { name: 'Prensa de pierna', series: 4, reps: 12 },
+    { name: 'Peso muerto rumano', series: 4, reps: 10 },
+    { name: 'Extensión de cuádriceps', series: 4, reps: 12 },
+    { name: 'Curl femoral', series: 4, reps: 12 },
+    { name: 'Elevación de talones', series: 4, reps: 15 },
+    { name: 'Cardio (30 minutos)', series: 1, reps: '30 min' },
+  ],
+  hombros_trapecios: [
+    { name: 'Press militar con barra', series: 4, reps: 10 },
+    { name: 'Elevaciones laterales', series: 4, reps: 12 },
+    { name: 'Elevaciones frontales', series: 4, reps: 12 },
+    { name: 'Encogimientos con mancuernas', series: 4, reps: 15 },
+    { name: 'Remo al mentón', series: 4, reps: 12 },
+    { name: 'Cardio (30 minutos)', series: 1, reps: '30 min' },
+  ],
+};
 
 export const EXERCISES_BY_GROUP = {
   PECHO: [
