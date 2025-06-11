@@ -1,47 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { TOTAL_DAYS } from '../constants';
-
-// Ejercicios con series y repeticiones para cada grupo muscular
-const ejerciciosPorGrupo = {
-  pecho_triceps: [
-    { name: 'Press de banca con barra', series: 4, reps: 10 },
-    { name: 'Press inclinado con mancuernas', series: 4, reps: 10 },
-    { name: 'Aperturas con mancuernas', series: 4, reps: 12 },
-    { name: 'Fondos en paralelas', series: 4, reps: 10 },
-    { name: 'Press francés', series: 4, reps: 12 },
-    { name: 'Extensiones en polea', series: 4, reps: 12 },
-    { name: 'Kickbacks con mancuerna', series: 4, reps: 15 },
-    { name: 'Cardio (30 minutos)', series: 1, reps: '30 min' },
-  ],
-  espalda_biceps: [
-    { name: 'Dominadas', series: 4, reps: 10 },
-    { name: 'Remo con barra', series: 4, reps: 12 },
-    { name: 'Peso muerto', series: 4, reps: 10 },
-    { name: 'Curl con barra', series: 4, reps: 12 },
-    { name: 'Curl alternado con mancuernas', series: 4, reps: 12 },
-    { name: 'Curl en predicador', series: 4, reps: 10 },
-    { name: 'Remo en máquina', series: 4, reps: 12 },
-    { name: 'Cardio (30 minutos)', series: 1, reps: '30 min' },
-  ],
-  piernas: [
-    { name: 'Sentadilla', series: 4, reps: 12 },
-    { name: 'Prensa de pierna', series: 4, reps: 12 },
-    { name: 'Peso muerto rumano', series: 4, reps: 10 },
-    { name: 'Extensión de cuádriceps', series: 4, reps: 12 },
-    { name: 'Curl femoral', series: 4, reps: 12 },
-    { name: 'Elevación de talones', series: 4, reps: 15 },
-    { name: 'Cardio (30 minutos)', series: 1, reps: '30 min' },
-  ],
-  hombros_trapecios: [
-    { name: 'Press militar con barra', series: 4, reps: 10 },
-    { name: 'Elevaciones laterales', series: 4, reps: 12 },
-    { name: 'Elevaciones frontales', series: 4, reps: 12 },
-    { name: 'Encogimientos con mancuernas', series: 4, reps: 15 },
-    { name: 'Remo al mentón', series: 4, reps: 12 },
-    { name: 'Cardio (30 minutos)', series: 1, reps: '30 min' },
-  ],
-};
+import { MUSCLE_GROUPS, EXERCISES_BY_GROUP } from '../data/exercises';
 
 
 const Calendar = () => {
@@ -50,10 +10,14 @@ const Calendar = () => {
     new Array(TOTAL_DAYS).fill({
       completed: false,
       restDay: false,
-      exercisesCompleted: [],
       muscleGroup: '',
+      exercises: [], // { name, series, reps, completed }
     })
   );
+  const [selectedGroup, setSelectedGroup] = useState('');
+  const [selectedExercise, setSelectedExercise] = useState('');
+  const [series, setSeries] = useState('');
+  const [reps, setReps] = useState('');
 
   const getUser = () =>
     (typeof window !== 'undefined' && localStorage.getItem('selectedUser')) ||
@@ -76,22 +40,43 @@ const Calendar = () => {
 
   const handleDayClick = (index) => {
     setSelectedDay(index);
+    const day = days[index];
+    setSelectedGroup(day.muscleGroup || '');
+    setSelectedExercise('');
+    setSeries('');
+    setReps('');
   };
 
   const handleMuscleGroupChange = (group) => {
-    if (selectedDay !== null && group) {
+    setSelectedGroup(group);
+    if (selectedDay !== null) {
+      setDays((prevDays) => {
+        const updatedDays = [...prevDays];
+        updatedDays[selectedDay] = {
+          ...updatedDays[selectedDay],
+          muscleGroup: group,
+          exercises: [],
+        };
+        return updatedDays;
+      });
+    }
+  };
+
+  const handleAddExercise = () => {
+    if (selectedDay !== null && selectedExercise && series && reps) {
       setDays((prevDays) => {
         const updatedDays = [...prevDays];
         const currentDay = { ...updatedDays[selectedDay] };
-
-        currentDay.muscleGroup = group;
-        currentDay.exercisesCompleted = new Array(
-          ejerciciosPorGrupo[group].length
-        ).fill(false);
-
+        currentDay.exercises = [
+          ...currentDay.exercises,
+          { name: selectedExercise, series, reps, completed: false },
+        ];
         updatedDays[selectedDay] = currentDay;
         return updatedDays;
       });
+      setSelectedExercise('');
+      setSeries('');
+      setReps('');
     }
   };
 
@@ -100,9 +85,9 @@ const Calendar = () => {
       setDays((prevDays) => {
         const updatedDays = [...prevDays];
         const currentDay = { ...updatedDays[selectedDay] };
-        currentDay.exercisesCompleted = [...currentDay.exercisesCompleted];
-        currentDay.exercisesCompleted[exerciseIndex] =
-          !currentDay.exercisesCompleted[exerciseIndex];
+        currentDay.exercises = currentDay.exercises.map((ex, idx) =>
+          idx === exerciseIndex ? { ...ex, completed: !ex.completed } : ex
+        );
         updatedDays[selectedDay] = currentDay;
         return updatedDays;
       });
@@ -111,9 +96,9 @@ const Calendar = () => {
 
   const handleCompleteDay = () => {
     if (selectedDay !== null) {
-      const completedExercises = days[selectedDay].exercisesCompleted.filter(Boolean).length;
-      const muscleGroup = days[selectedDay].muscleGroup;
-      if (completedExercises === ejerciciosPorGrupo[muscleGroup]?.length) {
+      const exercises = days[selectedDay].exercises;
+      const allDone = exercises.length > 0 && exercises.every((ex) => ex.completed);
+      if (allDone) {
         setDays((prevDays) => {
           const updatedDays = [...prevDays];
           updatedDays[selectedDay].completed = true;
@@ -139,8 +124,8 @@ const Calendar = () => {
     const resetDays = new Array(TOTAL_DAYS).fill({
       completed: false,
       restDay: false,
-      exercisesCompleted: [],
       muscleGroup: '',
+      exercises: [],
     });
     setDays(resetDays);
     localStorage.removeItem(`calendarDays_${getUser()}`);
@@ -228,7 +213,7 @@ const Calendar = () => {
           <div style={{ marginBottom: '15px' }}>
             <label style={{ marginRight: '10px' }}>Selecciona un grupo muscular:</label>
             <select
-              value={days[selectedDay].muscleGroup}
+              value={selectedGroup}
               onChange={(e) => handleMuscleGroupChange(e.target.value)}
               style={{
                 padding: '10px',
@@ -239,21 +224,56 @@ const Calendar = () => {
               }}
             >
               <option value="">Selecciona</option>
-              <option value="pecho_triceps">Pecho y Tríceps</option>
-              <option value="espalda_biceps">Espalda y Bíceps</option>
-              <option value="piernas">Piernas</option>
-              <option value="hombros_trapecios">Hombros y Trapecios</option>
+              {MUSCLE_GROUPS.map((grp) => (
+                <option key={grp.key} value={grp.key}>
+                  {grp.label}
+                </option>
+              ))}
             </select>
           </div>
 
-          {days[selectedDay].muscleGroup && (
+          {selectedGroup && (
+            <div style={{ marginBottom: '15px' }}>
+              <select
+                value={selectedExercise}
+                onChange={(e) => setSelectedExercise(e.target.value)}
+                style={{ padding: '10px', marginRight: '10px', borderRadius: '5px' }}
+              >
+                <option value="">Ejercicio</option>
+                {EXERCISES_BY_GROUP[selectedGroup].map((ex) => (
+                  <option key={ex.name} value={ex.name}>
+                    {ex.name}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="number"
+                placeholder="Series"
+                value={series}
+                onChange={(e) => setSeries(e.target.value)}
+                style={{ width: '80px', marginRight: '10px', padding: '10px', borderRadius: '5px' }}
+              />
+              <input
+                type="number"
+                placeholder="Reps"
+                value={reps}
+                onChange={(e) => setReps(e.target.value)}
+                style={{ width: '80px', marginRight: '10px', padding: '10px', borderRadius: '5px' }}
+              />
+              <button style={buttonStyle} onClick={handleAddExercise}>
+                Añadir ejercicio
+              </button>
+            </div>
+          )}
+
+          {days[selectedDay].exercises.length > 0 && (
             <div>
               <h4 style={{ marginBottom: '10px' }}>Ejercicios:</h4>
               <ul style={{ listStyleType: 'none', padding: 0 }}>
-                {ejerciciosPorGrupo[days[selectedDay].muscleGroup].map((exercise, i) => (
+                {days[selectedDay].exercises.map((exercise, i) => (
                   <li
                     key={i}
-                    style={exerciseStyle(days[selectedDay].exercisesCompleted[i])}
+                    style={exerciseStyle(exercise.completed)}
                     onClick={() => toggleExerciseComplete(i)}
                   >
                     {exercise.name} - {exercise.series} series de {exercise.reps} repeticiones
