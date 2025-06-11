@@ -1,5 +1,6 @@
 'use client';  // Indica que este componente solo debe ejecutarse en el cliente
 import { useState, useEffect } from 'react';
+import { DAYS_COUNT } from '@/lib/constants';
 
 // Componente para mostrar el progreso del calendario
 const CalendarOverview = () => {
@@ -13,7 +14,7 @@ const CalendarOverview = () => {
         const days = JSON.parse(savedDays);
         const completed = days.filter(day => day.completed).length;
         setCompletedDays(completed);
-        setRemainingDays(90 - completed);
+        setRemainingDays(DAYS_COUNT - completed);
       }
     }
   }, []);

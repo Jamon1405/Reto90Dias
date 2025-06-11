@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { DAYS_COUNT } from '@/lib/constants';
 
 // Ejercicios con series y repeticiones para cada grupo muscular
 const ejerciciosPorGrupo = {
@@ -46,7 +47,7 @@ const ejerciciosPorGrupo = {
 const Calendar = () => {
   const [selectedDay, setSelectedDay] = useState(null);
   const [days, setDays] = useState(() =>
-    new Array(90).fill({
+    new Array(DAYS_COUNT).fill({
       completed: false,
       restDay: false,
       exercisesCompleted: [],
@@ -131,7 +132,7 @@ const Calendar = () => {
   };
 
   const handleResetProgress = () => {
-    const resetDays = new Array(90).fill({
+    const resetDays = new Array(DAYS_COUNT).fill({
       completed: false,
       restDay: false,
       exercisesCompleted: [],
@@ -198,7 +199,7 @@ const Calendar = () => {
 
   return (
     <div style={containerStyle}>
-      <h2 style={headerStyle}>Calendario de 90 días</h2>
+      <h2 style={headerStyle}>Calendario de {DAYS_COUNT} días</h2>
       <div style={gridStyle}>
         {days.map((day, index) => (
           <div
