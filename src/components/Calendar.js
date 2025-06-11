@@ -125,14 +125,12 @@ const Calendar = () => {
     return (
       <div>
         <h4>{routine.name}</h4>
-        {Array.isArray(routine.exercises) ? (
+        {days[selectedDay].completed && Array.isArray(routine.exercises) && (
           <ul>
             {routine.exercises.map((ex, idx) => (
               <li key={idx}>{ex}</li>
             ))}
           </ul>
-        ) : (
-          <p>{routine.exercises}</p>
         )}
       </div>
     );
