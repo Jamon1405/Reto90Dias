@@ -15,6 +15,7 @@ const RoutineManager = () => {
   const [customExercise, setCustomExercise] = useState('');
   const [sets, setSets] = useState('');
   const [reps, setReps] = useState('');
+  const [weight, setWeight] = useState('');
   const [routineExercises, setRoutineExercises] = useState([]);
   const [routines, setRoutines] = useState({});
 
@@ -37,10 +38,11 @@ const RoutineManager = () => {
     if (name && sets && reps) {
       setRoutineExercises((prev) => [
         ...prev,
-        { group: selectedGroup, name, sets, reps },
+        { group: selectedGroup, name, sets, reps, weight },
       ]);
       setSets('');
       setReps('');
+      setWeight('');
       setCustomExercise('');
     }
   };
@@ -135,6 +137,13 @@ const RoutineManager = () => {
           onChange={(e) => setReps(e.target.value)}
           placeholder="Repeticiones"
         />
+        <input
+          style={{ ...inputStyle, flex: 1 }}
+          type="number"
+          value={weight}
+          onChange={(e) => setWeight(e.target.value)}
+          placeholder="Peso (kg)"
+        />
         <button type="button" style={buttonStyle} onClick={addExercise}>
           Añadir
         </button>
@@ -143,7 +152,7 @@ const RoutineManager = () => {
         <ul style={{ listStyle: 'none', padding: 0 }}>
           {routineExercises.map((ex, idx) => (
             <li key={idx} style={routineStyle}>
-              {ex.name} - {ex.sets}x{ex.reps}
+              {ex.name} - {ex.sets}x{ex.reps} - {ex.weight || 0}kg
             </li>
           ))}
         </ul>
@@ -163,7 +172,7 @@ const RoutineManager = () => {
                   {Array.isArray(routines[day].exercises)
                     ? routines[day].exercises.map((ex, i) => (
                         <li key={i}>
-                          {ex.name} - {ex.sets}x{ex.reps}
+                          {ex.name} - {ex.sets}x{ex.reps} - {ex.weight || 0}kg
                         </li>
                       ))
                     : <li>{routines[day].exercises}</li>}

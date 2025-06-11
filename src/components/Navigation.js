@@ -39,9 +39,6 @@ export default function Navigation() {
         <Link href="/weight" className="nav-link" onClick={() => setMenuOpen(false)}>
           Peso
         </Link>
-        <Link href="/diet" className="nav-link" onClick={() => setMenuOpen(false)}>
-          Dieta
-        </Link>
         <Link href="/routine" className="nav-link" onClick={() => setMenuOpen(false)}>
           Rutinas
         </Link>

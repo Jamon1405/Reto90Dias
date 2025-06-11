@@ -72,29 +72,6 @@ const WeightOverview = () => {
   );
 };
 
-// Componente para mostrar el progreso de la dieta
-const DietOverview = () => {
-  const [dietDaysCompleted, setDietDaysCompleted] = useState(0);
-  const user = useCurrentUser();
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedDays = localStorage.getItem(`dietDays_${user}`);
-      if (savedDays) {
-        const days = JSON.parse(savedDays);
-        const dietDays = days.filter(day => day.dietCompleted).length;
-        setDietDaysCompleted(dietDays);
-      }
-    }
-  }, [user]);
-
-  return (
-    <div style={overviewBoxStyle}>
-      <h3 style={overviewTitleStyle}>Progreso de la Dieta</h3>
-      <p><strong style={{ ...indicatorStyle, color: '#4caf50' }}>{dietDaysCompleted}</strong> días de dieta cumplidos</p>
-    </div>
-  );
-};
 
 // Estilos generales
 const overviewBoxStyle = {
@@ -140,7 +117,6 @@ const HomePage = () => {
 
       <CalendarOverview />
       <WeightOverview />
-      <DietOverview />
     </div>
   );
 };
