@@ -9,10 +9,14 @@ const Calendar = () => {
   const user = useCurrentUser();
   const [selectedDay, setSelectedDay] = useState(null);
   const createEmptyDays = () =>
-    Array.from({ length: TOTAL_DAYS }, () => ({ completed: false, didRoutine: null, routine: null, weights: {} }));
+    Array.from({
+      length: TOTAL_DAYS,
+    }, () => ({ completed: false, didRoutine: null, routine: null, logs: {} }));
   const [days, setDays] = useState(createEmptyDays());
   const [savedRoutines, setSavedRoutines] = useState({});
   const [weightInputs, setWeightInputs] = useState({});
+  const [setInputs, setSetInputs] = useState({});
+  const [repInputs, setRepInputs] = useState({});
   const startDate = new Date(START_DATE);
 
   useEffect(() => {
@@ -36,39 +40,49 @@ const Calendar = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [days]);
 
-  const handleCompleteDay = (didRoutine) => {
-    if (selectedDay !== null) {
+  const handleSaveDay = () => {
+    if (selectedDay === null) return;
+
+    const date = new Date(startDate.getTime() + selectedDay * 86400000)
+      .toISOString()
+      .split('T')[0];
+    const routineKey =
+      days[selectedDay].routine || weekdays[new Date(startDate.getTime() + selectedDay * 86400000).getDay()];
+    const routine = savedRoutines[routineKey];
+
+    if (routine) {
+      const logs = {};
+      const progress = JSON.parse(localStorage.getItem(`exerciseProgress_${user}`) || '{}');
+      routine.exercises.forEach((ex) => {
+        logs[ex.name] = {
+          sets: setInputs[ex.name] || ex.sets,
+          reps: repInputs[ex.name] || ex.reps,
+          weight: weightInputs[ex.name] || ex.weight || '',
+        };
+        const entry = { date, weight: parseFloat(logs[ex.name].weight || 0) };
+        if (!progress[ex.name]) progress[ex.name] = [];
+        progress[ex.name].push(entry);
+        const history = progress[ex.name];
+        if (history.length >= 3) {
+          const last = history.slice(-3);
+          if (last[0].weight === last[1].weight && last[1].weight === last[2].weight) {
+            alert(`Considera subir peso en ${ex.name}`);
+          }
+        }
+      });
+      localStorage.setItem(`exerciseProgress_${user}`, JSON.stringify(progress));
+
       setDays((prev) => {
         const updated = [...prev];
         updated[selectedDay] = {
           ...updated[selectedDay],
           completed: true,
-          didRoutine,
-          weights: weightInputs,
+          didRoutine: true,
+          routine: routineKey,
+          logs,
         };
         return updated;
       });
-
-      if (didRoutine) {
-        const routineKey = days[selectedDay].routine || weekdays[new Date(startDate.getTime() + selectedDay * 86400000).getDay()];
-        const routine = savedRoutines[routineKey];
-        if (routine) {
-          const progress = JSON.parse(localStorage.getItem(`exerciseProgress_${user}`) || '{}');
-          routine.exercises.forEach((ex) => {
-            const entry = { date: new Date(startDate.getTime() + selectedDay * 86400000).toISOString().split('T')[0], weight: parseFloat(weightInputs[ex.name] || ex.weight || 0) };
-            if (!progress[ex.name]) progress[ex.name] = [];
-            progress[ex.name].push(entry);
-            const history = progress[ex.name];
-            if (history.length >= 3) {
-              const last = history.slice(-3);
-              if (last[0].weight === last[1].weight && last[1].weight === last[2].weight) {
-                alert(`Considera subir peso en ${ex.name}`);
-              }
-            }
-          });
-          localStorage.setItem(`exerciseProgress_${user}`, JSON.stringify(progress));
-        }
-      }
 
       if (selectedDay === 29 || selectedDay === 59) {
         alert('¡Recuerda actualizar tu peso y grasa corporal en la sección Peso!');
@@ -76,11 +90,26 @@ const Calendar = () => {
     }
   };
 
+  const handleSkipDay = () => {
+    if (selectedDay === null) return;
+    setDays((prev) => {
+      const updated = [...prev];
+      updated[selectedDay] = {
+        ...updated[selectedDay],
+        completed: true,
+        didRoutine: false,
+        logs: {},
+      };
+      return updated;
+    });
+  };
+
   const handleResetProgress = () => {
     const reset = createEmptyDays();
     setDays(reset);
     localStorage.removeItem(`calendarDays_${user}`);
     localStorage.removeItem(`weeklyRoutines_${user}`);
+    localStorage.removeItem(`exerciseProgress_${user}`);
     setSavedRoutines({});
     window.dispatchEvent(new Event('routinesUpdated'));
     setSelectedDay(null);
@@ -126,12 +155,24 @@ const Calendar = () => {
                 const routine = savedRoutines[routineKey];
                 if (routine) {
                   const progress = JSON.parse(localStorage.getItem(`exerciseProgress_${user}`) || '{}');
-                  const inputs = {};
+                  const weightMap = {};
+                  const setMap = {};
+                  const repMap = {};
                   routine.exercises.forEach((ex) => {
                     const hist = progress[ex.name] || [];
-                    inputs[ex.name] = hist.length > 0 ? hist[hist.length - 1].weight : ex.weight || '';
+                    weightMap[ex.name] = hist.length > 0 ? hist[hist.length - 1].weight : ex.weight || '';
+                    setMap[ex.name] = ex.sets;
+                    repMap[ex.name] = ex.reps;
                   });
-                  setWeightInputs(inputs);
+                  const dayLogs = days[index].logs || {};
+                  Object.entries(dayLogs).forEach(([name, log]) => {
+                    if (log.weight) weightMap[name] = log.weight;
+                    if (log.sets) setMap[name] = log.sets;
+                    if (log.reps) repMap[name] = log.reps;
+                  });
+                  setWeightInputs(weightMap);
+                  setSetInputs(setMap);
+                  setRepInputs(repMap);
                 }
               }}
             >
@@ -184,25 +225,43 @@ const Calendar = () => {
                       <label>{ex.name}</label>
                       <input
                         type="number"
+                        value={setInputs[ex.name] || ''}
+                        onChange={(e) =>
+                          setSetInputs((p) => ({ ...p, [ex.name]: e.target.value }))
+                        }
+                        placeholder="Series"
+                        style={{ ...inputStyle, width: '60px', marginLeft: '10px' }}
+                      />
+                      <input
+                        type="number"
+                        value={repInputs[ex.name] || ''}
+                        onChange={(e) =>
+                          setRepInputs((p) => ({ ...p, [ex.name]: e.target.value }))
+                        }
+                        placeholder="Reps"
+                        style={{ ...inputStyle, width: '60px', marginLeft: '10px' }}
+                      />
+                      <input
+                        type="number"
                         value={weightInputs[ex.name] || ''}
                         onChange={(e) =>
                           setWeightInputs((p) => ({ ...p, [ex.name]: e.target.value }))
                         }
+                        placeholder="Kg"
                         style={{ ...inputStyle, width: '80px', marginLeft: '10px' }}
                       />
                     </div>
                   ))}
                 </div>
               )}
-              <p>¿Completaste la rutina?</p>
-              <button style={buttonStyle} onClick={() => handleCompleteDay(true)}>
-                Sí
+              <button style={buttonStyle} onClick={handleSaveDay}>
+                Guardar rutina del día
               </button>
               <button
                 style={{ ...buttonStyle, backgroundColor: '#e53935' }}
-                onClick={() => handleCompleteDay(false)}
+                onClick={handleSkipDay}
               >
-                No
+                No hice rutina
               </button>
             </div>
           ) : (
@@ -216,7 +275,7 @@ const Calendar = () => {
               setDays((prev) => {
                 const upd = [...prev];
                 upd[selectedDay].routine = null;
-                upd[selectedDay].weights = {};
+                upd[selectedDay].logs = {};
                 return upd;
               });
             }}
