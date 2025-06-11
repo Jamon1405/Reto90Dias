@@ -9,10 +9,10 @@ const DietProgress = () => {
   const [selectedDay, setSelectedDay] = useState(null);
   const [fastingHours, setFastingHours] = useState('');
   const [days, setDays] = useState(() =>
-    new Array(90).fill({
+    Array.from({ length: 90 }, () => ({
       dietCompleted: false,
       fastingHours: '',
-    })
+    }))
   );
 
   // Variables para calculadora BMR y macros
@@ -107,10 +107,10 @@ const DietProgress = () => {
   };
 
   const handleResetProgress = () => {
-    const resetDays = new Array(90).fill({
+    const resetDays = Array.from({ length: 90 }, () => ({
       dietCompleted: false,
       fastingHours: '',
-    });
+    }));
     setDays(resetDays);
     localStorage.removeItem('dietDays');
     setSelectedDay(null);
