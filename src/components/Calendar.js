@@ -305,6 +305,7 @@ const Calendar = () => {
                           setSetInputs((p) => ({ ...p, [ex]: e.target.value }))
                         }
                         placeholder="Series"
+                        enterKeyHint="next"
                         style={{ ...inputStyle, width: '60px' }}
                       />
                       <input
@@ -314,6 +315,7 @@ const Calendar = () => {
                           setRepInputs((p) => ({ ...p, [ex]: e.target.value }))
                         }
                         placeholder="Reps"
+                        enterKeyHint="next"
                         style={{ ...inputStyle, width: '60px', marginLeft: '5px' }}
                       />
                       <input
@@ -323,10 +325,12 @@ const Calendar = () => {
                           setWeightInputs((p) => ({ ...p, [ex]: e.target.value }))
                         }
                         placeholder="Lb"
+                        enterKeyHint="done"
                         style={{ ...inputStyle, width: '80px', marginLeft: '5px' }}
                       />
                       <button
                         type="button"
+                        aria-label="Quitar ejercicio"
                         style={removeButton}
                         onClick={() => handleRemoveExercise(ex)}
                       >
@@ -410,21 +414,23 @@ const dayBoxStyle = (day, selected) => ({
 });
 
 const buttonStyle = {
-  backgroundColor: '#0288d1',
+  backgroundColor: '#007bff',
   color: '#fff',
-  padding: '12px',
-  borderRadius: '8px',
+  padding: '10px 16px',
+  borderRadius: '6px',
   border: 'none',
   cursor: 'pointer',
   margin: '10px 5px',
-  boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+  fontSize: '16px',
+  transition: 'background-color 0.2s',
 };
 
 const inputStyle = {
   padding: '10px',
-  borderRadius: '5px',
+  borderRadius: '6px',
   border: '1px solid #ccc',
   marginBottom: '10px',
+  fontSize: '16px',
 };
 
 const exerciseRowStyle = {
@@ -438,10 +444,11 @@ const removeButton = {
   backgroundColor: '#e53935',
   color: '#fff',
   border: 'none',
-  borderRadius: '4px',
+  borderRadius: '6px',
   cursor: 'pointer',
   padding: '6px 8px',
   marginLeft: '5px',
+  fontSize: '14px',
 };
 
 export default Calendar;

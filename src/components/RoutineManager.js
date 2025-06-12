@@ -107,6 +107,7 @@ const RoutineManager = () => {
         value={routineName}
         onChange={(e) => setRoutineName(e.target.value)}
         placeholder="Nombre de la rutina"
+        enterKeyHint="next"
       />
       {muscleGroups.map((group) => (
         <div key={group} style={{ marginBottom: '10px' }}>
@@ -141,10 +142,12 @@ const RoutineManager = () => {
         value={customExercise}
         onChange={(e) => setCustomExercise(e.target.value)}
         placeholder="Ejercicio personalizado"
+        enterKeyHint="done"
       />
       <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
         <button
           type="button"
+          aria-label="Añadir personalizado"
           style={buttonStyle}
           onClick={() => {
             addExercise(customExercise.trim());
@@ -160,14 +163,25 @@ const RoutineManager = () => {
             <li key={idx} style={{ ...routineStyle, display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
               <span style={{ flexGrow: 1 }}>{ex}</span>
               <div style={actionContainerStyle}>
-                <button type="button" style={smallButton} onClick={() => moveExerciseUp(idx)}>
+                <button
+                  type="button"
+                  aria-label="Mover arriba"
+                  style={smallButton}
+                  onClick={() => moveExerciseUp(idx)}
+                >
                   ↑
                 </button>
-                <button type="button" style={smallButton} onClick={() => moveExerciseDown(idx)}>
+                <button
+                  type="button"
+                  aria-label="Mover abajo"
+                  style={smallButton}
+                  onClick={() => moveExerciseDown(idx)}
+                >
                   ↓
                 </button>
                 <button
                   type="button"
+                  aria-label="Eliminar"
                   style={{ ...smallButton, backgroundColor: '#e53935' }}
                   onClick={() => removeExercise(idx)}
                 >
@@ -178,12 +192,13 @@ const RoutineManager = () => {
           ))}
         </ul>
       )}
-      <button style={buttonStyle} onClick={handleSave}>
+      <button style={buttonStyle} aria-label="Guardar rutina" onClick={handleSave}>
         {editingDay ? 'Guardar Cambios' : 'Guardar Rutina'}
       </button>
       {editingDay && (
         <button
           type="button"
+          aria-label="Cancelar edición"
           style={{ ...buttonStyle, backgroundColor: '#e53935', marginLeft: '10px' }}
           onClick={() => {
             setEditingDay(null);
@@ -211,6 +226,7 @@ const RoutineManager = () => {
                 </ul>
                 <button
                   type="button"
+                  aria-label="Eliminar rutina"
                   style={{ ...buttonStyle, backgroundColor: '#e53935' }}
                   onClick={() => handleDelete(day)}
                 >
@@ -218,6 +234,7 @@ const RoutineManager = () => {
                 </button>
                 <button
                   type="button"
+                  aria-label="Editar rutina"
                   style={{ ...buttonStyle, marginLeft: '10px' }}
                   onClick={() => handleEdit(day)}
                 >
@@ -248,18 +265,20 @@ const inputStyle = {
   width: '100%',
   padding: '10px',
   marginBottom: '10px',
-  borderRadius: '5px',
+  borderRadius: '6px',
   border: '1px solid #ccc',
+  fontSize: '16px',
 };
 
 const buttonStyle = {
-  backgroundColor: '#0288d1',
+  backgroundColor: '#007bff',
   color: '#fff',
-  padding: '10px 20px',
+  padding: '10px 16px',
   border: 'none',
-  borderRadius: '5px',
+  borderRadius: '6px',
   cursor: 'pointer',
-  transition: 'background-color 0.3s',
+  fontSize: '16px',
+  transition: 'background-color 0.2s',
 };
 
 const routineStyle = {
@@ -271,26 +290,27 @@ const routineStyle = {
 };
 
 const groupHeaderStyle = {
-  backgroundColor: '#0288d1',
+  backgroundColor: '#007bff',
   color: '#fff',
   padding: '8px',
-  borderRadius: '5px',
+  borderRadius: '6px',
   cursor: 'pointer',
   marginBottom: '5px',
-  transition: 'background-color 0.3s',
+  transition: 'background-color 0.2s',
 };
 
 const exerciseButtonStyle = {
-  backgroundColor: '#0288d1',
+  backgroundColor: '#007bff',
   color: '#fff',
   padding: '8px',
   border: 'none',
-  borderRadius: '5px',
+  borderRadius: '6px',
   cursor: 'pointer',
   display: 'block',
   width: '100%',
   marginBottom: '5px',
-  transition: 'background-color 0.3s',
+  fontSize: '15px',
+  transition: 'background-color 0.2s',
 };
 
 const actionContainerStyle = {
@@ -300,13 +320,13 @@ const actionContainerStyle = {
 };
 
 const smallButton = {
-  backgroundColor: '#0288d1',
+  backgroundColor: '#007bff',
   color: '#fff',
   border: 'none',
-  borderRadius: '4px',
+  borderRadius: '6px',
   cursor: 'pointer',
   padding: '6px 8px',
-  fontSize: '16px',
+  fontSize: '14px',
 };
 
 export default RoutineManager;

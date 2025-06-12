@@ -182,14 +182,14 @@ const WeightTracker = () => {
   };
 
   const buttonStyle = {
-    backgroundColor: '#0288d1',
+    backgroundColor: '#007bff',
     color: '#fff',
-    padding: '12px 20px',
-    fontSize: '18px',
-    borderRadius: '10px',
+    padding: '10px 16px',
+    fontSize: '16px',
+    borderRadius: '6px',
     border: 'none',
     cursor: 'pointer',
-    transition: 'background-color 0.3s ease',
+    transition: 'background-color 0.2s',
     marginBottom: '20px',
   };
 
@@ -205,6 +205,7 @@ const WeightTracker = () => {
           value={currentWeight}
           onChange={(e) => setCurrentWeight(e.target.value)}
           style={inputStyle}
+          enterKeyHint="next"
         />
         <input
           type="number"
@@ -212,6 +213,7 @@ const WeightTracker = () => {
           value={height}
           onChange={(e) => setHeight(e.target.value)}
           style={inputStyle}
+          enterKeyHint="next"
         />
         <input
           type="number"
@@ -219,12 +221,13 @@ const WeightTracker = () => {
           value={bodyFat}
           onChange={(e) => setBodyFat(e.target.value)}
           style={inputStyle}
+          enterKeyHint="next"
         />
         <select value={gender} onChange={(e) => setGender(e.target.value)} style={inputStyle}>
           <option value="male">Hombre</option>
           <option value="female">Mujer</option>
         </select>
-        <button onClick={handleCalculateIdealWeight} style={buttonStyle}>
+        <button onClick={handleCalculateIdealWeight} style={buttonStyle} aria-label="Calcular peso ideal">
           Calcular Peso Ideal
         </button>
 
@@ -235,7 +238,11 @@ const WeightTracker = () => {
           </div>
         )}
 
-        <button onClick={handleResetData} style={{ ...buttonStyle, backgroundColor: '#e53935' }}>
+        <button
+          onClick={handleResetData}
+          style={{ ...buttonStyle, backgroundColor: '#e53935' }}
+          aria-label="Reiniciar datos"
+        >
           Reiniciar Datos
         </button>
       </div>
@@ -249,6 +256,7 @@ const WeightTracker = () => {
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
               style={inputStyle}
+              enterKeyHint="next"
             />
             <input
               type="number"
@@ -256,8 +264,9 @@ const WeightTracker = () => {
               value={entryWeight}
               onChange={(e) => setEntryWeight(e.target.value)}
               style={inputStyle}
+              enterKeyHint="done"
             />
-            <button onClick={handleAddWeight} style={buttonStyle}>
+            <button onClick={handleAddWeight} style={buttonStyle} aria-label="Añadir peso">
               Añadir entrada de peso
             </button>
           </div>
@@ -276,7 +285,11 @@ const WeightTracker = () => {
             {weightEntries.map((entry, index) => (
               <li key={index}>
                 {entry.date}: {entry.weight} kg
-                <button onClick={() => handleDeleteEntry(index)} style={buttonStyle}>
+                <button
+                  onClick={() => handleDeleteEntry(index)}
+                  style={buttonStyle}
+                  aria-label="Borrar entrada"
+                >
                   Borrar
                 </button>
               </li>

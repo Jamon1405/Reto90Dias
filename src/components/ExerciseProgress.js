@@ -14,6 +14,17 @@ import useCurrentUser from '../hooks/useCurrentUser';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
 
+const buttonStyle = {
+  backgroundColor: '#007bff',
+  color: '#fff',
+  border: 'none',
+  borderRadius: '6px',
+  padding: '8px 12px',
+  cursor: 'pointer',
+  fontSize: '14px',
+  transition: 'background-color 0.2s',
+};
+
 const ExerciseProgress = () => {
   const user = useCurrentUser();
   const [progress, setProgress] = useState({});
@@ -99,10 +110,11 @@ const ExerciseProgress = () => {
           onChange={(e) => setSelected(e.target.value)}
           style={{
             padding: '10px',
-            borderRadius: '5px',
+            borderRadius: '6px',
             border: '1px solid #ccc',
             marginBottom: '10px',
             width: '100%',
+            fontSize: '16px',
           }}
         >
           <option value="" disabled>
@@ -124,30 +136,17 @@ const ExerciseProgress = () => {
         <div style={{ marginTop: '10px' }}>
           <button
             type="button"
+            aria-label="Borrar ejercicio"
             onClick={handleDeleteExercise}
-            style={{
-              backgroundColor: '#e53935',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '5px',
-              padding: '8px 12px',
-              marginRight: '10px',
-              cursor: 'pointer',
-            }}
+            style={{ ...buttonStyle, backgroundColor: '#e53935', marginRight: '10px' }}
           >
             Borrar ejercicio
           </button>
           <button
             type="button"
+            aria-label="Borrar todo"
             onClick={handleDeleteAll}
-            style={{
-              backgroundColor: '#e53935',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '5px',
-              padding: '8px 12px',
-              cursor: 'pointer',
-            }}
+            style={{ ...buttonStyle, backgroundColor: '#e53935' }}
           >
             Borrar todo
           </button>
