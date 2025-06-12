@@ -139,7 +139,7 @@ const ExerciseProgress = () => {
             type="button"
             aria-label="Borrar ejercicio"
             onClick={handleDeleteExercise}
-            style={{ ...buttonStyle, backgroundColor: '#FF453A', marginRight: '10px' }}
+            style={{ ...buttonStyle, backgroundColor: 'var(--error-color)', marginRight: '10px' }}
           >
             Borrar ejercicio
           </button>
@@ -147,7 +147,7 @@ const ExerciseProgress = () => {
             type="button"
             aria-label="Borrar todo"
             onClick={handleDeleteAll}
-            style={{ ...buttonStyle, backgroundColor: '#FF453A' }}
+            style={{ ...buttonStyle, backgroundColor: 'var(--error-color)' }}
           >
             Borrar todo
           </button>

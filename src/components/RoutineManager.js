@@ -182,7 +182,7 @@ const RoutineManager = () => {
                 <button
                   type="button"
                   aria-label="Eliminar"
-                  style={{ ...smallButton, backgroundColor: '#FF453A' }}
+                  style={{ ...smallButton, backgroundColor: 'var(--error-color)' }}
                   onClick={() => removeExercise(idx)}
                 >
                   X
@@ -199,7 +199,7 @@ const RoutineManager = () => {
         <button
           type="button"
           aria-label="Cancelar edición"
-          style={{ ...buttonStyle, backgroundColor: '#FF453A', marginLeft: '10px' }}
+          style={{ ...buttonStyle, backgroundColor: 'var(--error-color)', marginLeft: '10px' }}
           onClick={() => {
             setEditingDay(null);
             setRoutineName('');
@@ -228,7 +228,7 @@ const RoutineManager = () => {
                   <button
                     type="button"
                     aria-label="Eliminar rutina"
-                    style={{ ...smallButton, backgroundColor: '#FF453A' }}
+                    style={{ ...smallButton, backgroundColor: 'var(--error-color)' }}
                     onClick={() => handleDelete(day)}
                   >
                     Eliminar

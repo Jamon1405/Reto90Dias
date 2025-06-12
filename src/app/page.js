@@ -31,10 +31,10 @@ const CalendarOverview = () => {
     <div style={overviewBoxStyle}>
       <h3 style={overviewTitleStyle}>Progreso del Calendario</h3>
       <p>
-        <strong style={{ ...indicatorStyle, color: '#30D158' }}>{routineDoneDays}</strong> días con rutina
+        <strong style={{ ...indicatorStyle, color: 'var(--success-color)' }}>{routineDoneDays}</strong> días con rutina
       </p>
       <p>
-        <strong style={{ ...indicatorStyle, color: '#FF453A' }}>{routineMissedDays}</strong> días sin rutina
+        <strong style={{ ...indicatorStyle, color: 'var(--error-color)' }}>{routineMissedDays}</strong> días sin rutina
       </p>
       <p>
         <strong style={{ ...indicatorStyle, color: 'var(--accent-color)' }}>{remainingDays}</strong> días restantes
@@ -66,8 +66,8 @@ const WeightOverview = () => {
   return (
     <div style={overviewBoxStyle}>
       <h3 style={overviewTitleStyle}>Progreso de Peso</h3>
-      <p><strong style={{ ...indicatorStyle, color: '#30D158' }}>{weightDifference} kg</strong> bajados</p>
-      <p>Faltan <strong style={{ ...indicatorStyle, color: '#FF453A' }}>{weightGoalDifference} kg</strong> para alcanzar tu meta</p>
+      <p><strong style={{ ...indicatorStyle, color: 'var(--success-color)' }}>{weightDifference} kg</strong> bajados</p>
+      <p>Faltan <strong style={{ ...indicatorStyle, color: 'var(--error-color)' }}>{weightGoalDifference} kg</strong> para alcanzar tu meta</p>
     </div>
   );
 };

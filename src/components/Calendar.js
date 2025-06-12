@@ -22,6 +22,7 @@ const Calendar = () => {
   const [startDate, setStartDate] = useState(new Date(START_DATE));
   const [isEditing, setIsEditing] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [newExercise, setNewExercise] = useState('');
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 480);
@@ -223,6 +224,17 @@ const handleSaveDay = () => {
       }
       return updated;
     });
+  };
+
+  const handleAddCustomExercise = () => {
+    const name = newExercise.trim();
+    if (!name) return;
+    setDayExercises((prev) => [...prev, name]);
+    setOpenExercises((prev) => [...prev, name]);
+    setWeightInputs((p) => ({ ...p, [name]: '' }));
+    setSetInputs((p) => ({ ...p, [name]: '' }));
+    setRepInputs((p) => ({ ...p, [name]: '' }));
+    setNewExercise('');
   };
 
   const handleResetProgress = () => {
@@ -459,11 +471,23 @@ const handleSaveDay = () => {
                   </div>
                 );
               })()}
+              <div style={{ marginTop: '10px' }}>
+                <input
+                  type="text"
+                  placeholder="Nuevo ejercicio"
+                  value={newExercise}
+                  onChange={(e) => setNewExercise(e.target.value)}
+                  style={{ ...inputStyle, marginBottom: '6px' }}
+                />
+                <button type="button" style={buttonStyle} onClick={handleAddCustomExercise}>
+                  Agregar ejercicio
+                </button>
+              </div>
               <button style={buttonStyle} onClick={handleSaveDay}>
                 {days[selectedDay].completed ? 'Guardar cambios' : 'Guardar rutina del día'}
               </button>
               <button
-                style={{ ...buttonStyle, backgroundColor: '#FF453A' }}
+                style={{ ...buttonStyle, backgroundColor: 'var(--error-color)' }}
                 onClick={handleSkipDay}
               >
                 No hice rutina
@@ -503,7 +527,7 @@ const handleSaveDay = () => {
             </div>
           )}
           <button
-            style={{ ...buttonStyle, marginTop: '10px', backgroundColor: '#FF453A' }}
+            style={{ ...buttonStyle, marginTop: '10px', backgroundColor: 'var(--error-color)' }}
           onClick={() => {
             setDays((prev) => {
               const upd = [...prev];
@@ -549,7 +573,7 @@ const headerStyle = {
   fontSize: '28px',
   fontWeight: 'bold',
   marginBottom: '20px',
-  color: '#f5f5f7',
+  color: '#FFFFFF',
   fontFamily: 'SF Pro Display, -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif',
 };
 
@@ -560,11 +584,11 @@ const dayBoxStyle = (day, selected, mobile) => ({
   cursor: 'pointer',
   minHeight: mobile ? '70px' : '60px',
   fontSize: mobile ? '14px' : '18px',
-  color: '#f5f5f7',
+  color: '#FFFFFF',
   border: day.completed
     ? day.didRoutine
-      ? '1px solid #30D158'
-      : '1px solid #FF453A'
+      ? '1px solid var(--success-color)'
+      : '1px solid var(--error-color)'
     : '1px solid #2C2C2E',
   backgroundColor: selected ? '#1C1C1E' : 'transparent',
   boxShadow: selected ? '0 0 10px rgba(0,0,0,0.5)' : 'none',
@@ -630,8 +654,8 @@ const inputContainerStyle = (mobile) => ({
 
 const removeButton = {
   backgroundColor: 'transparent',
-  color: '#FF453A',
-  border: '1px solid #FF453A',
+  color: 'var(--error-color)',
+  border: '1px solid var(--error-color)',
   borderRadius: '50%',
   cursor: 'pointer',
   padding: '6px',
@@ -646,7 +670,7 @@ const removeButton = {
 
 const addButton = {
   ...removeButton,
-  color: '#f5f5f7',
+  color: '#FFFFFF',
   borderColor: 'var(--accent-color)',
   backgroundColor: 'var(--accent-color)',
 };
@@ -654,13 +678,13 @@ const addButton = {
 const dayNumberStyle = {
   fontSize: '90px',
   fontWeight: 'bold',
-  color: '#f5f5f7',
+  color: '#FFFFFF',
   fontFamily: 'SF Pro Display, -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif',
 };
 
 const dayDateStyle = {
   fontSize: '16px',
-  color: '#f5f5f7',
+  color: '#FFFFFF',
 };
 
 export default Calendar;
