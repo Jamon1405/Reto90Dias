@@ -446,9 +446,13 @@ const removeButton = {
   border: 'none',
   borderRadius: '6px',
   cursor: 'pointer',
-  padding: '6px 8px',
+  padding: '8px 12px',
   marginLeft: '5px',
-  fontSize: '14px',
+  fontSize: '16px',
+  minWidth: '32px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
 };
 
 export default Calendar;

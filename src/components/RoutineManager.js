@@ -315,8 +315,9 @@ const exerciseButtonStyle = {
 
 const actionContainerStyle = {
   display: 'flex',
-  gap: '5px',
+  gap: '8px',
   marginLeft: 'auto',
+  flexWrap: 'nowrap',
 };
 
 const smallButton = {
@@ -325,8 +326,12 @@ const smallButton = {
   border: 'none',
   borderRadius: '6px',
   cursor: 'pointer',
-  padding: '6px 8px',
-  fontSize: '14px',
+  padding: '8px 12px',
+  fontSize: '16px',
+  minWidth: '32px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
 };
 
 export default RoutineManager;
