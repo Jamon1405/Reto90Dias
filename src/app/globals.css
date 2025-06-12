@@ -17,7 +17,7 @@ h1, h2 {
 .container {
   padding: 30px;
   margin: 0 auto;
-  max-width: 900px; /* Para centrar y limitar el ancho en pantallas grandes */
+  max-width: 600px; /* Para centrar y limitar el ancho en pantallas grandes */
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);

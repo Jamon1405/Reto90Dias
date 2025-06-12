@@ -255,8 +255,9 @@ const RoutineManager = () => {
 
 const containerStyle = {
   padding: '20px',
-  maxWidth: '800px',
+  maxWidth: '600px',
   margin: 'auto',
+  width: '100%',
 };
 
 const headerStyle = {

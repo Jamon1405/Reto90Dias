@@ -244,7 +244,7 @@ const Calendar = () => {
           return (
             <div
               key={index}
-              style={dayBoxStyle(day, selectedDay === index)}
+              style={dayBoxStyle(day, selectedDay === index, isMobile)}
               onClick={() => {
                 setSelectedDay(index);
                 setIsEditing(false);
@@ -461,12 +461,13 @@ const headerStyle = {
   marginBottom: '20px',
 };
 
-const dayBoxStyle = (day, selected) => ({
+const dayBoxStyle = (day, selected, mobile) => ({
   padding: '10px',
   margin: '5px',
   borderRadius: '8px',
   cursor: 'pointer',
-  minHeight: '60px',
+  minHeight: mobile ? '70px' : '60px',
+  fontSize: mobile ? '14px' : '16px',
   backgroundColor: day.completed
     ? day.didRoutine
       ? '#4caf50'

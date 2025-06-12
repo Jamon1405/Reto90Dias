@@ -159,7 +159,7 @@ const WeightTracker = () => {
     borderRadius: '20px',
     boxShadow: '0 6px 20px rgba(0, 0, 0, 0.1)',
     margin: '30px auto',
-    maxWidth: '900px',
+    maxWidth: '600px',
     textAlign: 'center',
     fontFamily: "'Poppins', sans-serif",
   };

@@ -100,7 +100,7 @@ const HomePage = () => {
     fontFamily: "'Poppins', sans-serif",
     backgroundColor: '#f9f9f9',
     minHeight: '100vh',
-    maxWidth: '900px',
+    maxWidth: '600px',
     margin: '0 auto',
     textAlign: 'center',
   };
