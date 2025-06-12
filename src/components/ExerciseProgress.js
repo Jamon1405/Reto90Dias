@@ -24,18 +24,40 @@ const ExerciseProgress = () => {
     setProgress(saved ? JSON.parse(saved) : {});
   }, [user]);
 
-  const data = selected && progress[selected] ? {
-    labels: progress[selected].map(p => p.date),
-    datasets: [{
-      label: `${selected} (kg)`,
-      data: progress[selected].map(p => p.weight),
-      borderColor: '#0288d1',
-      fill: false,
-      tension: 0.2,
-      pointRadius: 4,
-      borderWidth: 2,
-    }]
-  } : null;
+  const handleDeleteExercise = () => {
+    if (!selected) return;
+    setProgress((prev) => {
+      const updated = { ...prev };
+      delete updated[selected];
+      localStorage.setItem(`exerciseProgress_${user}`, JSON.stringify(updated));
+      return updated;
+    });
+    setSelected('');
+  };
+
+  const handleDeleteAll = () => {
+    localStorage.removeItem(`exerciseProgress_${user}`);
+    setProgress({});
+    setSelected('');
+  };
+
+  const data =
+    selected && progress[selected]
+      ? {
+          labels: progress[selected].map((p) => p.date),
+          datasets: [
+            {
+              label: `${selected} (lb)`,
+              data: progress[selected].map((p) => p.weight),
+              borderColor: '#0288d1',
+              fill: false,
+              tension: 0.2,
+              pointRadius: 4,
+              borderWidth: 2,
+            },
+          ],
+        }
+      : null;
 
   const options = {
     responsive: true,
@@ -95,6 +117,39 @@ const ExerciseProgress = () => {
       {data && (
         <div style={{ height: '300px' }}>
           <Line data={data} options={options} />
+        </div>
+      )}
+      {Object.keys(progress).length > 0 && (
+        <div style={{ marginTop: '10px' }}>
+          <button
+            type="button"
+            onClick={handleDeleteExercise}
+            style={{
+              backgroundColor: '#e53935',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '5px',
+              padding: '8px 12px',
+              marginRight: '10px',
+              cursor: 'pointer',
+            }}
+          >
+            Borrar ejercicio
+          </button>
+          <button
+            type="button"
+            onClick={handleDeleteAll}
+            style={{
+              backgroundColor: '#e53935',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '5px',
+              padding: '8px 12px',
+              cursor: 'pointer',
+            }}
+          >
+            Borrar todo
+          </button>
         </div>
       )}
     </div>

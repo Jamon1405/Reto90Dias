@@ -143,7 +143,7 @@ const Calendar = () => {
                   {log && (
                     <span>
                       {' '}- {log.sets || 0}x{log.reps || 0} @ {log.weight || 0}{' '}
-                      kg
+                      lb
                     </span>
                   )}
                 </li>
@@ -285,7 +285,7 @@ const Calendar = () => {
                         onChange={(e) =>
                           setWeightInputs((p) => ({ ...p, [ex]: e.target.value }))
                         }
-                        placeholder="Kg"
+                        placeholder="Lb"
                         style={{ ...inputStyle, width: '80px', marginLeft: '10px' }}
                       />
                     </div>
