@@ -157,16 +157,20 @@ const RoutineManager = () => {
       {routineExercises.length > 0 && (
         <ul style={{ listStyle: 'none', padding: 0 }}>
           {routineExercises.map((ex, idx) => (
-            <li key={idx} style={routineStyle}>
-              {ex}
-              <div style={{ float: 'right' }}>
+            <li key={idx} style={{ ...routineStyle, display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+              <span style={{ flexGrow: 1 }}>{ex}</span>
+              <div style={actionContainerStyle}>
                 <button type="button" style={smallButton} onClick={() => moveExerciseUp(idx)}>
                   ↑
                 </button>
                 <button type="button" style={smallButton} onClick={() => moveExerciseDown(idx)}>
                   ↓
                 </button>
-                <button type="button" style={{ ...smallButton, backgroundColor: '#e53935' }} onClick={() => removeExercise(idx)}>
+                <button
+                  type="button"
+                  style={{ ...smallButton, backgroundColor: '#e53935' }}
+                  onClick={() => removeExercise(idx)}
+                >
                   X
                 </button>
               </div>
@@ -289,14 +293,20 @@ const exerciseButtonStyle = {
   transition: 'background-color 0.3s',
 };
 
+const actionContainerStyle = {
+  display: 'flex',
+  gap: '5px',
+  marginLeft: 'auto',
+};
+
 const smallButton = {
   backgroundColor: '#0288d1',
   color: '#fff',
   border: 'none',
-  borderRadius: '3px',
+  borderRadius: '4px',
   cursor: 'pointer',
-  marginLeft: '5px',
-  padding: '2px 6px',
+  padding: '6px 8px',
+  fontSize: '16px',
 };
 
 export default RoutineManager;
