@@ -19,6 +19,7 @@ const Calendar = () => {
   const [repInputs, setRepInputs] = useState({});
   const [dayExercises, setDayExercises] = useState([]);
   const [startDate, setStartDate] = useState(new Date(START_DATE));
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     const savedDays = localStorage.getItem(`calendarDays_${user}`);
@@ -97,6 +98,7 @@ const Calendar = () => {
         alert('¡Recuerda actualizar tu peso y grasa corporal en la sección Peso!');
       }
     }
+    setIsEditing(false);
   };
 
   const handleSkipDay = () => {
@@ -115,6 +117,7 @@ const Calendar = () => {
     setWeightInputs({});
     setSetInputs({});
     setRepInputs({});
+    setIsEditing(false);
   };
 
   const handleRemoveExercise = (ex) => {
@@ -148,6 +151,7 @@ const Calendar = () => {
     setWeightInputs({});
     setSetInputs({});
     setRepInputs({});
+    setIsEditing(false);
   };
 
   const renderRoutine = (date) => {
@@ -205,6 +209,7 @@ const Calendar = () => {
               style={dayBoxStyle(day, selectedDay === index)}
               onClick={() => {
                 setSelectedDay(index);
+                setIsEditing(false);
                 const routineKey = days[index].routine || weekdays[date.getDay()];
                 const routine = savedRoutines[routineKey];
                 if (routine) {
@@ -291,7 +296,7 @@ const Calendar = () => {
             </div>
           )}
 
-          {!days[selectedDay].completed ? (
+          {!days[selectedDay].completed || isEditing ? (
             <div>
               {dayExercises.length > 0 && (
                 <div>
@@ -341,7 +346,7 @@ const Calendar = () => {
                 </div>
               )}
               <button style={buttonStyle} onClick={handleSaveDay}>
-                Guardar rutina del día
+                {days[selectedDay].completed ? 'Guardar cambios' : 'Guardar rutina del día'}
               </button>
               <button
                 style={{ ...buttonStyle, backgroundColor: '#e53935' }}
@@ -351,23 +356,39 @@ const Calendar = () => {
               </button>
             </div>
           ) : (
-            <p>
-              Rutina completada: {days[selectedDay].didRoutine ? 'Sí' : 'No'}
-            </p>
+            <div>
+              <p>
+                Rutina completada: {days[selectedDay].didRoutine ? 'Sí' : 'No'}
+              </p>
+              <button
+                type="button"
+                aria-label="Editar rutina"
+                style={buttonStyle}
+                onClick={() => setIsEditing(true)}
+              >
+                Editar rutina del día
+              </button>
+            </div>
           )}
           <button
             style={{ ...buttonStyle, marginTop: '10px', backgroundColor: '#e53935' }}
           onClick={() => {
             setDays((prev) => {
               const upd = [...prev];
-              upd[selectedDay].routine = null;
-              upd[selectedDay].logs = {};
+              upd[selectedDay] = {
+                ...upd[selectedDay],
+                routine: null,
+                logs: {},
+                completed: false,
+                didRoutine: null,
+              };
               return upd;
             });
             setDayExercises([]);
             setWeightInputs({});
             setSetInputs({});
             setRepInputs({});
+            setIsEditing(false);
           }}
         >
           Quitar rutina del día
