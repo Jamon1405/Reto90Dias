@@ -131,7 +131,7 @@ const WeightTracker = () => {
       {
         label: 'Peso (kg)',
         data: weightEntries.map((entry) => entry.weight),
-        borderColor: '#0a84ff',
+        borderColor: '#bb86fc',
         backgroundColor: 'rgba(10,132,255,0.2)',
         fill: true,
         tension: 0.2,
@@ -164,7 +164,7 @@ const WeightTracker = () => {
     fontSize: '32px',
     fontWeight: '600',
     marginBottom: '30px',
-    color: '#0a84ff',
+    color: '#bb86fc',
   };
 
   const inputStyle = {
@@ -179,7 +179,7 @@ const WeightTracker = () => {
   };
 
   const buttonStyle = {
-    backgroundColor: '#0a84ff',
+    backgroundColor: '#bb86fc',
     color: '#fff',
     padding: '8px 14px',
     fontSize: '16px',

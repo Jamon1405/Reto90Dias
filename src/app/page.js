@@ -83,7 +83,7 @@ const overviewBoxStyle = {
 }; 
 
 const overviewTitleStyle = {
-  color: '#0a84ff',
+  color: '#bb86fc',
   marginBottom: '15px',
 };
 
@@ -103,7 +103,7 @@ const HomePage = () => {
   };
 
   const headerStyle = {
-    color: '#0a84ff',
+    color: '#bb86fc',
     marginBottom: '40px',
     fontSize: '32px',
   };

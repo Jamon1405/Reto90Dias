@@ -18,6 +18,7 @@ const Calendar = () => {
   const [setInputs, setSetInputs] = useState({});
   const [repInputs, setRepInputs] = useState({});
   const [dayExercises, setDayExercises] = useState([]);
+  const [openExercises, setOpenExercises] = useState([]);
   const [startDate, setStartDate] = useState(new Date(START_DATE));
   const [isEditing, setIsEditing] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -86,6 +87,7 @@ const Calendar = () => {
       setRepInputs(repMap);
       const exercisesList = Object.keys(dayLogs).length > 0 ? Object.keys(dayLogs) : [...routine.exercises];
       setDayExercises(exercisesList);
+      setOpenExercises([]);
     } else {
       const weightMap = {};
       const setMap = {};
@@ -99,6 +101,7 @@ const Calendar = () => {
       setSetInputs(setMap);
       setRepInputs(repMap);
       setDayExercises(Object.keys(dayLogs));
+      setOpenExercises([]);
     }
   }, [selectedDay, days, savedRoutines, user]);
 
@@ -186,6 +189,7 @@ const Calendar = () => {
       return updated;
     });
     setDayExercises([]);
+    setOpenExercises([]);
     setWeightInputs({});
     setSetInputs({});
     setRepInputs({});
@@ -197,6 +201,7 @@ const Calendar = () => {
 
   const handleRemoveExercise = (ex) => {
     setDayExercises((prev) => prev.filter((e) => e !== ex));
+    setOpenExercises((prev) => prev.filter((e) => e !== ex));
     setWeightInputs((p) => {
       const { [ex]: _, ...rest } = p;
       return rest;
@@ -232,6 +237,7 @@ const Calendar = () => {
     setSelectedDay(0);
     setStartDate(new Date(START_DATE));
     setDayExercises([]);
+    setOpenExercises([]);
     setWeightInputs({});
     setSetInputs({});
     setRepInputs({});
@@ -303,8 +309,12 @@ const Calendar = () => {
             const date = new Date(startDate);
             date.setDate(startDate.getDate() + selectedDay);
             return (
-              <div style={{ ...dayBoxStyle(days[selectedDay], true, isMobile), marginBottom: '15px' }}>
-                Día {selectedDay + 1} - {date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })} {weekdays[date.getDay()]}
+              <div style={{ marginBottom: '15px' }}>
+                <div style={dayNumberStyle}>{selectedDay + 1}</div>
+                <div style={dayDateStyle}>
+                  {date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}{' '}
+                  {weekdays[date.getDay()]}
+                </div>
               </div>
             );
           })()}
@@ -357,14 +367,20 @@ const Calendar = () => {
                   <div>
                     {allExercises.map((ex) => {
                       const selected = dayExercises.includes(ex);
+                      const opened = openExercises.includes(ex);
                       return (
-                        <details key={ex} open={selected} style={exerciseRowStyle(isMobile, selected)}>
+                        <details key={ex} open={opened} style={exerciseRowStyle(isMobile, opened)}>
                           <summary
                             style={summaryStyle(isMobile)}
                             onClick={(e) => {
                               if (!selected) {
                                 e.preventDefault();
                                 setDayExercises((p) => [...p, ex]);
+                                setOpenExercises((p) => [...p, ex]);
+                              } else {
+                                setOpenExercises((p) =>
+                                  p.includes(ex) ? p.filter((x) => x !== ex) : [...p, ex]
+                                );
                               }
                             }}
                           >
@@ -389,6 +405,7 @@ const Calendar = () => {
                                 onClick={(ev) => {
                                   ev.preventDefault();
                                   setDayExercises((p) => [...p, ex]);
+                                  setOpenExercises((p) => [...p, ex]);
                                 }}
                               >
                                 +
@@ -507,7 +524,7 @@ const headerStyle = {
   fontSize: '28px',
   fontWeight: 'bold',
   marginBottom: '20px',
-  color: '#0a84ff',
+  color: '#bb86fc',
 };
 
 const dayBoxStyle = (day, selected, mobile) => ({
@@ -529,7 +546,7 @@ const dayBoxStyle = (day, selected, mobile) => ({
 });
 
 const buttonStyle = {
-  backgroundColor: '#0a84ff',
+  backgroundColor: '#bb86fc',
   color: '#fff',
   padding: '8px 14px',
   borderRadius: '8px',
@@ -603,8 +620,19 @@ const removeButton = {
 
 const addButton = {
   ...removeButton,
-  color: '#0a84ff',
-  borderColor: '#0a84ff',
+  color: '#bb86fc',
+  borderColor: '#bb86fc',
+};
+
+const dayNumberStyle = {
+  fontSize: '48px',
+  fontWeight: 'bold',
+  color: '#bb86fc',
+};
+
+const dayDateStyle = {
+  fontSize: '16px',
+  color: '#e0e0e0',
 };
 
 export default Calendar;

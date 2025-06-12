@@ -261,7 +261,7 @@ const containerStyle = {
 };
 
 const headerStyle = {
-  color: '#0a84ff',
+  color: '#bb86fc',
 };
 
 const inputStyle = {
@@ -276,7 +276,7 @@ const inputStyle = {
 };
 
 const buttonStyle = {
-  backgroundColor: '#0a84ff',
+  backgroundColor: '#bb86fc',
   color: '#fff',
   padding: '8px 14px',
   border: 'none',
@@ -295,7 +295,7 @@ const routineStyle = {
 };
 
 const groupHeaderStyle = {
-  backgroundColor: '#0a84ff',
+  backgroundColor: '#bb86fc',
   color: '#fff',
   padding: '8px',
   borderRadius: '8px',
@@ -305,7 +305,7 @@ const groupHeaderStyle = {
 };
 
 const exerciseButtonStyle = {
-  backgroundColor: '#0a84ff',
+  backgroundColor: '#bb86fc',
   color: '#fff',
   padding: '8px',
   border: 'none',
@@ -326,7 +326,7 @@ const actionContainerStyle = {
 };
 
 const smallButton = {
-  backgroundColor: '#0a84ff',
+  backgroundColor: '#bb86fc',
   color: '#fff',
   border: 'none',
   borderRadius: '8px',
