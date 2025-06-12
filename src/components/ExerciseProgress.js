@@ -15,8 +15,8 @@ import useCurrentUser from '../hooks/useCurrentUser';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
 
 const buttonStyle = {
-  backgroundColor: '#f5f5f7',
-  color: '#121212',
+  backgroundColor: '#0A84FF',
+  color: '#FFFFFF',
   border: 'none',
   borderRadius: '8px',
   padding: '6px 12px',
@@ -82,12 +82,12 @@ const ExerciseProgress = () => {
     },
     scales: {
       x: {
-        ticks: { color: '#e0e0e0' },
-        grid: { color: '#333' },
+        ticks: { color: '#f5f5f7' },
+        grid: { color: '#2C2C2E' },
       },
       y: {
-        ticks: { color: '#e0e0e0' },
-        grid: { color: '#333' },
+        ticks: { color: '#f5f5f7' },
+        grid: { color: '#2C2C2E' },
       },
     },
   };
@@ -129,7 +129,7 @@ const ExerciseProgress = () => {
         </select>
       )}
       {data && (
-        <div style={{ height: '300px' }}>
+        <div style={{ height: '250px', maxWidth: '600px', margin: '0 auto' }}>
           <Line data={data} options={options} />
         </div>
       )}
@@ -139,7 +139,7 @@ const ExerciseProgress = () => {
             type="button"
             aria-label="Borrar ejercicio"
             onClick={handleDeleteExercise}
-            style={{ ...buttonStyle, backgroundColor: '#e53935', marginRight: '10px' }}
+            style={{ ...buttonStyle, backgroundColor: '#FF453A', marginRight: '10px' }}
           >
             Borrar ejercicio
           </button>
@@ -147,7 +147,7 @@ const ExerciseProgress = () => {
             type="button"
             aria-label="Borrar todo"
             onClick={handleDeleteAll}
-            style={{ ...buttonStyle, backgroundColor: '#e53935' }}
+            style={{ ...buttonStyle, backgroundColor: '#FF453A' }}
           >
             Borrar todo
           </button>

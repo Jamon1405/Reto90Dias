@@ -463,7 +463,7 @@ const handleSaveDay = () => {
                 {days[selectedDay].completed ? 'Guardar cambios' : 'Guardar rutina del día'}
               </button>
               <button
-                style={{ ...buttonStyle, backgroundColor: '#e53935' }}
+                style={{ ...buttonStyle, backgroundColor: '#FF453A' }}
                 onClick={handleSkipDay}
               >
                 No hice rutina
@@ -476,14 +476,21 @@ const handleSaveDay = () => {
               </p>
               {days[selectedDay].didRoutine &&
                 Object.keys(days[selectedDay].logs || {}).length > 0 && (
-                  <ul style={{ listStyle: 'none', padding: 0 }}>
-                    {Object.entries(days[selectedDay].logs).map(([name, log]) => (
-                      <li key={name} style={{ marginBottom: '6px' }}>
-                        {name}: {log.sets}x{log.reps}{' '}
-                        {log.weight ? `${log.weight} lb` : ''}
-                      </li>
-                    ))}
-                  </ul>
+                  <>
+                    {days[selectedDay].routine && savedRoutines[days[selectedDay].routine] && (
+                      <p style={{ fontWeight: 'bold', marginBottom: '6px' }}>
+                        {savedRoutines[days[selectedDay].routine].name}
+                      </p>
+                    )}
+                    <ul style={{ listStyle: 'none', padding: 0 }}>
+                      {Object.entries(days[selectedDay].logs).map(([name, log]) => (
+                        <li key={name} style={{ marginBottom: '6px' }}>
+                          {name}: {log.sets}x{log.reps}{' '}
+                          {log.weight ? `${log.weight} lb` : ''}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
                 )}
               <button
                 type="button"
@@ -496,7 +503,7 @@ const handleSaveDay = () => {
             </div>
           )}
           <button
-            style={{ ...buttonStyle, marginTop: '10px', backgroundColor: '#e53935' }}
+            style={{ ...buttonStyle, marginTop: '10px', backgroundColor: '#FF453A' }}
           onClick={() => {
             setDays((prev) => {
               const upd = [...prev];
@@ -550,20 +557,20 @@ const dayBoxStyle = (day, selected, mobile) => ({
   cursor: 'pointer',
   minHeight: mobile ? '70px' : '60px',
   fontSize: mobile ? '14px' : '18px',
-  color: '#e0e0e0',
+  color: '#f5f5f7',
   border: day.completed
     ? day.didRoutine
-      ? '1px solid #4caf50'
-      : '1px solid #e57373'
-    : '1px solid #444',
-  backgroundColor: selected ? '#1e1e1e' : 'transparent',
+      ? '1px solid #30D158'
+      : '1px solid #FF453A'
+    : '1px solid #2C2C2E',
+  backgroundColor: selected ? '#1C1C1E' : 'transparent',
   boxShadow: selected ? '0 0 10px rgba(0,0,0,0.5)' : 'none',
   transition: 'background-color 0.3s, box-shadow 0.3s',
 });
 
 const buttonStyle = {
-  backgroundColor: '#f5f5f7',
-  color: '#121212',
+  backgroundColor: '#0A84FF',
+  color: '#FFFFFF',
   padding: '8px 14px',
   borderRadius: '8px',
   border: 'none',
@@ -577,11 +584,11 @@ const buttonStyle = {
 const inputStyle = {
   padding: '10px',
   borderRadius: '6px',
-  border: '1px solid #333',
+  border: '1px solid #2C2C2E',
   marginBottom: '10px',
   fontSize: '16px',
-  backgroundColor: '#1e1e1e',
-  color: '#e0e0e0',
+  backgroundColor: '#1C1C1E',
+  color: '#f5f5f7',
 };
 
 const exerciseRowStyle = (mobile, selected) => ({
@@ -620,8 +627,8 @@ const inputContainerStyle = (mobile) => ({
 
 const removeButton = {
   backgroundColor: 'transparent',
-  color: '#e53935',
-  border: '1px solid #e53935',
+  color: '#FF453A',
+  border: '1px solid #FF453A',
   borderRadius: '50%',
   cursor: 'pointer',
   padding: '6px',
@@ -637,7 +644,8 @@ const removeButton = {
 const addButton = {
   ...removeButton,
   color: '#f5f5f7',
-  borderColor: '#f5f5f7',
+  borderColor: '#0A84FF',
+  backgroundColor: '#0A84FF',
 };
 
 const dayNumberStyle = {
@@ -649,7 +657,7 @@ const dayNumberStyle = {
 
 const dayDateStyle = {
   fontSize: '16px',
-  color: '#e0e0e0',
+  color: '#f5f5f7',
 };
 
 export default Calendar;

@@ -182,7 +182,7 @@ const RoutineManager = () => {
                 <button
                   type="button"
                   aria-label="Eliminar"
-                  style={{ ...smallButton, backgroundColor: '#e53935' }}
+                  style={{ ...smallButton, backgroundColor: '#FF453A' }}
                   onClick={() => removeExercise(idx)}
                 >
                   X
@@ -199,7 +199,7 @@ const RoutineManager = () => {
         <button
           type="button"
           aria-label="Cancelar edición"
-          style={{ ...buttonStyle, backgroundColor: '#e53935', marginLeft: '10px' }}
+          style={{ ...buttonStyle, backgroundColor: '#FF453A', marginLeft: '10px' }}
           onClick={() => {
             setEditingDay(null);
             setRoutineName('');
@@ -228,7 +228,7 @@ const RoutineManager = () => {
                   <button
                     type="button"
                     aria-label="Eliminar rutina"
-                    style={{ ...smallButton, backgroundColor: '#e53935' }}
+                    style={{ ...smallButton, backgroundColor: '#FF453A' }}
                     onClick={() => handleDelete(day)}
                   >
                     Eliminar
@@ -270,15 +270,15 @@ const inputStyle = {
   padding: '10px',
   marginBottom: '10px',
   borderRadius: '6px',
-  border: '1px solid #333',
+  border: '1px solid #2C2C2E',
   fontSize: '16px',
-  backgroundColor: '#1e1e1e',
-  color: '#e0e0e0',
+  backgroundColor: '#1C1C1E',
+  color: '#f5f5f7',
 };
 
 const buttonStyle = {
-  backgroundColor: '#f5f5f7',
-  color: '#121212',
+  backgroundColor: '#0A84FF',
+  color: '#FFFFFF',
   padding: '8px 14px',
   border: 'none',
   borderRadius: '8px',
@@ -292,12 +292,12 @@ const routineStyle = {
   padding: '10px',
   marginBottom: '10px',
   borderRadius: '5px',
-  border: '1px solid #333',
+  border: '1px solid #2C2C2E',
 };
 
 const groupHeaderStyle = {
-  backgroundColor: '#f5f5f7',
-  color: '#121212',
+  backgroundColor: '#0A84FF',
+  color: '#FFFFFF',
   padding: '8px',
   borderRadius: '8px',
   cursor: 'pointer',
@@ -306,8 +306,8 @@ const groupHeaderStyle = {
 };
 
 const exerciseButtonStyle = {
-  backgroundColor: '#f5f5f7',
-  color: '#121212',
+  backgroundColor: '#1C1C1E',
+  color: '#f5f5f7',
   padding: '8px',
   border: 'none',
   borderRadius: '8px',
@@ -328,8 +328,8 @@ const actionContainerStyle = {
 };
 
 const smallButton = {
-  backgroundColor: '#f5f5f7',
-  color: '#121212',
+  backgroundColor: '#0A84FF',
+  color: '#FFFFFF',
   border: 'none',
   borderRadius: '8px',
   cursor: 'pointer',

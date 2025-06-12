@@ -122,7 +122,7 @@ const WeightTracker = () => {
 
   // Cálculo del peso bajado
   const weightLost = (initialWeight - currentWeightValue).toFixed(1);
-  const weightDifferenceColor = goalDifference > 0 ? '#e53935' : '#4caf50'; // Rojo si falta bajar, verde si se pasó la meta
+  const weightDifferenceColor = goalDifference > 0 ? '#FF453A' : '#30D158'; // Rojo si falta bajar, verde si se pasó la meta
 
   // Datos del gráfico de línea
   const data = {
@@ -173,15 +173,15 @@ const WeightTracker = () => {
     padding: '12px',
     fontSize: '16px',
     borderRadius: '10px',
-    border: '1px solid #333',
+    border: '1px solid #2C2C2E',
     marginBottom: '15px',
-    backgroundColor: '#1e1e1e',
-    color: '#e0e0e0',
+    backgroundColor: '#1C1C1E',
+    color: '#f5f5f7',
   };
 
   const buttonStyle = {
-    backgroundColor: '#f5f5f7',
-    color: '#121212',
+    backgroundColor: '#0A84FF',
+    color: '#FFFFFF',
     padding: '8px 14px',
     fontSize: '16px',
     borderRadius: '8px',
@@ -239,7 +239,7 @@ const WeightTracker = () => {
 
         <button
           onClick={handleResetData}
-          style={{ ...buttonStyle, backgroundColor: '#e53935' }}
+          style={{ ...buttonStyle, backgroundColor: '#FF453A' }}
           aria-label="Reiniciar datos"
         >
           Reiniciar Datos
