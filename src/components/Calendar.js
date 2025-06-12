@@ -152,7 +152,10 @@ const Calendar = () => {
         <input
           type="date"
           value={startDate.toISOString().split('T')[0]}
-          onChange={(e) => setStartDate(new Date(e.target.value))}
+          onChange={(e) => {
+            const [y, m, d] = e.target.value.split('-');
+            setStartDate(new Date(y, m - 1, d));
+          }}
           style={inputStyle}
         />
       </div>
