@@ -17,6 +17,7 @@ const Calendar = () => {
   const [weightInputs, setWeightInputs] = useState({});
   const [setInputs, setSetInputs] = useState({});
   const [repInputs, setRepInputs] = useState({});
+  const [dayExercises, setDayExercises] = useState([]);
   const [startDate, setStartDate] = useState(new Date(START_DATE));
 
   useEffect(() => {
@@ -61,7 +62,7 @@ const Calendar = () => {
       const progress = JSON.parse(
         localStorage.getItem(`exerciseProgress_${user}`) || '{}'
       );
-      routine.exercises.forEach((ex) => {
+      dayExercises.forEach((ex) => {
         logs[ex] = {
           sets: setInputs[ex] || '',
           reps: repInputs[ex] || '',
@@ -85,7 +86,7 @@ const Calendar = () => {
         updated[selectedDay] = {
           ...updated[selectedDay],
           completed: true,
-          didRoutine: true,
+          didRoutine: dayExercises.length > 0,
           routine: routineKey,
           logs,
         };
@@ -110,6 +111,26 @@ const Calendar = () => {
       };
       return updated;
     });
+    setDayExercises([]);
+    setWeightInputs({});
+    setSetInputs({});
+    setRepInputs({});
+  };
+
+  const handleRemoveExercise = (ex) => {
+    setDayExercises((prev) => prev.filter((e) => e !== ex));
+    setWeightInputs((p) => {
+      const { [ex]: _, ...rest } = p;
+      return rest;
+    });
+    setSetInputs((p) => {
+      const { [ex]: _, ...rest } = p;
+      return rest;
+    });
+    setRepInputs((p) => {
+      const { [ex]: _, ...rest } = p;
+      return rest;
+    });
   };
 
   const handleResetProgress = () => {
@@ -123,6 +144,10 @@ const Calendar = () => {
     window.dispatchEvent(new Event('routinesUpdated'));
     setSelectedDay(null);
     setStartDate(new Date(START_DATE));
+    setDayExercises([]);
+    setWeightInputs({});
+    setSetInputs({});
+    setRepInputs({});
   };
 
   const renderRoutine = (date) => {
@@ -204,6 +229,13 @@ const Calendar = () => {
                   setWeightInputs(weightMap);
                   setSetInputs(setMap);
                   setRepInputs(repMap);
+                  const exercisesList =
+                    Object.keys(dayLogs).length > 0
+                      ? Object.keys(dayLogs)
+                      : [...routine.exercises];
+                  setDayExercises(exercisesList);
+                } else {
+                  setDayExercises([]);
                 }
               }}
             >
@@ -239,6 +271,11 @@ const Calendar = () => {
                     upd[selectedDay].routine = e.target.value;
                     return upd;
                   });
+                  const r = savedRoutines[e.target.value];
+                  setDayExercises(r ? [...r.exercises] : []);
+                  setWeightInputs({});
+                  setSetInputs({});
+                  setRepInputs({});
                 }}
                 style={inputStyle}
               >
@@ -256,11 +293,11 @@ const Calendar = () => {
 
           {!days[selectedDay].completed ? (
             <div>
-              {days[selectedDay].routine && (
+              {dayExercises.length > 0 && (
                 <div>
-                  {savedRoutines[days[selectedDay].routine]?.exercises.map((ex) => (
-                    <div key={ex} style={{ marginBottom: '5px' }}>
-                      <label>{ex}</label>
+                  {dayExercises.map((ex) => (
+                    <div key={ex} style={exerciseRowStyle}>
+                      <label style={{ flex: '1' }}>{ex}</label>
                       <input
                         type="number"
                         value={setInputs[ex] || ''}
@@ -268,7 +305,7 @@ const Calendar = () => {
                           setSetInputs((p) => ({ ...p, [ex]: e.target.value }))
                         }
                         placeholder="Series"
-                        style={{ ...inputStyle, width: '60px', marginLeft: '10px' }}
+                        style={{ ...inputStyle, width: '60px' }}
                       />
                       <input
                         type="number"
@@ -277,7 +314,7 @@ const Calendar = () => {
                           setRepInputs((p) => ({ ...p, [ex]: e.target.value }))
                         }
                         placeholder="Reps"
-                        style={{ ...inputStyle, width: '60px', marginLeft: '10px' }}
+                        style={{ ...inputStyle, width: '60px', marginLeft: '5px' }}
                       />
                       <input
                         type="number"
@@ -286,8 +323,15 @@ const Calendar = () => {
                           setWeightInputs((p) => ({ ...p, [ex]: e.target.value }))
                         }
                         placeholder="Lb"
-                        style={{ ...inputStyle, width: '80px', marginLeft: '10px' }}
+                        style={{ ...inputStyle, width: '80px', marginLeft: '5px' }}
                       />
+                      <button
+                        type="button"
+                        style={removeButton}
+                        onClick={() => handleRemoveExercise(ex)}
+                      >
+                        X
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -309,17 +353,21 @@ const Calendar = () => {
           )}
           <button
             style={{ ...buttonStyle, marginTop: '10px', backgroundColor: '#e53935' }}
-            onClick={() => {
-              setDays((prev) => {
-                const upd = [...prev];
-                upd[selectedDay].routine = null;
-                upd[selectedDay].logs = {};
-                return upd;
-              });
-            }}
-          >
-            Quitar rutina del día
-          </button>
+          onClick={() => {
+            setDays((prev) => {
+              const upd = [...prev];
+              upd[selectedDay].routine = null;
+              upd[selectedDay].logs = {};
+              return upd;
+            });
+            setDayExercises([]);
+            setWeightInputs({});
+            setSetInputs({});
+            setRepInputs({});
+          }}
+        >
+          Quitar rutina del día
+        </button>
         </div>
       )}
       <button style={{ ...buttonStyle, marginTop: '20px' }} onClick={handleResetProgress}>
@@ -335,7 +383,8 @@ const containerStyle = {
   borderRadius: '15px',
   margin: 'auto',
   textAlign: 'center',
-  maxWidth: '1000px',
+  width: '100%',
+  maxWidth: '600px',
   boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
 };
 
@@ -350,6 +399,7 @@ const dayBoxStyle = (day, selected) => ({
   margin: '5px',
   borderRadius: '8px',
   cursor: 'pointer',
+  minHeight: '60px',
   backgroundColor: day.completed
     ? day.didRoutine
       ? '#4caf50'
@@ -375,6 +425,23 @@ const inputStyle = {
   borderRadius: '5px',
   border: '1px solid #ccc',
   marginBottom: '10px',
+};
+
+const exerciseRowStyle = {
+  display: 'flex',
+  alignItems: 'center',
+  flexWrap: 'wrap',
+  marginBottom: '5px',
+};
+
+const removeButton = {
+  backgroundColor: '#e53935',
+  color: '#fff',
+  border: 'none',
+  borderRadius: '4px',
+  cursor: 'pointer',
+  padding: '6px 8px',
+  marginLeft: '5px',
 };
 
 export default Calendar;
