@@ -16,8 +16,10 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body>
-        <Navigation /> {/* Navegación */}
-        {children}      {/* Aquí se renderizan las páginas */}
+        <div className="container">
+          <Navigation /> {/* Navegación */}
+          {children} {/* Aquí se renderizan las páginas */}
+        </div>
       </body>
     </html>
   );

@@ -98,10 +98,7 @@ const HomePage = () => {
   const containerStyle = {
     padding: '30px',
     minHeight: '100vh',
-    maxWidth: '430px',
-    margin: '0 auto',
     textAlign: 'center',
-    width: '100%',
   };
 
   const headerStyle = {

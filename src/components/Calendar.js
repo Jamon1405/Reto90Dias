@@ -114,7 +114,19 @@ const handleSaveDay = () => {
     const routineKey = days[selectedDay].routine;
     const routine = savedRoutines[routineKey];
 
-    if (routine) {
+    if (!routine || dayExercises.length === 0) {
+      setDays((prev) => {
+        const updated = [...prev];
+        updated[selectedDay] = {
+          ...updated[selectedDay],
+          completed: true,
+          didRoutine: false,
+          routine: null,
+          logs: {},
+        };
+        return updated;
+      });
+    } else {
       const logs = {};
       const progress = JSON.parse(
         localStorage.getItem(`exerciseProgress_${user}`) || '{}'
