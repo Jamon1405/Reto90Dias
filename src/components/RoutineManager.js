@@ -261,6 +261,8 @@ const containerStyle = {
   backgroundColor: 'var(--background-card)',
   borderRadius: '20px',
   boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
+  transform: 'scale(0.95)',
+  transformOrigin: 'top center',
 };
 
 const headerStyle = {

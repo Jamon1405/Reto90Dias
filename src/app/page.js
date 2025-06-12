@@ -108,7 +108,7 @@ const HomePage = () => {
   };
 
   return (
-    <div style={containerStyle}>
+    <div style={{ ...containerStyle, transform: 'scale(0.95)', transformOrigin: 'top center' }}>
       <h1 style={headerStyle}>Resumen General</h1>
 
       <CalendarOverview />
