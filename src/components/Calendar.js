@@ -54,8 +54,7 @@ const Calendar = () => {
     const date = new Date(startDate.getTime() + selectedDay * 86400000)
       .toISOString()
       .split('T')[0];
-    const routineKey =
-      days[selectedDay].routine || weekdays[new Date(startDate.getTime() + selectedDay * 86400000).getDay()];
+    const routineKey = days[selectedDay].routine;
     const routine = savedRoutines[routineKey];
 
     if (routine) {
@@ -63,6 +62,9 @@ const Calendar = () => {
       const progress = JSON.parse(
         localStorage.getItem(`exerciseProgress_${user}`) || '{}'
       );
+
+      const prevLogs = days[selectedDay].logs || {};
+
       dayExercises.forEach((ex) => {
         logs[ex] = {
           sets: setInputs[ex] || '',
@@ -71,7 +73,12 @@ const Calendar = () => {
         };
         const entry = { date, weight: parseFloat(logs[ex].weight || 0) };
         if (!progress[ex]) progress[ex] = [];
-        progress[ex].push(entry);
+        const idx = progress[ex].findIndex((en) => en.date === date);
+        if (idx >= 0) {
+          progress[ex][idx] = entry;
+        } else {
+          progress[ex].push(entry);
+        }
         const history = progress[ex];
         if (history.length >= 3) {
           const last = history.slice(-3);
@@ -80,6 +87,16 @@ const Calendar = () => {
           }
         }
       });
+
+      Object.keys(prevLogs).forEach((ex) => {
+        if (!dayExercises.includes(ex)) {
+          if (progress[ex]) {
+            progress[ex] = progress[ex].filter((en) => en.date !== date);
+            if (progress[ex].length === 0) delete progress[ex];
+          }
+        }
+      });
+
       localStorage.setItem(`exerciseProgress_${user}`, JSON.stringify(progress));
 
       setDays((prev) => {
@@ -134,6 +151,15 @@ const Calendar = () => {
       const { [ex]: _, ...rest } = p;
       return rest;
     });
+    setDays((prev) => {
+      const updated = [...prev];
+      const log = updated[selectedDay]?.logs;
+      if (log && log[ex]) {
+        const { [ex]: removed, ...rest } = log;
+        updated[selectedDay].logs = rest;
+      }
+      return updated;
+    });
   };
 
   const handleResetProgress = () => {
@@ -155,24 +181,28 @@ const Calendar = () => {
   };
 
   const renderRoutine = (date) => {
-    const dayName = weekdays[date.getDay()];
     const routineKey = days[selectedDay]?.routine;
     const routine = routineKey ? savedRoutines[routineKey] : null;
     if (!routine) return <p>No hay rutina para este día</p>;
+    const logs = days[selectedDay].logs || {};
+    const exercises = days[selectedDay].completed
+      ? Object.keys(logs)
+      : Array.isArray(routine.exercises)
+        ? routine.exercises
+        : [];
     return (
       <div>
         <h4>{routine.name}</h4>
-        {days[selectedDay].completed && Array.isArray(routine.exercises) && (
+        {exercises.length > 0 && (
           <ul>
-            {routine.exercises.map((ex, idx) => {
-              const log = days[selectedDay].logs?.[ex];
+            {exercises.map((ex, idx) => {
+              const log = logs[ex];
               return (
                 <li key={idx}>
                   {ex}
                   {log && (
                     <span>
-                      {' '}- {log.sets || 0}x{log.reps || 0} @ {log.weight || 0}{' '}
-                      lb
+                      {' '}- {log.sets || 0}x{log.reps || 0} @ {log.weight || 0} lb
                     </span>
                   )}
                 </li>
@@ -210,7 +240,7 @@ const Calendar = () => {
               onClick={() => {
                 setSelectedDay(index);
                 setIsEditing(false);
-                const routineKey = days[index].routine || weekdays[date.getDay()];
+                const routineKey = days[index].routine;
                 const routine = savedRoutines[routineKey];
                 if (routine) {
                   const progress = JSON.parse(
