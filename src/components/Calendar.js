@@ -188,39 +188,6 @@ const Calendar = () => {
     setIsEditing(false);
   };
 
-  const renderRoutine = (date) => {
-    const routineKey = days[selectedDay]?.routine;
-    const routine = routineKey ? savedRoutines[routineKey] : null;
-    if (!routine) return <p>No hay rutina para este día</p>;
-    const logs = days[selectedDay].logs || {};
-    const exercises = days[selectedDay].completed
-      ? Object.keys(logs)
-      : Array.isArray(routine.exercises)
-        ? routine.exercises
-        : [];
-    return (
-      <div>
-        <h4>{routine.name}</h4>
-        {exercises.length > 0 && (
-          <ul>
-            {exercises.map((ex, idx) => {
-              const log = logs[ex];
-              return (
-                <li key={idx}>
-                  {ex}
-                  {log && (
-                    <span>
-                      {' '}- {log.sets || 0}x{log.reps || 0} @ {log.weight || 0} lb
-                    </span>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </div>
-    );
-  };
 
   return (
     <div style={containerStyle}>
@@ -298,8 +265,7 @@ const Calendar = () => {
             transition: 'max-height 0.3s ease',
           }}
         >
-          {!isEditing &&
-            renderRoutine(new Date(startDate.getTime() + selectedDay * 86400000))}
+
 
           {!days[selectedDay].routine && Object.keys(savedRoutines).length === 0 && (
             <p>No hay rutinas guardadas. Crea una en la sección Rutinas.</p>
@@ -349,10 +315,45 @@ const Calendar = () => {
                     {allExercises.map((ex) => {
                       const selected = dayExercises.includes(ex);
                       return (
-                        <div key={ex} style={exerciseRowStyle(isMobile, selected)}>
-                          <label style={exerciseLabelStyle(isMobile)}>{ex}</label>
-                          {selected ? (
-                            <>
+                        <details key={ex} open={selected} style={exerciseRowStyle(isMobile, selected)}>
+                          <summary
+                            style={summaryStyle(isMobile)}
+                            onClick={(e) => {
+                              if (!selected) {
+                                e.preventDefault();
+                                setDayExercises((p) => [...p, ex]);
+                              }
+                            }}
+                          >
+                            <span>{ex}</span>
+                            {selected ? (
+                              <button
+                                type="button"
+                                aria-label="Quitar ejercicio"
+                                style={removeButton}
+                                onClick={(ev) => {
+                                  ev.preventDefault();
+                                  handleRemoveExercise(ex);
+                                }}
+                              >
+                                X
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                aria-label="Agregar ejercicio"
+                                style={addButton}
+                                onClick={(ev) => {
+                                  ev.preventDefault();
+                                  setDayExercises((p) => [...p, ex]);
+                                }}
+                              >
+                                +
+                              </button>
+                            )}
+                          </summary>
+                          {selected && (
+                            <div style={inputContainerStyle(isMobile)}>
                               <input
                                 type="number"
                                 value={setInputs[ex] || ''}
@@ -386,26 +387,9 @@ const Calendar = () => {
                                 enterKeyHint="done"
                                 style={inputSizeStyle(isMobile, '80px')}
                               />
-                              <button
-                                type="button"
-                                aria-label="Quitar ejercicio"
-                                style={removeButton}
-                                onClick={() => handleRemoveExercise(ex)}
-                              >
-                                X
-                              </button>
-                            </>
-                          ) : (
-                            <button
-                              type="button"
-                              aria-label="Agregar ejercicio"
-                              style={addButton}
-                              onClick={() => setDayExercises((p) => [...p, ex])}
-                            >
-                              +
-                            </button>
+                            </div>
                           )}
-                        </div>
+                        </details>
                       );
                     })}
                   </div>
@@ -533,13 +517,26 @@ const exerciseRowStyle = (mobile, selected) => ({
   backgroundColor: selected ? '#e3f2fd' : '#f7f7f7',
 });
 
-const exerciseLabelStyle = (mobile) => ({
-  flex: mobile ? '0 0 100%' : '1',
-});
-
 const inputSizeStyle = (mobile, width) => ({
   ...inputStyle,
   width: mobile ? '100%' : width,
+});
+
+const summaryStyle = (mobile) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  cursor: 'pointer',
+  listStyle: 'none',
+  padding: mobile ? '6px' : '4px 6px',
+});
+
+const inputContainerStyle = (mobile) => ({
+  display: 'flex',
+  flexDirection: mobile ? 'column' : 'row',
+  flexWrap: 'wrap',
+  gap: '4px',
+  marginTop: '4px',
 });
 
 const removeButton = {
