@@ -97,7 +97,7 @@ const ExerciseProgress = () => {
       style={{
         marginTop: '20px',
         textAlign: 'center',
-        maxWidth: '600px',
+        maxWidth: '430px',
         width: '100%',
         marginLeft: 'auto',
         marginRight: 'auto',
@@ -129,7 +129,7 @@ const ExerciseProgress = () => {
         </select>
       )}
       {data && (
-        <div style={{ height: '250px', maxWidth: '600px', margin: '0 auto' }}>
+        <div style={{ height: '250px', maxWidth: '430px', margin: '0 auto' }}>
           <Line data={data} options={options} />
         </div>
       )}

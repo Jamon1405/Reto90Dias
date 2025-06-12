@@ -539,7 +539,7 @@ const containerStyle = {
   margin: 'auto',
   textAlign: 'center',
   width: '100%',
-  maxWidth: '600px',
+  maxWidth: '430px',
 };
 
 const headerStyle = {

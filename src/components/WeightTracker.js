@@ -156,7 +156,8 @@ const WeightTracker = () => {
   const containerStyle = {
     padding: '24px',
     margin: '30px auto',
-    maxWidth: '600px',
+    maxWidth: '430px',
+    width: '100%',
     textAlign: 'center',
   };
 

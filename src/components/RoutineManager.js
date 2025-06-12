@@ -255,7 +255,7 @@ const RoutineManager = () => {
 
 const containerStyle = {
   padding: '20px',
-  maxWidth: '600px',
+  maxWidth: '430px',
   margin: 'auto',
   width: '100%',
 };
