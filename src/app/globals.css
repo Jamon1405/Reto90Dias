@@ -133,7 +133,7 @@ button {
 }
 
 .nav-link {
-  color: var(--accent-color);
+  color: #FFFFFF;
   text-decoration: none;
   font-size: 18px;
   cursor: pointer;

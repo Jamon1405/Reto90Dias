@@ -122,7 +122,6 @@ const WeightTracker = () => {
 
   // Cálculo del peso bajado
   const weightLost = (initialWeight - currentWeightValue).toFixed(1);
-  const weightDifferenceColor = goalDifference > 0 ? 'var(--error-color)' : 'var(--success-color)'; // Rojo si falta bajar, verde si se pasó la meta
 
   // Datos del gráfico de línea
   const data = {
@@ -279,8 +278,8 @@ const WeightTracker = () => {
             <p>Peso Inicial: {initialWeight} kg</p>
             <p>Peso Actual: {currentWeightValue} kg</p>
             <p>Peso Meta: {weightGoal} kg</p>
-            <p style={{ color: weightDifferenceColor }}>Falta para Meta: {goalDifference} kg</p>
-            <p style={{ color: weightDifferenceColor }}>¡Has bajado!: {Math.abs(weightLost)} kg</p>
+            <p>Falta para Meta: {goalDifference} kg</p>
+            <p>¡Has bajado!: {Math.abs(weightLost)} kg</p>
           </div>
 
           <h3>Entradas de Peso</h3>

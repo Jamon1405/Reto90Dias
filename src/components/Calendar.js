@@ -383,103 +383,96 @@ const handleSaveDay = () => {
               {(() => {
                 const routineKey = days[selectedDay].routine;
                 const routine = savedRoutines[routineKey];
-                const logExercises = Object.keys(days[selectedDay].logs || {});
-                const allExercises = routine
-                  ? Array.from(new Set([...(routine.exercises || []), ...logExercises]))
-                  : logExercises;
+                const available = routine ? routine.exercises.filter((ex) => !dayExercises.includes(ex)) : [];
                 return (
                   <div>
-                    {allExercises.map((ex) => {
-                      const selected = dayExercises.includes(ex);
+                    {dayExercises.map((ex) => {
                       const opened = openExercises.includes(ex);
                       return (
                         <details key={ex} open={opened} style={exerciseRowStyle(isMobile, opened)}>
                           <summary
                             style={summaryStyle(isMobile)}
                             onClick={(e) => {
-                              if (!selected) {
-                                e.preventDefault();
-                                setDayExercises((p) => [...p, ex]);
-                                setOpenExercises((p) => [...p, ex]);
-                              } else {
-                                setOpenExercises((p) =>
-                                  p.includes(ex) ? p.filter((x) => x !== ex) : [...p, ex]
-                                );
-                              }
+                              setOpenExercises((p) =>
+                                p.includes(ex) ? p.filter((x) => x !== ex) : [...p, ex]
+                              );
                             }}
                           >
                             <span>{ex}</span>
-                            {selected ? (
-                              <button
-                                type="button"
-                                aria-label="Quitar ejercicio"
-                                style={removeButton}
-                                onClick={(ev) => {
-                                  ev.preventDefault();
-                                  ev.stopPropagation();
-                                  handleRemoveExercise(ex);
-                                }}
-                              >
-                                X
-                              </button>
-                            ) : (
-                              <button
-                                type="button"
-                                aria-label="Agregar ejercicio"
-                                style={addButton}
-                                onClick={(ev) => {
-                                  ev.preventDefault();
-                                  ev.stopPropagation();
-                                  setDayExercises((p) =>
-                                    p.includes(ex) ? p : [...p, ex]
-                                  );
-                                  setOpenExercises((p) => [...p, ex]);
-                                }}
-                              >
-                                +
-                              </button>
-                            )}
+                            <button
+                              type="button"
+                              aria-label="Quitar ejercicio"
+                              style={removeButton}
+                              onClick={(ev) => {
+                                ev.preventDefault();
+                                ev.stopPropagation();
+                                handleRemoveExercise(ex);
+                              }}
+                            >
+                              X
+                            </button>
                           </summary>
-                          {selected && (
-                            <div style={inputContainerStyle(isMobile)}>
-                              <input
-                                type="number"
-                                value={setInputs[ex] || ''}
-                                onChange={(e) =>
-                                  setSetInputs((p) => ({ ...p, [ex]: e.target.value }))
-                                }
-                                placeholder="Series"
-                                aria-label={`Series de ${ex}`}
-                                enterKeyHint="next"
-                                style={inputSizeStyle(isMobile, '60px')}
-                              />
-                              <input
-                                type="number"
-                                value={repInputs[ex] || ''}
-                                onChange={(e) =>
-                                  setRepInputs((p) => ({ ...p, [ex]: e.target.value }))
-                                }
-                                placeholder="Reps"
-                                aria-label={`Repeticiones de ${ex}`}
-                                enterKeyHint="next"
-                                style={inputSizeStyle(isMobile, '60px')}
-                              />
-                              <input
-                                type="number"
-                                value={weightInputs[ex] || ''}
-                                onChange={(e) =>
-                                  setWeightInputs((p) => ({ ...p, [ex]: e.target.value }))
-                                }
-                                placeholder="Lb"
-                                aria-label={`Peso de ${ex}`}
-                                enterKeyHint="done"
-                                style={inputSizeStyle(isMobile, '80px')}
-                              />
-                            </div>
-                          )}
+                          <div style={inputContainerStyle(isMobile)}>
+                            <input
+                              type="number"
+                              value={setInputs[ex] || ''}
+                              onChange={(e) =>
+                                setSetInputs((p) => ({ ...p, [ex]: e.target.value }))
+                              }
+                              placeholder="Series"
+                              aria-label={`Series de ${ex}`}
+                              enterKeyHint="next"
+                              style={inputSizeStyle(isMobile, '60px')}
+                            />
+                            <input
+                              type="number"
+                              value={repInputs[ex] || ''}
+                              onChange={(e) =>
+                                setRepInputs((p) => ({ ...p, [ex]: e.target.value }))
+                              }
+                              placeholder="Reps"
+                              aria-label={`Repeticiones de ${ex}`}
+                              enterKeyHint="next"
+                              style={inputSizeStyle(isMobile, '60px')}
+                            />
+                            <input
+                              type="number"
+                              value={weightInputs[ex] || ''}
+                              onChange={(e) =>
+                                setWeightInputs((p) => ({ ...p, [ex]: e.target.value }))
+                              }
+                              placeholder="Lb"
+                              aria-label={`Peso de ${ex}`}
+                              enterKeyHint="done"
+                              style={inputSizeStyle(isMobile, '80px')}
+                            />
+                          </div>
                         </details>
                       );
                     })}
+                    {available.length > 0 && (
+                      <select
+                        value=""
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val) {
+                            setDayExercises((p) => [...p, val]);
+                            setOpenExercises((p) => [...p, val]);
+                            e.target.value = '';
+                          }
+                        }}
+                        style={{ ...inputStyle, marginBottom: '10px' }}
+                      >
+                        <option value="" disabled>
+                          Agregar ejercicio
+                        </option>
+                        {available.map((ex) => (
+                          <option key={ex} value={ex}>
+                            {ex}
+                          </option>
+                        ))}
+                      </select>
+                    )}
                   </div>
                 );
               })()}
@@ -665,8 +658,8 @@ const inputContainerStyle = (mobile) => ({
 });
 
 const removeButton = {
-  backgroundColor: 'transparent',
-  color: 'var(--error-color)',
+  backgroundColor: 'var(--error-color)',
+  color: '#FFFFFF',
   border: '1px solid var(--error-color)',
   borderRadius: '50%',
   cursor: 'pointer',
