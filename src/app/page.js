@@ -37,7 +37,7 @@ const CalendarOverview = () => {
         <strong style={{ ...indicatorStyle, color: '#e57373' }}>{routineMissedDays}</strong> días sin rutina
       </p>
       <p>
-        <strong style={{ ...indicatorStyle, color: '#0288d1' }}>{remainingDays}</strong> días restantes
+        <strong style={{ ...indicatorStyle, color: '#007aff' }}>{remainingDays}</strong> días restantes
       </p>
     </div>
   );
@@ -84,7 +84,7 @@ const overviewBoxStyle = {
 };
 
 const overviewTitleStyle = {
-  color: '#0288d1',
+  color: '#007aff',
   marginBottom: '15px',
 };
 
@@ -97,8 +97,7 @@ const indicatorStyle = {
 const HomePage = () => {
   const containerStyle = {
     padding: '30px',
-    fontFamily: "'Poppins', sans-serif",
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#f5f5f7',
     minHeight: '100vh',
     maxWidth: '600px',
     margin: '0 auto',
@@ -106,7 +105,7 @@ const HomePage = () => {
   };
 
   const headerStyle = {
-    color: '#0288d1',
+    color: '#007aff',
     marginBottom: '40px',
     fontSize: '32px',
   };

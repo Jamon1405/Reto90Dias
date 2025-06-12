@@ -529,15 +529,16 @@ const dayBoxStyle = (day, selected, mobile) => ({
 });
 
 const buttonStyle = {
-  backgroundColor: '#007bff',
+  backgroundColor: '#007aff',
   color: '#fff',
-  padding: '10px 16px',
-  borderRadius: '6px',
+  padding: '8px 14px',
+  borderRadius: '8px',
   border: 'none',
   cursor: 'pointer',
   margin: '10px 5px',
   fontSize: '16px',
-  transition: 'background-color 0.2s',
+  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+  transition: 'background-color 0.3s',
 };
 
 const inputStyle = {
@@ -600,8 +601,8 @@ const removeButton = {
 
 const addButton = {
   ...removeButton,
-  color: '#007bff',
-  borderColor: '#007bff',
+  color: '#007aff',
+  borderColor: '#007aff',
 };
 
 export default Calendar;

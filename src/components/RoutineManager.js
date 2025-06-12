@@ -261,7 +261,7 @@ const containerStyle = {
 };
 
 const headerStyle = {
-  color: '#0288d1',
+  color: '#007aff',
 };
 
 const inputStyle = {
@@ -274,14 +274,15 @@ const inputStyle = {
 };
 
 const buttonStyle = {
-  backgroundColor: '#007bff',
+  backgroundColor: '#007aff',
   color: '#fff',
-  padding: '10px 16px',
+  padding: '8px 14px',
   border: 'none',
-  borderRadius: '6px',
+  borderRadius: '8px',
   cursor: 'pointer',
   fontSize: '16px',
-  transition: 'background-color 0.2s',
+  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+  transition: 'background-color 0.3s',
 };
 
 const routineStyle = {
@@ -293,27 +294,27 @@ const routineStyle = {
 };
 
 const groupHeaderStyle = {
-  backgroundColor: '#007bff',
+  backgroundColor: '#007aff',
   color: '#fff',
   padding: '8px',
-  borderRadius: '6px',
+  borderRadius: '8px',
   cursor: 'pointer',
   marginBottom: '5px',
-  transition: 'background-color 0.2s',
+  transition: 'background-color 0.3s',
 };
 
 const exerciseButtonStyle = {
-  backgroundColor: '#007bff',
+  backgroundColor: '#007aff',
   color: '#fff',
   padding: '8px',
   border: 'none',
-  borderRadius: '6px',
+  borderRadius: '8px',
   cursor: 'pointer',
   display: 'block',
   width: '100%',
   marginBottom: '5px',
   fontSize: '15px',
-  transition: 'background-color 0.2s',
+  transition: 'background-color 0.3s',
 };
 
 const actionContainerStyle = {
@@ -324,18 +325,19 @@ const actionContainerStyle = {
 };
 
 const smallButton = {
-  backgroundColor: '#007bff',
+  backgroundColor: '#007aff',
   color: '#fff',
   border: 'none',
-  borderRadius: '6px',
+  borderRadius: '8px',
   cursor: 'pointer',
-  padding: '8px 12px',
+  padding: '6px 10px',
   fontSize: '16px',
   minWidth: '32px',
   width: 'auto',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
+  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
 };
 
 export default RoutineManager;
