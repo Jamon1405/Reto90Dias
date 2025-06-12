@@ -392,6 +392,7 @@ const Calendar = () => {
                                 style={removeButton}
                                 onClick={(ev) => {
                                   ev.preventDefault();
+                                  ev.stopPropagation();
                                   handleRemoveExercise(ex);
                                 }}
                               >
@@ -404,6 +405,7 @@ const Calendar = () => {
                                 style={addButton}
                                 onClick={(ev) => {
                                   ev.preventDefault();
+                                  ev.stopPropagation();
                                   setDayExercises((p) => [...p, ex]);
                                   setOpenExercises((p) => [...p, ex]);
                                 }}
@@ -524,7 +526,8 @@ const headerStyle = {
   fontSize: '28px',
   fontWeight: 'bold',
   marginBottom: '20px',
-  color: '#bb86fc',
+  color: '#f5f5f7',
+  fontFamily: 'SF Pro Display, -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif',
 };
 
 const dayBoxStyle = (day, selected, mobile) => ({
@@ -546,7 +549,7 @@ const dayBoxStyle = (day, selected, mobile) => ({
 });
 
 const buttonStyle = {
-  backgroundColor: '#bb86fc',
+  backgroundColor: '#f5f5f7',
   color: '#fff',
   padding: '8px 14px',
   borderRadius: '8px',
@@ -620,14 +623,15 @@ const removeButton = {
 
 const addButton = {
   ...removeButton,
-  color: '#bb86fc',
-  borderColor: '#bb86fc',
+  color: '#f5f5f7',
+  borderColor: '#f5f5f7',
 };
 
 const dayNumberStyle = {
-  fontSize: '48px',
+  fontSize: '72px',
   fontWeight: 'bold',
-  color: '#bb86fc',
+  color: '#f5f5f7',
+  fontFamily: 'SF Pro Display, -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif',
 };
 
 const dayDateStyle = {

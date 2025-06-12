@@ -131,7 +131,7 @@ const WeightTracker = () => {
       {
         label: 'Peso (kg)',
         data: weightEntries.map((entry) => entry.weight),
-        borderColor: '#bb86fc',
+        borderColor: '#f5f5f7',
         backgroundColor: 'rgba(10,132,255,0.2)',
         fill: true,
         tension: 0.2,
@@ -164,7 +164,8 @@ const WeightTracker = () => {
     fontSize: '32px',
     fontWeight: '600',
     marginBottom: '30px',
-    color: '#bb86fc',
+    color: '#f5f5f7',
+    fontFamily: 'SF Pro Display, -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif',
   };
 
   const inputStyle = {
@@ -179,7 +180,7 @@ const WeightTracker = () => {
   };
 
   const buttonStyle = {
-    backgroundColor: '#bb86fc',
+    backgroundColor: '#f5f5f7',
     color: '#fff',
     padding: '8px 14px',
     fontSize: '16px',

@@ -261,7 +261,8 @@ const containerStyle = {
 };
 
 const headerStyle = {
-  color: '#bb86fc',
+  color: '#f5f5f7',
+  fontFamily: 'SF Pro Display, -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif',
 };
 
 const inputStyle = {
@@ -276,7 +277,7 @@ const inputStyle = {
 };
 
 const buttonStyle = {
-  backgroundColor: '#bb86fc',
+  backgroundColor: '#f5f5f7',
   color: '#fff',
   padding: '8px 14px',
   border: 'none',
@@ -295,7 +296,7 @@ const routineStyle = {
 };
 
 const groupHeaderStyle = {
-  backgroundColor: '#bb86fc',
+  backgroundColor: '#f5f5f7',
   color: '#fff',
   padding: '8px',
   borderRadius: '8px',
@@ -305,7 +306,7 @@ const groupHeaderStyle = {
 };
 
 const exerciseButtonStyle = {
-  backgroundColor: '#bb86fc',
+  backgroundColor: '#f5f5f7',
   color: '#fff',
   padding: '8px',
   border: 'none',
@@ -322,11 +323,12 @@ const actionContainerStyle = {
   display: 'flex',
   gap: '8px',
   marginLeft: 'auto',
-  flexWrap: 'nowrap',
+  flexWrap: 'wrap',
+  marginTop: '4px',
 };
 
 const smallButton = {
-  backgroundColor: '#bb86fc',
+  backgroundColor: '#f5f5f7',
   color: '#fff',
   border: 'none',
   borderRadius: '8px',

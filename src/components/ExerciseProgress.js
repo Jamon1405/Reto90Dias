@@ -15,7 +15,7 @@ import useCurrentUser from '../hooks/useCurrentUser';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
 
 const buttonStyle = {
-  backgroundColor: '#bb86fc',
+  backgroundColor: '#f5f5f7',
   color: '#fff',
   border: 'none',
   borderRadius: '8px',
@@ -61,7 +61,7 @@ const ExerciseProgress = () => {
             {
               label: `${selected} (lb)`,
               data: progress[selected].map((p) => p.weight),
-              borderColor: '#bb86fc',
+              borderColor: '#f5f5f7',
               fill: false,
               tension: 0.2,
               pointRadius: 4,
