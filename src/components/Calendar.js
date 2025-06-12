@@ -20,6 +20,14 @@ const Calendar = () => {
   const [dayExercises, setDayExercises] = useState([]);
   const [startDate, setStartDate] = useState(new Date(START_DATE));
   const [isEditing, setIsEditing] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 480);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     const savedDays = localStorage.getItem(`calendarDays_${user}`);
@@ -332,8 +340,8 @@ const Calendar = () => {
               {dayExercises.length > 0 && (
                 <div>
                   {dayExercises.map((ex) => (
-                    <div key={ex} style={exerciseRowStyle}>
-                      <label style={{ flex: '1' }}>{ex}</label>
+                    <div key={ex} style={exerciseRowStyle(isMobile)}>
+                      <label style={exerciseLabelStyle(isMobile)}>{ex}</label>
                       <input
                         type="number"
                         value={setInputs[ex] || ''}
@@ -343,7 +351,7 @@ const Calendar = () => {
                         placeholder="Series"
                         aria-label={`Series de ${ex}`}
                         enterKeyHint="next"
-                        style={{ ...inputStyle, width: '60px' }}
+                        style={inputSizeStyle(isMobile, '60px')}
                       />
                       <input
                         type="number"
@@ -354,7 +362,7 @@ const Calendar = () => {
                         placeholder="Reps"
                         aria-label={`Repeticiones de ${ex}`}
                         enterKeyHint="next"
-                        style={{ ...inputStyle, width: '60px', marginLeft: '5px' }}
+                        style={inputSizeStyle(isMobile, '60px')}
                       />
                       <input
                         type="number"
@@ -365,7 +373,7 @@ const Calendar = () => {
                         placeholder="Lb"
                         aria-label={`Peso de ${ex}`}
                         enterKeyHint="done"
-                        style={{ ...inputStyle, width: '80px', marginLeft: '5px' }}
+                        style={inputSizeStyle(isMobile, '80px')}
                       />
                       <button
                         type="button"
@@ -488,13 +496,23 @@ const inputStyle = {
   fontSize: '16px',
 };
 
-const exerciseRowStyle = {
+const exerciseRowStyle = (mobile) => ({
   display: 'flex',
-  alignItems: 'center',
+  alignItems: mobile ? 'stretch' : 'center',
+  flexDirection: mobile ? 'column' : 'row',
   flexWrap: 'wrap',
   gap: '4px',
   marginBottom: '5px',
-};
+});
+
+const exerciseLabelStyle = (mobile) => ({
+  flex: mobile ? '0 0 100%' : '1',
+});
+
+const inputSizeStyle = (mobile, width) => ({
+  ...inputStyle,
+  width: mobile ? '100%' : width,
+});
 
 const removeButton = {
   backgroundColor: 'transparent',
