@@ -224,22 +224,24 @@ const RoutineManager = () => {
                       ))
                     : <li>{routines[day].exercises}</li>}
                 </ul>
-                <button
-                  type="button"
-                  aria-label="Eliminar rutina"
-                  style={{ ...buttonStyle, backgroundColor: '#e53935' }}
-                  onClick={() => handleDelete(day)}
-                >
-                  Eliminar
-                </button>
-                <button
-                  type="button"
-                  aria-label="Editar rutina"
-                  style={{ ...buttonStyle, marginLeft: '10px' }}
-                  onClick={() => handleEdit(day)}
-                >
-                  Editar
-                </button>
+                <div style={actionContainerStyle}>
+                  <button
+                    type="button"
+                    aria-label="Eliminar rutina"
+                    style={{ ...smallButton, backgroundColor: '#e53935' }}
+                    onClick={() => handleDelete(day)}
+                  >
+                    Eliminar
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Editar rutina"
+                    style={smallButton}
+                    onClick={() => handleEdit(day)}
+                  >
+                    Editar
+                  </button>
+                </div>
               </>
             ) : (
               <span>Sin rutina</span>
@@ -329,6 +331,7 @@ const smallButton = {
   padding: '8px 12px',
   fontSize: '16px',
   minWidth: '32px',
+  width: 'auto',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
