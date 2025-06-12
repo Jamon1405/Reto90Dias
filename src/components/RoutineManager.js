@@ -14,6 +14,7 @@ const RoutineManager = () => {
   const [customExercise, setCustomExercise] = useState('');
   const [routineExercises, setRoutineExercises] = useState([]);
   const [routines, setRoutines] = useState({});
+  const [editingDay, setEditingDay] = useState(null);
 
   useEffect(() => {
     const saved = localStorage.getItem(`weeklyRoutines_${user}`);
@@ -35,15 +36,39 @@ const RoutineManager = () => {
     }
   };
 
+  const moveExerciseUp = (index) => {
+    setRoutineExercises((prev) => {
+      if (index === 0) return prev;
+      const updated = [...prev];
+      [updated[index - 1], updated[index]] = [updated[index], updated[index - 1]];
+      return updated;
+    });
+  };
+
+  const moveExerciseDown = (index) => {
+    setRoutineExercises((prev) => {
+      if (index === prev.length - 1) return prev;
+      const updated = [...prev];
+      [updated[index + 1], updated[index]] = [updated[index], updated[index + 1]];
+      return updated;
+    });
+  };
+
+  const removeExercise = (index) => {
+    setRoutineExercises((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleSave = () => {
     if (routineName.trim() && routineExercises.length > 0) {
-      const updated = {
-        ...routines,
-        [weekday]: { name: routineName, exercises: routineExercises },
-      };
+      let updated = { ...routines };
+      if (editingDay && editingDay !== weekday) {
+        delete updated[editingDay];
+      }
+      updated[weekday] = { name: routineName, exercises: routineExercises };
       setRoutines(updated);
       setRoutineName('');
       setRoutineExercises([]);
+      setEditingDay(null);
       localStorage.setItem(`weeklyRoutines_${user}`, JSON.stringify(updated));
       window.dispatchEvent(new Event('routinesUpdated'));
     }
@@ -55,6 +80,16 @@ const RoutineManager = () => {
     setRoutines(updated);
     localStorage.setItem(`weeklyRoutines_${user}`, JSON.stringify(updated));
     window.dispatchEvent(new Event('routinesUpdated'));
+  };
+
+  const handleEdit = (day) => {
+    const routine = routines[day];
+    if (routine) {
+      setWeekday(day);
+      setRoutineName(routine.name);
+      setRoutineExercises(Array.isArray(routine.exercises) ? [...routine.exercises] : [routine.exercises]);
+      setEditingDay(day);
+    }
   };
 
   return (
@@ -124,13 +159,37 @@ const RoutineManager = () => {
           {routineExercises.map((ex, idx) => (
             <li key={idx} style={routineStyle}>
               {ex}
+              <div style={{ float: 'right' }}>
+                <button type="button" style={smallButton} onClick={() => moveExerciseUp(idx)}>
+                  ↑
+                </button>
+                <button type="button" style={smallButton} onClick={() => moveExerciseDown(idx)}>
+                  ↓
+                </button>
+                <button type="button" style={{ ...smallButton, backgroundColor: '#e53935' }} onClick={() => removeExercise(idx)}>
+                  X
+                </button>
+              </div>
             </li>
           ))}
         </ul>
       )}
       <button style={buttonStyle} onClick={handleSave}>
-        Guardar Rutina
+        {editingDay ? 'Guardar Cambios' : 'Guardar Rutina'}
       </button>
+      {editingDay && (
+        <button
+          type="button"
+          style={{ ...buttonStyle, backgroundColor: '#e53935', marginLeft: '10px' }}
+          onClick={() => {
+            setEditingDay(null);
+            setRoutineName('');
+            setRoutineExercises([]);
+          }}
+        >
+          Cancelar
+        </button>
+      )}
       <h3 style={{ marginTop: '20px' }}>Rutinas Guardadas</h3>
       <ul style={{ listStyle: 'none', padding: 0 }}>
         {weekdays.map((day) => (
@@ -152,6 +211,13 @@ const RoutineManager = () => {
                   onClick={() => handleDelete(day)}
                 >
                   Eliminar
+                </button>
+                <button
+                  type="button"
+                  style={{ ...buttonStyle, marginLeft: '10px' }}
+                  onClick={() => handleEdit(day)}
+                >
+                  Editar
                 </button>
               </>
             ) : (
@@ -221,6 +287,16 @@ const exerciseButtonStyle = {
   width: '100%',
   marginBottom: '5px',
   transition: 'background-color 0.3s',
+};
+
+const smallButton = {
+  backgroundColor: '#0288d1',
+  color: '#fff',
+  border: 'none',
+  borderRadius: '3px',
+  cursor: 'pointer',
+  marginLeft: '5px',
+  padding: '2px 6px',
 };
 
 export default RoutineManager;

@@ -17,13 +17,15 @@ const Calendar = () => {
   const [weightInputs, setWeightInputs] = useState({});
   const [setInputs, setSetInputs] = useState({});
   const [repInputs, setRepInputs] = useState({});
-  const startDate = new Date(START_DATE);
+  const [startDate, setStartDate] = useState(new Date(START_DATE));
 
   useEffect(() => {
     const savedDays = localStorage.getItem(`calendarDays_${user}`);
     setDays(savedDays ? JSON.parse(savedDays) : createEmptyDays());
     const routines = localStorage.getItem(`weeklyRoutines_${user}`);
     setSavedRoutines(routines ? JSON.parse(routines) : {});
+    const sd = localStorage.getItem(`startDate_${user}`);
+    if (sd) setStartDate(new Date(sd));
   }, [user]);
 
   useEffect(() => {
@@ -34,6 +36,10 @@ const Calendar = () => {
     window.addEventListener('routinesUpdated', handler);
     return () => window.removeEventListener('routinesUpdated', handler);
   }, [user]);
+
+  useEffect(() => {
+    localStorage.setItem(`startDate_${user}`, startDate.toISOString());
+  }, [startDate, user]);
 
   useEffect(() => {
     localStorage.setItem(`calendarDays_${user}`, JSON.stringify(days));
@@ -112,9 +118,11 @@ const Calendar = () => {
     localStorage.removeItem(`calendarDays_${user}`);
     localStorage.removeItem(`weeklyRoutines_${user}`);
     localStorage.removeItem(`exerciseProgress_${user}`);
+    localStorage.removeItem(`startDate_${user}`);
     setSavedRoutines({});
     window.dispatchEvent(new Event('routinesUpdated'));
     setSelectedDay(null);
+    setStartDate(new Date(START_DATE));
   };
 
   const renderRoutine = (date) => {
@@ -139,6 +147,15 @@ const Calendar = () => {
   return (
     <div style={containerStyle}>
       <h2 style={headerStyle}>Calendario de 60 días</h2>
+      <div style={{ marginBottom: '10px' }}>
+        <label style={{ marginRight: '10px' }}>Inicio del reto:</label>
+        <input
+          type="date"
+          value={startDate.toISOString().split('T')[0]}
+          onChange={(e) => setStartDate(new Date(e.target.value))}
+          style={inputStyle}
+        />
+      </div>
       <div className="calendar-grid">
         {days.map((day, index) => {
           const date = new Date(startDate);
