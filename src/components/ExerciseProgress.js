@@ -15,14 +15,14 @@ import useCurrentUser from '../hooks/useCurrentUser';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
 
 const buttonStyle = {
-  backgroundColor: '#007aff',
+  backgroundColor: '#0a84ff',
   color: '#fff',
   border: 'none',
   borderRadius: '8px',
   padding: '6px 12px',
   cursor: 'pointer',
   fontSize: '14px',
-  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+  boxShadow: 'none',
   transition: 'background-color 0.3s',
 };
 
@@ -61,7 +61,7 @@ const ExerciseProgress = () => {
             {
               label: `${selected} (lb)`,
               data: progress[selected].map((p) => p.weight),
-              borderColor: '#007aff',
+              borderColor: '#0a84ff',
               fill: false,
               tension: 0.2,
               pointRadius: 4,
@@ -82,12 +82,12 @@ const ExerciseProgress = () => {
     },
     scales: {
       x: {
-        ticks: { color: '#555' },
-        grid: { color: '#e0e0e0' },
+        ticks: { color: '#e0e0e0' },
+        grid: { color: '#333' },
       },
       y: {
-        ticks: { color: '#555' },
-        grid: { color: '#e0e0e0' },
+        ticks: { color: '#e0e0e0' },
+        grid: { color: '#333' },
       },
     },
   };

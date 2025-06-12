@@ -261,7 +261,7 @@ const containerStyle = {
 };
 
 const headerStyle = {
-  color: '#007aff',
+  color: '#0a84ff',
 };
 
 const inputStyle = {
@@ -269,32 +269,33 @@ const inputStyle = {
   padding: '10px',
   marginBottom: '10px',
   borderRadius: '6px',
-  border: '1px solid #ccc',
+  border: '1px solid #333',
   fontSize: '16px',
+  backgroundColor: '#1e1e1e',
+  color: '#e0e0e0',
 };
 
 const buttonStyle = {
-  backgroundColor: '#007aff',
+  backgroundColor: '#0a84ff',
   color: '#fff',
   padding: '8px 14px',
   border: 'none',
   borderRadius: '8px',
   cursor: 'pointer',
   fontSize: '16px',
-  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+  boxShadow: 'none',
   transition: 'background-color 0.3s',
 };
 
 const routineStyle = {
-  backgroundColor: '#fff',
   padding: '10px',
   marginBottom: '10px',
   borderRadius: '5px',
-  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+  border: '1px solid #333',
 };
 
 const groupHeaderStyle = {
-  backgroundColor: '#007aff',
+  backgroundColor: '#0a84ff',
   color: '#fff',
   padding: '8px',
   borderRadius: '8px',
@@ -304,7 +305,7 @@ const groupHeaderStyle = {
 };
 
 const exerciseButtonStyle = {
-  backgroundColor: '#007aff',
+  backgroundColor: '#0a84ff',
   color: '#fff',
   padding: '8px',
   border: 'none',
@@ -325,7 +326,7 @@ const actionContainerStyle = {
 };
 
 const smallButton = {
-  backgroundColor: '#007aff',
+  backgroundColor: '#0a84ff',
   color: '#fff',
   border: 'none',
   borderRadius: '8px',
@@ -337,7 +338,7 @@ const smallButton = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+  boxShadow: 'none',
 };
 
 export default RoutineManager;

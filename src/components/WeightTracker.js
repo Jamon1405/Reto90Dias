@@ -131,8 +131,8 @@ const WeightTracker = () => {
       {
         label: 'Peso (kg)',
         data: weightEntries.map((entry) => entry.weight),
-        borderColor: '#007aff',
-        backgroundColor: 'rgba(0, 122, 255, 0.2)',
+        borderColor: '#0a84ff',
+        backgroundColor: 'rgba(10,132,255,0.2)',
         fill: true,
         tension: 0.2,
       },
@@ -155,9 +155,6 @@ const WeightTracker = () => {
   // Estilos
   const containerStyle = {
     padding: '24px',
-    backgroundColor: '#ffffff',
-    borderRadius: '12px',
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
     margin: '30px auto',
     maxWidth: '600px',
     textAlign: 'center',
@@ -167,7 +164,7 @@ const WeightTracker = () => {
     fontSize: '32px',
     fontWeight: '600',
     marginBottom: '30px',
-    color: '#007aff',
+    color: '#0a84ff',
   };
 
   const inputStyle = {
@@ -175,13 +172,14 @@ const WeightTracker = () => {
     padding: '12px',
     fontSize: '16px',
     borderRadius: '10px',
-    border: '1px solid #ddd',
+    border: '1px solid #333',
     marginBottom: '15px',
-    boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
+    backgroundColor: '#1e1e1e',
+    color: '#e0e0e0',
   };
 
   const buttonStyle = {
-    backgroundColor: '#007aff',
+    backgroundColor: '#0a84ff',
     color: '#fff',
     padding: '8px 14px',
     fontSize: '16px',
@@ -189,7 +187,7 @@ const WeightTracker = () => {
     border: 'none',
     cursor: 'pointer',
     transition: 'background-color 0.3s',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+    boxShadow: 'none',
     marginBottom: '20px',
   };
 

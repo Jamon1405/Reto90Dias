@@ -497,19 +497,17 @@ const Calendar = () => {
 
 const containerStyle = {
   padding: '20px',
-  backgroundColor: '#ffffff',
-  borderRadius: '15px',
   margin: 'auto',
   textAlign: 'center',
   width: '100%',
   maxWidth: '600px',
-  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
 };
 
 const headerStyle = {
-  fontSize: '24px',
+  fontSize: '28px',
   fontWeight: 'bold',
   marginBottom: '20px',
+  color: '#0a84ff',
 };
 
 const dayBoxStyle = (day, selected, mobile) => ({
@@ -518,18 +516,20 @@ const dayBoxStyle = (day, selected, mobile) => ({
   borderRadius: '8px',
   cursor: 'pointer',
   minHeight: mobile ? '70px' : '60px',
-  fontSize: mobile ? '14px' : '16px',
-  backgroundColor: day.completed
+  fontSize: mobile ? '14px' : '18px',
+  color: '#e0e0e0',
+  border: day.completed
     ? day.didRoutine
-      ? '#4caf50'
-      : '#e57373'
-    : '#f1f1f1',
-  boxShadow: selected ? '0px 0px 15px rgba(0, 0, 0, 0.2)' : '0 2px 4px rgba(0,0,0,0.1)',
+      ? '1px solid #4caf50'
+      : '1px solid #e57373'
+    : '1px solid #444',
+  backgroundColor: selected ? '#1e1e1e' : 'transparent',
+  boxShadow: selected ? '0 0 10px rgba(0,0,0,0.5)' : 'none',
   transition: 'background-color 0.3s, box-shadow 0.3s',
 });
 
 const buttonStyle = {
-  backgroundColor: '#007aff',
+  backgroundColor: '#0a84ff',
   color: '#fff',
   padding: '8px 14px',
   borderRadius: '8px',
@@ -537,16 +537,18 @@ const buttonStyle = {
   cursor: 'pointer',
   margin: '10px 5px',
   fontSize: '16px',
-  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+  boxShadow: 'none',
   transition: 'background-color 0.3s',
 };
 
 const inputStyle = {
   padding: '10px',
   borderRadius: '6px',
-  border: '1px solid #ccc',
+  border: '1px solid #333',
   marginBottom: '10px',
   fontSize: '16px',
+  backgroundColor: '#1e1e1e',
+  color: '#e0e0e0',
 };
 
 const exerciseRowStyle = (mobile, selected) => ({
@@ -558,8 +560,8 @@ const exerciseRowStyle = (mobile, selected) => ({
   marginBottom: '5px',
   padding: '6px',
   borderRadius: '6px',
-  backgroundColor: selected ? '#e3f2fd' : '#f7f7f7',
-});
+  backgroundColor: selected ? '#2a2a2a' : 'transparent',
+  });
 
 const inputSizeStyle = (mobile, width) => ({
   ...inputStyle,
@@ -601,8 +603,8 @@ const removeButton = {
 
 const addButton = {
   ...removeButton,
-  color: '#007aff',
-  borderColor: '#007aff',
+  color: '#0a84ff',
+  borderColor: '#0a84ff',
 };
 
 export default Calendar;

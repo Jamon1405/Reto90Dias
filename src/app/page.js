@@ -76,15 +76,14 @@ const WeightOverview = () => {
 // Estilos generales
 const overviewBoxStyle = {
   padding: '20px',
-  backgroundColor: '#ffffff',
+  border: '1px solid #333',
   borderRadius: '10px',
   marginBottom: '20px',
   textAlign: 'center',
-  boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
-};
+}; 
 
 const overviewTitleStyle = {
-  color: '#007aff',
+  color: '#0a84ff',
   marginBottom: '15px',
 };
 
@@ -97,7 +96,6 @@ const indicatorStyle = {
 const HomePage = () => {
   const containerStyle = {
     padding: '30px',
-    backgroundColor: '#f5f5f7',
     minHeight: '100vh',
     maxWidth: '600px',
     margin: '0 auto',
@@ -105,7 +103,7 @@ const HomePage = () => {
   };
 
   const headerStyle = {
-    color: '#007aff',
+    color: '#0a84ff',
     marginBottom: '40px',
     fontSize: '32px',
   };
