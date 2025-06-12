@@ -7,7 +7,7 @@ const weekdays = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes'
 
 const Calendar = () => {
   const user = useCurrentUser();
-  const [selectedDay, setSelectedDay] = useState(null);
+  const [selectedDay, setSelectedDay] = useState(0);
   const createEmptyDays = () =>
     Array.from({
       length: TOTAL_DAYS,
@@ -31,7 +31,10 @@ const Calendar = () => {
 
   useEffect(() => {
     const savedDays = localStorage.getItem(`calendarDays_${user}`);
-    setDays(savedDays ? JSON.parse(savedDays) : createEmptyDays());
+    const loadedDays = savedDays ? JSON.parse(savedDays) : createEmptyDays();
+    setDays(loadedDays);
+    const first = loadedDays.findIndex((d) => !d.completed);
+    setSelectedDay(first >= 0 ? first : 0);
     const routines = localStorage.getItem(`weeklyRoutines_${user}`);
     setSavedRoutines(routines ? JSON.parse(routines) : {});
     const sd = localStorage.getItem(`startDate_${user}`);
@@ -56,8 +59,50 @@ const Calendar = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [days]);
 
+  useEffect(() => {
+    if (selectedDay === null || !days[selectedDay]) return;
+    const routineKey = days[selectedDay].routine;
+    const routine = savedRoutines[routineKey];
+    const dayLogs = days[selectedDay].logs || {};
+    const progress = JSON.parse(localStorage.getItem(`exerciseProgress_${user}`) || '{}');
+
+    if (routine) {
+      const weightMap = {};
+      const setMap = {};
+      const repMap = {};
+      routine.exercises.forEach((ex) => {
+        const hist = progress[ex] || [];
+        weightMap[ex] = hist.length > 0 ? hist[hist.length - 1].weight : '';
+        setMap[ex] = '';
+        repMap[ex] = '';
+      });
+      Object.entries(dayLogs).forEach(([name, log]) => {
+        if (log.weight) weightMap[name] = log.weight;
+        if (log.sets) setMap[name] = log.sets;
+        if (log.reps) repMap[name] = log.reps;
+      });
+      setWeightInputs(weightMap);
+      setSetInputs(setMap);
+      setRepInputs(repMap);
+      const exercisesList = Object.keys(dayLogs).length > 0 ? Object.keys(dayLogs) : [...routine.exercises];
+      setDayExercises(exercisesList);
+    } else {
+      const weightMap = {};
+      const setMap = {};
+      const repMap = {};
+      Object.entries(dayLogs).forEach(([name, log]) => {
+        weightMap[name] = log.weight || '';
+        setMap[name] = log.sets || '';
+        repMap[name] = log.reps || '';
+      });
+      setWeightInputs(weightMap);
+      setSetInputs(setMap);
+      setRepInputs(repMap);
+      setDayExercises(Object.keys(dayLogs));
+    }
+  }, [selectedDay, days, savedRoutines, user]);
+
   const handleSaveDay = () => {
-    if (selectedDay === null) return;
 
     const date = new Date(startDate.getTime() + selectedDay * 86400000)
       .toISOString()
@@ -124,10 +169,12 @@ const Calendar = () => {
       }
     }
     setIsEditing(false);
+    if (selectedDay < TOTAL_DAYS - 1) {
+      setSelectedDay(selectedDay + 1);
+    }
   };
 
   const handleSkipDay = () => {
-    if (selectedDay === null) return;
     setDays((prev) => {
       const updated = [...prev];
       updated[selectedDay] = {
@@ -143,6 +190,9 @@ const Calendar = () => {
     setSetInputs({});
     setRepInputs({});
     setIsEditing(false);
+    if (selectedDay < TOTAL_DAYS - 1) {
+      setSelectedDay(selectedDay + 1);
+    }
   };
 
   const handleRemoveExercise = (ex) => {
@@ -179,7 +229,7 @@ const Calendar = () => {
     localStorage.removeItem(`startDate_${user}`);
     setSavedRoutines({});
     window.dispatchEvent(new Event('routinesUpdated'));
-    setSelectedDay(null);
+    setSelectedDay(0);
     setStartDate(new Date(START_DATE));
     setDayExercises([]);
     setWeightInputs({});
@@ -204,57 +254,41 @@ const Calendar = () => {
           style={inputStyle}
         />
       </div>
-      <div className="calendar-grid">
-        {days.map((day, index) => {
-          const date = new Date(startDate);
-          date.setDate(startDate.getDate() + index);
-          return (
-            <div
-              key={index}
-              style={dayBoxStyle(day, selectedDay === index, isMobile)}
-              onClick={() => {
-                setSelectedDay(index);
-                setIsEditing(false);
-                const routineKey = days[index].routine;
-                const routine = savedRoutines[routineKey];
-                if (routine) {
-                  const progress = JSON.parse(
-                    localStorage.getItem(`exerciseProgress_${user}`) || '{}'
-                  );
-                  const weightMap = {};
-                  const setMap = {};
-                  const repMap = {};
-                  routine.exercises.forEach((ex) => {
-                    const hist = progress[ex] || [];
-                    weightMap[ex] = hist.length > 0 ? hist[hist.length - 1].weight : '';
-                    setMap[ex] = '';
-                    repMap[ex] = '';
-                  });
-                  const dayLogs = days[index].logs || {};
-                  Object.entries(dayLogs).forEach(([name, log]) => {
-                    if (log.weight) weightMap[name] = log.weight;
-                    if (log.sets) setMap[name] = log.sets;
-                    if (log.reps) repMap[name] = log.reps;
-                  });
-                  setWeightInputs(weightMap);
-                  setSetInputs(setMap);
-                  setRepInputs(repMap);
-                  const exercisesList =
-                    Object.keys(dayLogs).length > 0
-                      ? Object.keys(dayLogs)
-                      : [...routine.exercises];
-                  setDayExercises(exercisesList);
-                } else {
-                  setDayExercises([]);
-                }
-              }}
-            >
-              Dia {index + 1}
-              <br />
-              {date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })} - {weekdays[date.getDay()]}
-            </div>
-          );
-        })}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+        <button
+          type="button"
+          aria-label="Día anterior"
+          disabled={selectedDay === 0}
+          style={{ ...buttonStyle, padding: '6px 10px' }}
+          onClick={() => setSelectedDay((d) => Math.max(0, d - 1))}
+        >
+          ←
+        </button>
+        <select
+          value={selectedDay}
+          onChange={(e) => setSelectedDay(parseInt(e.target.value, 10))}
+          style={inputStyle}
+        >
+          {days.map((_, idx) => {
+            const dt = new Date(startDate);
+            dt.setDate(startDate.getDate() + idx);
+            return (
+              <option key={idx} value={idx}>
+                Día {idx + 1} -
+                {dt.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
+              </option>
+            );
+          })}
+        </select>
+        <button
+          type="button"
+          aria-label="Día siguiente"
+          disabled={selectedDay === TOTAL_DAYS - 1}
+          style={{ ...buttonStyle, padding: '6px 10px' }}
+          onClick={() => setSelectedDay((d) => Math.min(TOTAL_DAYS - 1, d + 1))}
+        >
+          →
+        </button>
       </div>
       {selectedDay !== null && (
         <div
@@ -265,6 +299,15 @@ const Calendar = () => {
             transition: 'max-height 0.3s ease',
           }}
         >
+          {(() => {
+            const date = new Date(startDate);
+            date.setDate(startDate.getDate() + selectedDay);
+            return (
+              <div style={{ ...dayBoxStyle(days[selectedDay], true, isMobile), marginBottom: '15px' }}>
+                Día {selectedDay + 1} - {date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })} {weekdays[date.getDay()]}
+              </div>
+            );
+          })()}
 
 
           {!days[selectedDay].routine && Object.keys(savedRoutines).length === 0 && (
