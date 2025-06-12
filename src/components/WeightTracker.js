@@ -181,7 +181,7 @@ const WeightTracker = () => {
 
   const buttonStyle = {
     backgroundColor: '#f5f5f7',
-    color: '#fff',
+    color: '#121212',
     padding: '8px 14px',
     fontSize: '16px',
     borderRadius: '8px',

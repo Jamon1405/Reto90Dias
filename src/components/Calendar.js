@@ -550,7 +550,7 @@ const dayBoxStyle = (day, selected, mobile) => ({
 
 const buttonStyle = {
   backgroundColor: '#f5f5f7',
-  color: '#fff',
+  color: '#121212',
   padding: '8px 14px',
   borderRadius: '8px',
   border: 'none',

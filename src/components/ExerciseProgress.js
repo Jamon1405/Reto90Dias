@@ -16,7 +16,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip,
 
 const buttonStyle = {
   backgroundColor: '#f5f5f7',
-  color: '#fff',
+  color: '#121212',
   border: 'none',
   borderRadius: '8px',
   padding: '6px 12px',
