@@ -540,6 +540,9 @@ const containerStyle = {
   textAlign: 'center',
   width: '100%',
   maxWidth: '430px',
+  backgroundColor: 'var(--background-card)',
+  borderRadius: '20px',
+  boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
 };
 
 const headerStyle = {
@@ -569,7 +572,7 @@ const dayBoxStyle = (day, selected, mobile) => ({
 });
 
 const buttonStyle = {
-  backgroundColor: '#0A84FF',
+  backgroundColor: 'var(--accent-color)',
   color: '#FFFFFF',
   padding: '8px 14px',
   borderRadius: '8px',
@@ -644,8 +647,8 @@ const removeButton = {
 const addButton = {
   ...removeButton,
   color: '#f5f5f7',
-  borderColor: '#0A84FF',
-  backgroundColor: '#0A84FF',
+  borderColor: 'var(--accent-color)',
+  backgroundColor: 'var(--accent-color)',
 };
 
 const dayNumberStyle = {

@@ -15,7 +15,7 @@ import useCurrentUser from '../hooks/useCurrentUser';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
 
 const buttonStyle = {
-  backgroundColor: '#0A84FF',
+  backgroundColor: 'var(--accent-color)',
   color: '#FFFFFF',
   border: 'none',
   borderRadius: '8px',
@@ -129,7 +129,7 @@ const ExerciseProgress = () => {
         </select>
       )}
       {data && (
-        <div style={{ height: '250px', maxWidth: '430px', margin: '0 auto' }}>
+        <div style={{ height: '300px', maxWidth: '600px', margin: '0 auto' }}>
           <Line data={data} options={options} />
         </div>
       )}

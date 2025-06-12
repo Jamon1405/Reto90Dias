@@ -37,7 +37,7 @@ const CalendarOverview = () => {
         <strong style={{ ...indicatorStyle, color: '#FF453A' }}>{routineMissedDays}</strong> días sin rutina
       </p>
       <p>
-        <strong style={{ ...indicatorStyle, color: '#0A84FF' }}>{remainingDays}</strong> días restantes
+        <strong style={{ ...indicatorStyle, color: 'var(--accent-color)' }}>{remainingDays}</strong> días restantes
       </p>
     </div>
   );
@@ -76,11 +76,12 @@ const WeightOverview = () => {
 // Estilos generales
 const overviewBoxStyle = {
   padding: '20px',
-  border: '1px solid #2C2C2E',
-  borderRadius: '10px',
+  borderRadius: '20px',
   marginBottom: '20px',
   textAlign: 'center',
-}; 
+  backgroundColor: 'var(--background-card)',
+  boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
+};
 
 const overviewTitleStyle = {
   color: '#f5f5f7',

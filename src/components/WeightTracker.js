@@ -159,6 +159,9 @@ const WeightTracker = () => {
     maxWidth: '430px',
     width: '100%',
     textAlign: 'center',
+    backgroundColor: 'var(--background-card)',
+    borderRadius: '20px',
+    boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
   };
 
   const headerStyle = {
@@ -181,7 +184,7 @@ const WeightTracker = () => {
   };
 
   const buttonStyle = {
-    backgroundColor: '#0A84FF',
+    backgroundColor: 'var(--accent-color)',
     color: '#FFFFFF',
     padding: '8px 14px',
     fontSize: '16px',
@@ -301,7 +304,9 @@ const WeightTracker = () => {
             ))}
           </ul>
 
-          <Line data={data} options={options} />
+          <div style={{ height: '300px', maxWidth: '600px', margin: '0 auto' }}>
+            <Line data={data} options={options} />
+          </div>
         </>
       )}
     </div>

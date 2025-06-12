@@ -258,6 +258,9 @@ const containerStyle = {
   maxWidth: '430px',
   margin: 'auto',
   width: '100%',
+  backgroundColor: 'var(--background-card)',
+  borderRadius: '20px',
+  boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
 };
 
 const headerStyle = {
@@ -277,7 +280,7 @@ const inputStyle = {
 };
 
 const buttonStyle = {
-  backgroundColor: '#0A84FF',
+  backgroundColor: 'var(--accent-color)',
   color: '#FFFFFF',
   padding: '8px 14px',
   border: 'none',
@@ -296,7 +299,7 @@ const routineStyle = {
 };
 
 const groupHeaderStyle = {
-  backgroundColor: '#0A84FF',
+  backgroundColor: 'var(--accent-color)',
   color: '#FFFFFF',
   padding: '8px',
   borderRadius: '8px',
@@ -328,7 +331,7 @@ const actionContainerStyle = {
 };
 
 const smallButton = {
-  backgroundColor: '#0A84FF',
+  backgroundColor: 'var(--accent-color)',
   color: '#FFFFFF',
   border: 'none',
   borderRadius: '8px',
