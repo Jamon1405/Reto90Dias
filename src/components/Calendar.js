@@ -156,8 +156,8 @@ const Calendar = () => {
 
   const renderRoutine = (date) => {
     const dayName = weekdays[date.getDay()];
-    const routineKey = days[selectedDay]?.routine || dayName;
-    const routine = savedRoutines[routineKey];
+    const routineKey = days[selectedDay]?.routine;
+    const routine = routineKey ? savedRoutines[routineKey] : null;
     if (!routine) return <p>No hay rutina para este día</p>;
     return (
       <div>
@@ -311,6 +311,7 @@ const Calendar = () => {
                           setSetInputs((p) => ({ ...p, [ex]: e.target.value }))
                         }
                         placeholder="Series"
+                        aria-label={`Series de ${ex}`}
                         enterKeyHint="next"
                         style={{ ...inputStyle, width: '60px' }}
                       />
@@ -321,6 +322,7 @@ const Calendar = () => {
                           setRepInputs((p) => ({ ...p, [ex]: e.target.value }))
                         }
                         placeholder="Reps"
+                        aria-label={`Repeticiones de ${ex}`}
                         enterKeyHint="next"
                         style={{ ...inputStyle, width: '60px', marginLeft: '5px' }}
                       />
@@ -331,6 +333,7 @@ const Calendar = () => {
                           setWeightInputs((p) => ({ ...p, [ex]: e.target.value }))
                         }
                         placeholder="Lb"
+                        aria-label={`Peso de ${ex}`}
                         enterKeyHint="done"
                         style={{ ...inputStyle, width: '80px', marginLeft: '5px' }}
                       />
@@ -459,13 +462,14 @@ const exerciseRowStyle = {
   display: 'flex',
   alignItems: 'center',
   flexWrap: 'wrap',
+  gap: '4px',
   marginBottom: '5px',
 };
 
 const removeButton = {
   backgroundColor: 'transparent',
   color: '#e53935',
-  border: 'none',
+  border: '1px solid #e53935',
   borderRadius: '50%',
   cursor: 'pointer',
   padding: '4px',
