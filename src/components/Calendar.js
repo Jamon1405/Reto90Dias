@@ -293,7 +293,7 @@ const Calendar = () => {
         <div
           style={{
             marginTop: '20px',
-            overflow: 'hidden',
+            overflowY: 'auto',
             maxHeight: '1000px',
             transition: 'max-height 0.3s ease',
           }}
@@ -337,56 +337,80 @@ const Calendar = () => {
 
           {!days[selectedDay].completed || isEditing ? (
             <div>
-              {dayExercises.length > 0 && (
-                <div>
-                  {dayExercises.map((ex) => (
-                    <div key={ex} style={exerciseRowStyle(isMobile)}>
-                      <label style={exerciseLabelStyle(isMobile)}>{ex}</label>
-                      <input
-                        type="number"
-                        value={setInputs[ex] || ''}
-                        onChange={(e) =>
-                          setSetInputs((p) => ({ ...p, [ex]: e.target.value }))
-                        }
-                        placeholder="Series"
-                        aria-label={`Series de ${ex}`}
-                        enterKeyHint="next"
-                        style={inputSizeStyle(isMobile, '60px')}
-                      />
-                      <input
-                        type="number"
-                        value={repInputs[ex] || ''}
-                        onChange={(e) =>
-                          setRepInputs((p) => ({ ...p, [ex]: e.target.value }))
-                        }
-                        placeholder="Reps"
-                        aria-label={`Repeticiones de ${ex}`}
-                        enterKeyHint="next"
-                        style={inputSizeStyle(isMobile, '60px')}
-                      />
-                      <input
-                        type="number"
-                        value={weightInputs[ex] || ''}
-                        onChange={(e) =>
-                          setWeightInputs((p) => ({ ...p, [ex]: e.target.value }))
-                        }
-                        placeholder="Lb"
-                        aria-label={`Peso de ${ex}`}
-                        enterKeyHint="done"
-                        style={inputSizeStyle(isMobile, '80px')}
-                      />
-                      <button
-                        type="button"
-                        aria-label="Quitar ejercicio"
-                        style={removeButton}
-                        onClick={() => handleRemoveExercise(ex)}
-                      >
-                        X
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
+              {(() => {
+                const routineKey = days[selectedDay].routine;
+                const routine = savedRoutines[routineKey];
+                const logExercises = Object.keys(days[selectedDay].logs || {});
+                const allExercises = routine
+                  ? Array.from(new Set([...(routine.exercises || []), ...logExercises]))
+                  : logExercises;
+                return (
+                  <div>
+                    {allExercises.map((ex) => {
+                      const selected = dayExercises.includes(ex);
+                      return (
+                        <div key={ex} style={exerciseRowStyle(isMobile, selected)}>
+                          <label style={exerciseLabelStyle(isMobile)}>{ex}</label>
+                          {selected ? (
+                            <>
+                              <input
+                                type="number"
+                                value={setInputs[ex] || ''}
+                                onChange={(e) =>
+                                  setSetInputs((p) => ({ ...p, [ex]: e.target.value }))
+                                }
+                                placeholder="Series"
+                                aria-label={`Series de ${ex}`}
+                                enterKeyHint="next"
+                                style={inputSizeStyle(isMobile, '60px')}
+                              />
+                              <input
+                                type="number"
+                                value={repInputs[ex] || ''}
+                                onChange={(e) =>
+                                  setRepInputs((p) => ({ ...p, [ex]: e.target.value }))
+                                }
+                                placeholder="Reps"
+                                aria-label={`Repeticiones de ${ex}`}
+                                enterKeyHint="next"
+                                style={inputSizeStyle(isMobile, '60px')}
+                              />
+                              <input
+                                type="number"
+                                value={weightInputs[ex] || ''}
+                                onChange={(e) =>
+                                  setWeightInputs((p) => ({ ...p, [ex]: e.target.value }))
+                                }
+                                placeholder="Lb"
+                                aria-label={`Peso de ${ex}`}
+                                enterKeyHint="done"
+                                style={inputSizeStyle(isMobile, '80px')}
+                              />
+                              <button
+                                type="button"
+                                aria-label="Quitar ejercicio"
+                                style={removeButton}
+                                onClick={() => handleRemoveExercise(ex)}
+                              >
+                                X
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              type="button"
+                              aria-label="Agregar ejercicio"
+                              style={addButton}
+                              onClick={() => setDayExercises((p) => [...p, ex])}
+                            >
+                              +
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
               <button style={buttonStyle} onClick={handleSaveDay}>
                 {days[selectedDay].completed ? 'Guardar cambios' : 'Guardar rutina del día'}
               </button>
@@ -497,13 +521,16 @@ const inputStyle = {
   fontSize: '16px',
 };
 
-const exerciseRowStyle = (mobile) => ({
+const exerciseRowStyle = (mobile, selected) => ({
   display: 'flex',
   alignItems: mobile ? 'stretch' : 'center',
   flexDirection: mobile ? 'column' : 'row',
   flexWrap: 'wrap',
   gap: '4px',
   marginBottom: '5px',
+  padding: '6px',
+  borderRadius: '6px',
+  backgroundColor: selected ? '#e3f2fd' : '#f7f7f7',
 });
 
 const exerciseLabelStyle = (mobile) => ({
@@ -529,6 +556,12 @@ const removeButton = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
+};
+
+const addButton = {
+  ...removeButton,
+  color: '#007bff',
+  borderColor: '#007bff',
 };
 
 export default Calendar;

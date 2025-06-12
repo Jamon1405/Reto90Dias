@@ -3,7 +3,7 @@ import WeightTracker from '../../components/WeightTracker';
 
 export default function WeightTrackerPage() {
   return (
-    <div>
+    <div className="container">
       <WeightTracker />
     </div>
   );
