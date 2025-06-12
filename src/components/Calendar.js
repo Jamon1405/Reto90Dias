@@ -260,7 +260,8 @@ const Calendar = () => {
             transition: 'max-height 0.3s ease',
           }}
         >
-          {renderRoutine(new Date(startDate.getTime() + selectedDay * 86400000))}
+          {!isEditing &&
+            renderRoutine(new Date(startDate.getTime() + selectedDay * 86400000))}
 
           {!days[selectedDay].routine && Object.keys(savedRoutines).length === 0 && (
             <p>No hay rutinas guardadas. Crea una en la sección Rutinas.</p>
@@ -462,15 +463,16 @@ const exerciseRowStyle = {
 };
 
 const removeButton = {
-  backgroundColor: '#e53935',
-  color: '#fff',
+  backgroundColor: 'transparent',
+  color: '#e53935',
   border: 'none',
-  borderRadius: '6px',
+  borderRadius: '50%',
   cursor: 'pointer',
-  padding: '8px 12px',
+  padding: '4px',
   marginLeft: '5px',
-  fontSize: '16px',
-  minWidth: '32px',
+  fontSize: '14px',
+  width: '24px',
+  height: '24px',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
