@@ -280,13 +280,18 @@ const WeightTracker = () => {
           </div>
 
           <h3>Entradas de Peso</h3>
-          <ul>
+          <ul style={{ padding: 0, listStyle: 'none' }}>
             {weightEntries.map((entry, index) => (
-              <li key={index}>
-                {entry.date}: {entry.weight} kg
+              <li
+                key={index}
+                style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}
+              >
+                <span style={{ flexGrow: 1 }}>
+                  {entry.date}: {entry.weight} kg
+                </span>
                 <button
                   onClick={() => handleDeleteEntry(index)}
-                  style={buttonStyle}
+                  style={{ ...buttonStyle, marginLeft: '10px' }}
                   aria-label="Borrar entrada"
                 >
                   Borrar

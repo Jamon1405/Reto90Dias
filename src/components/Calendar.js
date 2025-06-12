@@ -105,7 +105,7 @@ const Calendar = () => {
     }
   }, [selectedDay, days, savedRoutines, user]);
 
-  const handleSaveDay = () => {
+const handleSaveDay = () => {
 
     const date = new Date(startDate.getTime() + selectedDay * 86400000)
       .toISOString()
@@ -406,7 +406,9 @@ const Calendar = () => {
                                 onClick={(ev) => {
                                   ev.preventDefault();
                                   ev.stopPropagation();
-                                  setDayExercises((p) => [...p, ex]);
+                                  setDayExercises((p) =>
+                                    p.includes(ex) ? p : [...p, ex]
+                                  );
                                   setOpenExercises((p) => [...p, ex]);
                                 }}
                               >
@@ -472,6 +474,17 @@ const Calendar = () => {
               <p>
                 Rutina completada: {days[selectedDay].didRoutine ? 'Sí' : 'No'}
               </p>
+              {days[selectedDay].didRoutine &&
+                Object.keys(days[selectedDay].logs || {}).length > 0 && (
+                  <ul style={{ listStyle: 'none', padding: 0 }}>
+                    {Object.entries(days[selectedDay].logs).map(([name, log]) => (
+                      <li key={name} style={{ marginBottom: '6px' }}>
+                        {name}: {log.sets}x{log.reps}{' '}
+                        {log.weight ? `${log.weight} lb` : ''}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               <button
                 type="button"
                 aria-label="Editar rutina"
@@ -611,11 +624,11 @@ const removeButton = {
   border: '1px solid #e53935',
   borderRadius: '50%',
   cursor: 'pointer',
-  padding: '4px',
+  padding: '6px',
   marginLeft: '5px',
-  fontSize: '14px',
-  width: '24px',
-  height: '24px',
+  fontSize: '16px',
+  width: '28px',
+  height: '28px',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -628,7 +641,7 @@ const addButton = {
 };
 
 const dayNumberStyle = {
-  fontSize: '72px',
+  fontSize: '90px',
   fontWeight: 'bold',
   color: '#f5f5f7',
   fontFamily: 'SF Pro Display, -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif',
