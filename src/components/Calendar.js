@@ -135,9 +135,20 @@ const Calendar = () => {
         <h4>{routine.name}</h4>
         {days[selectedDay].completed && Array.isArray(routine.exercises) && (
           <ul>
-            {routine.exercises.map((ex, idx) => (
-              <li key={idx}>{ex}</li>
-            ))}
+            {routine.exercises.map((ex, idx) => {
+              const log = days[selectedDay].logs?.[ex];
+              return (
+                <li key={idx}>
+                  {ex}
+                  {log && (
+                    <span>
+                      {' '}- {log.sets || 0}x{log.reps || 0} @ {log.weight || 0}{' '}
+                      kg
+                    </span>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
