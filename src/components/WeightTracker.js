@@ -122,7 +122,6 @@ const WeightTracker = () => {
 
   // Cálculo del peso bajado
   const weightLost = (initialWeight - currentWeightValue).toFixed(1);
-  const weightDifferenceColor = goalDifference > 0 ? '#e53935' : '#4caf50'; // Rojo si falta bajar, verde si se pasó la meta
 
   // Datos del gráfico de línea
   const data = {
@@ -131,8 +130,8 @@ const WeightTracker = () => {
       {
         label: 'Peso (kg)',
         data: weightEntries.map((entry) => entry.weight),
-        borderColor: '#0288d1',
-        backgroundColor: 'rgba(2, 136, 209, 0.2)',
+        borderColor: '#f5f5f7',
+        backgroundColor: 'rgba(10,132,255,0.2)',
         fill: true,
         tension: 0.2,
       },
@@ -154,21 +153,24 @@ const WeightTracker = () => {
 
   // Estilos
   const containerStyle = {
-    padding: '30px',
-    backgroundColor: '#f9f9f9',
-    borderRadius: '20px',
-    boxShadow: '0 6px 20px rgba(0, 0, 0, 0.1)',
+    padding: '24px',
     margin: '30px auto',
-    maxWidth: '900px',
+    maxWidth: '430px',
+    width: '100%',
     textAlign: 'center',
-    fontFamily: "'Poppins', sans-serif",
+    backgroundColor: 'var(--background-card)',
+    borderRadius: '20px',
+    boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
+    transform: 'scale(0.95)',
+    transformOrigin: 'top center',
   };
 
   const headerStyle = {
     fontSize: '32px',
-    fontWeight: 'bold',
+    fontWeight: '600',
     marginBottom: '30px',
-    color: '#333',
+    color: '#f5f5f7',
+    fontFamily: 'SF Pro Display, -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif',
   };
 
   const inputStyle = {
@@ -176,20 +178,22 @@ const WeightTracker = () => {
     padding: '12px',
     fontSize: '16px',
     borderRadius: '10px',
-    border: '1px solid #ddd',
+    border: '1px solid #2C2C2E',
     marginBottom: '15px',
-    boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
+    backgroundColor: '#1C1C1E',
+    color: '#f5f5f7',
   };
 
   const buttonStyle = {
-    backgroundColor: '#0288d1',
-    color: '#fff',
-    padding: '12px 20px',
-    fontSize: '18px',
-    borderRadius: '10px',
+    backgroundColor: 'var(--accent-color)',
+    color: '#FFFFFF',
+    padding: '8px 14px',
+    fontSize: '16px',
+    borderRadius: '8px',
     border: 'none',
     cursor: 'pointer',
-    transition: 'background-color 0.3s ease',
+    transition: 'background-color 0.3s',
+    boxShadow: 'none',
     marginBottom: '20px',
   };
 
@@ -205,6 +209,7 @@ const WeightTracker = () => {
           value={currentWeight}
           onChange={(e) => setCurrentWeight(e.target.value)}
           style={inputStyle}
+          enterKeyHint="next"
         />
         <input
           type="number"
@@ -212,6 +217,7 @@ const WeightTracker = () => {
           value={height}
           onChange={(e) => setHeight(e.target.value)}
           style={inputStyle}
+          enterKeyHint="next"
         />
         <input
           type="number"
@@ -219,12 +225,13 @@ const WeightTracker = () => {
           value={bodyFat}
           onChange={(e) => setBodyFat(e.target.value)}
           style={inputStyle}
+          enterKeyHint="next"
         />
         <select value={gender} onChange={(e) => setGender(e.target.value)} style={inputStyle}>
           <option value="male">Hombre</option>
           <option value="female">Mujer</option>
         </select>
-        <button onClick={handleCalculateIdealWeight} style={buttonStyle}>
+        <button onClick={handleCalculateIdealWeight} style={buttonStyle} aria-label="Calcular peso ideal">
           Calcular Peso Ideal
         </button>
 
@@ -235,7 +242,11 @@ const WeightTracker = () => {
           </div>
         )}
 
-        <button onClick={handleResetData} style={{ ...buttonStyle, backgroundColor: '#e53935' }}>
+        <button
+          onClick={handleResetData}
+          style={{ ...buttonStyle, backgroundColor: 'var(--error-color)' }}
+          aria-label="Reiniciar datos"
+        >
           Reiniciar Datos
         </button>
       </div>
@@ -249,6 +260,7 @@ const WeightTracker = () => {
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
               style={inputStyle}
+              enterKeyHint="next"
             />
             <input
               type="number"
@@ -256,8 +268,9 @@ const WeightTracker = () => {
               value={entryWeight}
               onChange={(e) => setEntryWeight(e.target.value)}
               style={inputStyle}
+              enterKeyHint="done"
             />
-            <button onClick={handleAddWeight} style={buttonStyle}>
+            <button onClick={handleAddWeight} style={buttonStyle} aria-label="Añadir peso">
               Añadir entrada de peso
             </button>
           </div>
@@ -267,23 +280,34 @@ const WeightTracker = () => {
             <p>Peso Inicial: {initialWeight} kg</p>
             <p>Peso Actual: {currentWeightValue} kg</p>
             <p>Peso Meta: {weightGoal} kg</p>
-            <p style={{ color: weightDifferenceColor }}>Falta para Meta: {goalDifference} kg</p>
-            <p style={{ color: weightDifferenceColor }}>¡Has bajado!: {Math.abs(weightLost)} kg</p>
+            <p>Falta para Meta: {goalDifference} kg</p>
+            <p>¡Has bajado!: {Math.abs(weightLost)} kg</p>
           </div>
 
           <h3>Entradas de Peso</h3>
-          <ul>
+          <ul style={{ padding: 0, listStyle: 'none' }}>
             {weightEntries.map((entry, index) => (
-              <li key={index}>
-                {entry.date}: {entry.weight} kg
-                <button onClick={() => handleDeleteEntry(index)} style={buttonStyle}>
+              <li
+                key={index}
+                style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}
+              >
+                <span style={{ flexGrow: 1 }}>
+                  {entry.date}: {entry.weight} kg
+                </span>
+                <button
+                  onClick={() => handleDeleteEntry(index)}
+                  style={{ ...buttonStyle, marginLeft: '10px' }}
+                  aria-label="Borrar entrada"
+                >
                   Borrar
                 </button>
               </li>
             ))}
           </ul>
 
-          <Line data={data} options={options} />
+          <div style={{ height: '300px', maxWidth: '430px', margin: '0 auto' }}>
+            <Line data={data} options={options} />
+          </div>
         </>
       )}
     </div>

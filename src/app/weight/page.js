@@ -3,7 +3,7 @@ import WeightTracker from '../../components/WeightTracker';
 
 export default function WeightTrackerPage() {
   return (
-    <div>
+    <div style={{ transform: 'scale(0.95)', transformOrigin: 'top center' }}>
       <WeightTracker />
     </div>
   );

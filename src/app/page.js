@@ -31,13 +31,13 @@ const CalendarOverview = () => {
     <div style={overviewBoxStyle}>
       <h3 style={overviewTitleStyle}>Progreso del Calendario</h3>
       <p>
-        <strong style={{ ...indicatorStyle, color: '#4caf50' }}>{routineDoneDays}</strong> días con rutina
+        <strong style={{ ...indicatorStyle, color: '#FFFFFF' }}>{routineDoneDays}</strong> días con rutina
       </p>
       <p>
-        <strong style={{ ...indicatorStyle, color: '#e57373' }}>{routineMissedDays}</strong> días sin rutina
+        <strong style={{ ...indicatorStyle, color: '#FFFFFF' }}>{routineMissedDays}</strong> días sin rutina
       </p>
       <p>
-        <strong style={{ ...indicatorStyle, color: '#0288d1' }}>{remainingDays}</strong> días restantes
+        <strong style={{ ...indicatorStyle, color: '#FFFFFF' }}>{remainingDays}</strong> días restantes
       </p>
     </div>
   );
@@ -66,48 +66,25 @@ const WeightOverview = () => {
   return (
     <div style={overviewBoxStyle}>
       <h3 style={overviewTitleStyle}>Progreso de Peso</h3>
-      <p><strong style={{ ...indicatorStyle, color: '#4caf50' }}>{weightDifference} kg</strong> bajados</p>
-      <p>Faltan <strong style={{ ...indicatorStyle, color: '#e53935' }}>{weightGoalDifference} kg</strong> para alcanzar tu meta</p>
+      <p><strong style={{ ...indicatorStyle, color: '#FFFFFF' }}>{weightDifference} kg</strong> bajados</p>
+      <p>Faltan <strong style={{ ...indicatorStyle, color: '#FFFFFF' }}>{weightGoalDifference} kg</strong> para alcanzar tu meta</p>
     </div>
   );
 };
 
-// Componente para mostrar el progreso de la dieta
-const DietOverview = () => {
-  const [dietDaysCompleted, setDietDaysCompleted] = useState(0);
-  const user = useCurrentUser();
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedDays = localStorage.getItem(`dietDays_${user}`);
-      if (savedDays) {
-        const days = JSON.parse(savedDays);
-        const dietDays = days.filter(day => day.dietCompleted).length;
-        setDietDaysCompleted(dietDays);
-      }
-    }
-  }, [user]);
-
-  return (
-    <div style={overviewBoxStyle}>
-      <h3 style={overviewTitleStyle}>Progreso de la Dieta</h3>
-      <p><strong style={{ ...indicatorStyle, color: '#4caf50' }}>{dietDaysCompleted}</strong> días de dieta cumplidos</p>
-    </div>
-  );
-};
 
 // Estilos generales
 const overviewBoxStyle = {
   padding: '20px',
-  backgroundColor: '#ffffff',
-  borderRadius: '10px',
+  borderRadius: '20px',
   marginBottom: '20px',
   textAlign: 'center',
-  boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
+  backgroundColor: 'var(--background-card)',
+  boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
 };
 
 const overviewTitleStyle = {
-  color: '#0288d1',
+  color: '#f5f5f7',
   marginBottom: '15px',
 };
 
@@ -120,27 +97,22 @@ const indicatorStyle = {
 const HomePage = () => {
   const containerStyle = {
     padding: '30px',
-    fontFamily: "'Poppins', sans-serif",
-    backgroundColor: '#f9f9f9',
     minHeight: '100vh',
-    maxWidth: '900px',
-    margin: '0 auto',
     textAlign: 'center',
   };
 
   const headerStyle = {
-    color: '#0288d1',
+    color: '#f5f5f7',
     marginBottom: '40px',
     fontSize: '32px',
   };
 
   return (
-    <div style={containerStyle}>
+    <div style={{ ...containerStyle, transform: 'scale(0.95)', transformOrigin: 'top center' }}>
       <h1 style={headerStyle}>Resumen General</h1>
 
       <CalendarOverview />
       <WeightOverview />
-      <DietOverview />
     </div>
   );
 };
