@@ -23,18 +23,20 @@ export default function CoreBusiness({ lang = 'es' }) {
   const t = content[lang];
   return (
     <section className={styles.section}>
-      <h2 className={styles.title}>{t.title}</h2>
-      <ul className={styles.list}>
-        {t.items.map((item) => (
-          <li key={item} dangerouslySetInnerHTML={{ __html: item }} />
-        ))}
-      </ul>
       <img
-        src="https://images.unsplash.com/photo-1535185384036-9f18e86e5f5c?auto=format&fit=crop&w=1200&q=80"
+        src="https://images.unsplash.com/photo-1535185384036-9f18e86e5f5c?auto=format&fit=crop&w=1600&q=80"
         alt="Production control room"
-        className={styles.image}
+        className={styles.background}
         loading="lazy"
       />
+      <div className={styles.overlay}>
+        <h2 className={styles.title}>{t.title}</h2>
+        <ul className={styles.list}>
+          {t.items.map((item) => (
+            <li key={item} dangerouslySetInnerHTML={{ __html: item }} />
+          ))}
+        </ul>
+      </div>
     </section>
   );
 }

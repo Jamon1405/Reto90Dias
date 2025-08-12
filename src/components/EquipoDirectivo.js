@@ -23,20 +23,22 @@ export default function EquipoDirectivo({ lang = 'es' }) {
   const t = content[lang];
   return (
     <section className={styles.section}>
-      <h2 className={styles.title}>{t.title}</h2>
-      <ul className={styles.list}>
-        {t.members.map((m) => (
-          <li key={m.name}>
-            <strong>{m.name}</strong> — {m.role}
-          </li>
-        ))}
-      </ul>
       <img
-        src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=1200&q=80"
+        src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=1600&q=80"
         alt="Team meeting"
-        className={styles.image}
+        className={styles.background}
         loading="lazy"
       />
+      <div className={styles.overlay}>
+        <h2 className={styles.title}>{t.title}</h2>
+        <ul className={styles.list}>
+          {t.members.map((m) => (
+            <li key={m.name}>
+              <strong>{m.name}</strong> — {m.role}
+            </li>
+          ))}
+        </ul>
+      </div>
     </section>
   );
 }

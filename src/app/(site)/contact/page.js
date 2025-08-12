@@ -4,7 +4,7 @@ import Contacto from '@/components/Contacto';
 export default function Page() {
   return (
     <FadeInSection>
-      <Contacto lang="en" />
+      <Contacto lang="es" />
     </FadeInSection>
   );
 }

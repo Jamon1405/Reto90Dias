@@ -15,8 +15,14 @@ export default function Contacto({ lang = 'es' }) {
   const t = content[lang];
   return (
     <section className={styles.section}>
-      <h2 className={styles.title}>{t.title}</h2>
-      <div className={styles.content}>
+      <img
+        src="https://images.unsplash.com/photo-1497493292307-31c376b6e479?auto=format&fit=crop&w=1600&q=80"
+        alt="Contact us"
+        className={styles.background}
+        loading="lazy"
+      />
+      <div className={styles.overlay}>
+        <h2 className={styles.title}>{t.title}</h2>
         <p>{t.intro}</p>
         <ul className={styles.list}>
           <li>
@@ -27,12 +33,6 @@ export default function Contacto({ lang = 'es' }) {
           </li>
         </ul>
       </div>
-      <img
-        src="https://images.unsplash.com/photo-1497493292307-31c376b6e479?auto=format&fit=crop&w=1200&q=80"
-        alt="Contact us"
-        className={styles.image}
-        loading="lazy"
-      />
     </section>
   );
 }

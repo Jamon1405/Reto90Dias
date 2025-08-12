@@ -27,18 +27,20 @@ export default function ProduccionesDestacadas({ lang = 'es' }) {
   const t = content[lang];
   return (
     <section className={styles.section}>
-      <h2 className={styles.title}>{t.title}</h2>
-      <ul className={styles.list}>
-        {t.items.map((i) => (
-          <li key={i}>{i}</li>
-        ))}
-      </ul>
       <img
-        src="https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=1200&q=80"
+        src="https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=1600&q=80"
         alt="Camera setup"
-        className={styles.image}
+        className={styles.background}
         loading="lazy"
       />
+      <div className={styles.overlay}>
+        <h2 className={styles.title}>{t.title}</h2>
+        <ul className={styles.list}>
+          {t.items.map((i) => (
+            <li key={i}>{i}</li>
+          ))}
+        </ul>
+      </div>
     </section>
   );
 }

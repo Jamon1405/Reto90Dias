@@ -29,30 +29,32 @@ export default function Infraestructura({ lang = 'es' }) {
   const t = content[lang];
   return (
     <section className={styles.section}>
-      <h2 className={styles.title}>{t.title}</h2>
-      <h3 className={styles.subtitle}>{t.studiosTitle}</h3>
-      <ul className={styles.list}>
-        {t.studios.map((s) => (
-          <li key={s}>{s}</li>
-        ))}
-      </ul>
-      <h3 className={styles.subtitle}>{t.techTitle}</h3>
-      <ul className={styles.list}>
-        {t.tech.map((s) => (
-          <li key={s}>{s}</li>
-        ))}
-      </ul>
-        <img
-          src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=80"
-          alt="LED wall"
-          className={styles.image}
-          loading="lazy"
-        />
+      <img
+        src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1600&q=80"
+        alt="LED wall"
+        className={styles.background}
+        loading="lazy"
+      />
+      <div className={styles.overlay}>
+        <h2 className={styles.title}>{t.title}</h2>
+        <h3 className={styles.subtitle}>{t.studiosTitle}</h3>
+        <ul className={styles.list}>
+          {t.studios.map((s) => (
+            <li key={s}>{s}</li>
+          ))}
+        </ul>
+        <h3 className={styles.subtitle}>{t.techTitle}</h3>
+        <ul className={styles.list}>
+          {t.tech.map((s) => (
+            <li key={s}>{s}</li>
+          ))}
+        </ul>
         <video
           src="https://www.w3schools.com/html/mov_bbb.mp4"
           className={styles.video}
           controls
         />
-      </section>
-    );
-  }
+      </div>
+    </section>
+  );
+}

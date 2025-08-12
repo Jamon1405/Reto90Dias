@@ -7,13 +7,13 @@ export default function Page() {
   return (
     <>
       <FadeInSection>
-        <QuienesSomos lang="en" />
+        <QuienesSomos lang="es" />
       </FadeInSection>
       <FadeInSection>
-        <PropuestaValor lang="en" />
+        <PropuestaValor lang="es" />
       </FadeInSection>
       <FadeInSection>
-        <EquipoDirectivo lang="en" />
+        <EquipoDirectivo lang="es" />
       </FadeInSection>
     </>
   );

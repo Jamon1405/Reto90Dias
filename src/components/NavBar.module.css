@@ -1,19 +1,24 @@
 .nav {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  background: var(--primary);
-  padding: 1rem;
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 100;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  left: 0;
+  width: 100%;
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
 }
 
 .nav a {
-  color: var(--foreground);
+  color: #fff;
   text-decoration: none;
-  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+  transition: color 0.3s;
 }
 
 .nav a:hover {
@@ -21,8 +26,7 @@
 }
 
 .brand {
-  font-size: 1.2rem;
-  color: var(--accent);
+  font-weight: 700;
 }
 
 .spacer {
@@ -30,5 +34,5 @@
 }
 
 .lang {
-  color: var(--accent);
+  font-weight: 700;
 }

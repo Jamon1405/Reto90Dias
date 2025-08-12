@@ -9,7 +9,7 @@ const content = {
   en: {
     title: 'Our value proposition',
     body:
-      'At Light Channel we blend creativity, technological innovation and experience to bring ideas to their fullest expression. We evolve with new ways of consuming content, exploring vertical formats, immersive experiences and hybrid productions that connect with today\'s audiences.',
+      "At Light Channel we blend creativity, technological innovation and experience to bring ideas to their fullest expression. We evolve with new ways of consuming content, exploring vertical formats, immersive experiences and hybrid productions that connect with today's audiences.",
   },
 };
 
@@ -17,14 +17,16 @@ export default function PropuestaValor({ lang = 'es' }) {
   const t = content[lang];
   return (
     <section className={styles.section}>
-      <h2 className={styles.title}>{t.title}</h2>
-      <p className={styles.text}>{t.body}</p>
       <img
-        src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1200&q=80"
+        src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1600&q=80"
         alt="Creative workspace"
-        className={styles.image}
+        className={styles.background}
         loading="lazy"
       />
+      <div className={styles.overlay}>
+        <h2 className={styles.title}>{t.title}</h2>
+        <p className={styles.text}>{t.body}</p>
+      </div>
     </section>
   );
 }

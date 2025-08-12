@@ -1,17 +1,34 @@
 .section {
-  padding: 4rem 0;
-  animation: fadeIn 1s ease-in;
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #fff;
+}
+
+.background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.4);
+}
+
+.overlay {
+  position: relative;
+  max-width: 800px;
+  padding: 2rem;
 }
 
 .title {
-  color: var(--accent);
   font-size: 2rem;
-  margin-bottom: 1.5rem;
-  text-align: center;
-}
-
-.content {
-  text-align: center;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
 }
 
 .list {
@@ -21,27 +38,17 @@
 }
 
 .list li {
-  margin: 0.5rem 0;
+  margin-bottom: 0.5rem;
 }
 
 .list a {
-  color: var(--accent);
+  color: #fff;
   text-decoration: none;
+  border-bottom: 1px solid var(--accent);
+  transition: color 0.3s, border-color 0.3s;
 }
 
-.image {
-  width: 100%;
-  margin-top: 2rem;
-  border-radius: 8px;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.list a:hover {
+  color: var(--accent);
+  border-color: var(--primary);
 }
