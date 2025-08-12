@@ -1,64 +1,27 @@
-/* Estilos globales por defecto (para pantallas grandes) */
+:root {
+  --background: #000;
+  --foreground: #fff;
+  --accent: #ff0050;
+  --font-sans: 'Montserrat', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
-  padding: 0;
-  font-family: Arial, sans-serif;
-  background-color: #f5f5f5;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  line-height: 1.6;
 }
 
-h1, h2 {
-  color: #0288d1;
-  font-size: 32px; /* Tamaño grande para pantallas grandes */
+a {
+  color: var(--accent);
 }
 
-/* Ajustes para contenedores generales */
-.container {
-  padding: 30px;
+main {
+  width: min(1200px, 90%);
   margin: 0 auto;
-  max-width: 900px; /* Para centrar y limitar el ancho en pantallas grandes */
-}
-
-/* Media Queries para pantallas más pequeñas (móviles y tablets) */
-@media (max-width: 768px) {
-  body {
-    font-size: 16px;
-  }
-
-  h1, h2 {
-    font-size: 24px;  /* Reducir tamaño de los encabezados en dispositivos móviles */
-  }
-
-  .container {
-    padding: 15px;  /* Ajustar padding en pantallas más pequeñas */
-  }
-
-  /* Ajustar los inputs */
-  input, select, button {
-    font-size: 16px; /* Reducir el tamaño de las fuentes en móviles */
-    padding: 10px; /* Ajustar el padding */
-  }
-}
-
-/* Media Queries para pantallas aún más pequeñas (como smartphones pequeños) */
-@media (max-width: 480px) {
-  h1, h2 {
-    font-size: 20px;  /* Reducir aún más el tamaño de los encabezados en pantallas muy pequeñas */
-  }
-
-  .container {
-    padding: 10px;
-  }
-
-  /* Ajustar aún más los inputs */
-  input, select, button {
-    font-size: 14px;
-    padding: 8px;
-  }
-
-  /* Ajustar los botones */
-  button {
-    font-size: 14px;
-    padding: 10px;
-    width: 100%; /* Botones a ancho completo en pantallas muy pequeñas */
-  }
 }
