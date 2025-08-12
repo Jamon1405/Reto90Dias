@@ -1,0 +1,33 @@
+.section {
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.title {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.tab {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: #57598c;
+  color: #fff;
+  cursor: pointer;
+}
+
+.active {
+  background: #ad60a9;
+}
+
+.body {
+  max-width: 800px;
+  margin: 0 auto;
+}

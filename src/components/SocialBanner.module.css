@@ -1,0 +1,31 @@
+.banner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #075e7f;
+  color: #fff;
+}
+
+.label {
+  font-weight: 700;
+}
+
+.list {
+  display: flex;
+  gap: 1rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.list a {
+  color: #ad60a9;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.list a:hover {
+  color: #fff;
+}
