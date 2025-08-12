@@ -1,21 +1,12 @@
-import QuienesSomos from '../components/QuienesSomos';
-import CoreBusiness from '../components/CoreBusiness';
-import Infraestructura from '../components/Infraestructura';
-import ProduccionesDestacadas from '../components/ProduccionesDestacadas';
-import PropuestaValor from '../components/PropuestaValor';
-import EquipoDirectivo from '../components/EquipoDirectivo';
-import Contacto from '../components/Contacto';
+import styles from './home.module.css';
 
 export default function HomePage() {
   return (
-    <main>
-      <QuienesSomos />
-      <CoreBusiness />
-      <Infraestructura />
-      <ProduccionesDestacadas />
-      <PropuestaValor />
-      <EquipoDirectivo />
-      <Contacto />
-    </main>
+    <section className={styles.hero}>
+      <div>
+        <h1>Light Channel</h1>
+        <p>Producción audiovisual de alto impacto.</p>
+      </div>
+    </section>
   );
 }

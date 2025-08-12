@@ -1,0 +1,18 @@
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  background: #111;
+  padding: 1rem;
+}
+
+.nav a {
+  color: var(--foreground);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.nav a:hover {
+  color: var(--accent);
+}
