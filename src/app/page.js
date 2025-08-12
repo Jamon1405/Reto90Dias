@@ -1,5 +1,8 @@
 'use client';  // Indica que este componente solo debe ejecutarse en el cliente
 import { useState, useEffect } from 'react';
+import QuienesSomos from '../components/QuienesSomos';
+import CoreBusiness from '../components/CoreBusiness';
+import PropuestaValor from '../components/PropuestaValor';
 
 // Componente para mostrar el progreso del calendario
 const CalendarOverview = () => {
@@ -117,13 +120,18 @@ const HomePage = () => {
   };
 
   return (
-    <div style={containerStyle}>
-      <h1 style={headerStyle}>Resumen General</h1>
+    <>
+      <div style={containerStyle}>
+        <h1 style={headerStyle}>Resumen General</h1>
 
-      <CalendarOverview />
-      <WeightOverview />
-      <DietOverview />
-    </div>
+        <CalendarOverview />
+        <WeightOverview />
+        <DietOverview />
+      </div>
+      <QuienesSomos />
+      <CoreBusiness />
+      <PropuestaValor />
+    </>
   );
 };
 
