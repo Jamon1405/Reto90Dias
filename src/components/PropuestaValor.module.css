@@ -10,16 +10,8 @@
   text-align: center;
 }
 
-.content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
+.text {
+  max-width: 800px;
+  margin: 0 auto;
   text-align: center;
-}
-
-.content img {
-  max-width: 100%;
-  height: auto;
-  border-radius: 8px;
 }

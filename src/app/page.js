@@ -1,12 +1,21 @@
-import styles from './home.module.css';
+import QuienesSomos from '../components/QuienesSomos';
+import CoreBusiness from '../components/CoreBusiness';
+import Infraestructura from '../components/Infraestructura';
+import ProduccionesDestacadas from '../components/ProduccionesDestacadas';
+import PropuestaValor from '../components/PropuestaValor';
+import EquipoDirectivo from '../components/EquipoDirectivo';
+import Contacto from '../components/Contacto';
 
 export default function HomePage() {
   return (
-    <section className={styles.hero}>
-      <div>
-        <h1>Light Channel</h1>
-        <p>Producción audiovisual de alto impacto.</p>
-      </div>
-    </section>
+    <>
+      <QuienesSomos />
+      <CoreBusiness />
+      <Infraestructura />
+      <ProduccionesDestacadas />
+      <PropuestaValor />
+      <EquipoDirectivo />
+      <Contacto />
+    </>
   );
 }

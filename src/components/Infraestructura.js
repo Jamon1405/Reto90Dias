@@ -4,13 +4,19 @@ export default function Infraestructura() {
   return (
     <section id="infraestructura" className={styles.section}>
       <h2 className={styles.title}>Infraestructura</h2>
-      <div className={styles.content}>
-        <img src="https://via.placeholder.com/800x400?text=Infraestructura" alt="Infraestructura" />
-        <p>
-          Contamos con estudios, foros y equipo de última generación para
-          desarrollar proyectos de cualquier escala.
-        </p>
-      </div>
+      <h3 className={styles.subtitle}>Estudios y Foros</h3>
+      <ul className={styles.list}>
+        <li>EGGM Argos</li>
+        <li>7 Digital</li>
+        <li>UC Roma</li>
+        <li>Audio Pent House</li>
+      </ul>
+      <h3 className={styles.subtitle}>Tecnología</h3>
+      <ul className={styles.list}>
+        <li>Pantallas LED de gran formato</li>
+        <li>Equipos de producción y postproducción de última generación</li>
+        <li>Capacidad para proyectos en volumen virtual y set real</li>
+      </ul>
     </section>
   );
 }
