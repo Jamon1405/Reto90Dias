@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import styles from './NavBar.module.css';
 
 const labels = {
@@ -54,12 +55,28 @@ export default function NavBar({ lang = 'es' }) {
   const l = labels[lang];
   const p = paths[lang];
   const pathname = usePathname();
+  const [hidden, setHidden] = useState(false);
+
+  useEffect(() => {
+    let lastY = window.scrollY;
+    const onScroll = () => {
+      const currentY = window.scrollY;
+      if (currentY > lastY && currentY > 100) {
+        setHidden(true);
+      } else {
+        setHidden(false);
+      }
+      lastY = currentY;
+    };
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const linkClass = (path) =>
     `${styles.link} ${pathname === path ? styles.active : ''}`;
 
   return (
-    <nav className={styles.nav}>
+    <nav className={`${styles.nav} ${hidden ? styles.hidden : ''}`}>
       <Link href={p.home} className={`${styles.brand} ${linkClass(p.home)}`}>
         Light Channel
       </Link>

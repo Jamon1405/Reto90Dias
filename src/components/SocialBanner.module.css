@@ -1,10 +1,13 @@
+
 .banner {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 1rem;
-  padding: 1rem;
-  background: #075e7f;
+  padding: 1.5rem;
+  background: linear-gradient(90deg, var(--primary), var(--accent), #57598c);
+  background-size: 300% 300%;
+  animation: bannerGradient 8s ease infinite;
   color: #fff;
 }
 
@@ -20,12 +23,36 @@
   padding: 0;
 }
 
-.list a {
-  color: #ad60a9;
+.link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #fff;
   text-decoration: none;
-  transition: color 0.3s ease;
+  transition: transform 0.3s, color 0.3s;
 }
 
-.list a:hover {
-  color: #fff;
+.icon {
+  transition: transform 0.3s;
+}
+
+.link:hover {
+  color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.link:hover .icon {
+  transform: scale(1.2);
+}
+
+@keyframes bannerGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }

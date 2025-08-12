@@ -1,21 +1,22 @@
 "use client";
 import styles from './SocialBanner.module.css';
+import { FaInstagram, FaYoutube, FaFacebook } from 'react-icons/fa';
 
 const content = {
   es: {
     follow: 'Síguenos',
     links: [
-      { label: 'Instagram', href: '#' },
-      { label: 'YouTube', href: '#' },
-      { label: 'Facebook', href: '#' },
+      { label: 'Instagram', href: '#', Icon: FaInstagram },
+      { label: 'YouTube', href: '#', Icon: FaYoutube },
+      { label: 'Facebook', href: '#', Icon: FaFacebook },
     ],
   },
   en: {
     follow: 'Follow us',
     links: [
-      { label: 'Instagram', href: '#' },
-      { label: 'YouTube', href: '#' },
-      { label: 'Facebook', href: '#' },
+      { label: 'Instagram', href: '#', Icon: FaInstagram },
+      { label: 'YouTube', href: '#', Icon: FaYoutube },
+      { label: 'Facebook', href: '#', Icon: FaFacebook },
     ],
   },
 };
@@ -26,10 +27,11 @@ export default function SocialBanner({ lang = 'es' }) {
     <div className={styles.banner}>
       <span className={styles.label}>{t.follow}</span>
       <ul className={styles.list}>
-        {t.links.map((l) => (
-          <li key={l.label}>
-            <a href={l.href} target="_blank" rel="noopener noreferrer">
-              {l.label}
+        {t.links.map(({ label, href, Icon }) => (
+          <li key={label}>
+            <a href={href} target="_blank" rel="noopener noreferrer" className={styles.link}>
+              <Icon className={styles.icon} />
+              {label}
             </a>
           </li>
         ))}

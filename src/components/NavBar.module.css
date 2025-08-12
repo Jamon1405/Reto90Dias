@@ -10,6 +10,7 @@
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(4px);
   z-index: 1000;
+  transition: transform 0.3s ease;
 }
 
 
@@ -58,4 +59,8 @@
 
 .lang {
   font-weight: 700;
+}
+
+.hidden {
+  transform: translateY(-100%);
 }
