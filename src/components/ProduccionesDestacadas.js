@@ -1,16 +1,44 @@
 import styles from './ProduccionesDestacadas.module.css';
 
-export default function ProduccionesDestacadas() {
+const content = {
+  es: {
+    title: 'Producciones destacadas',
+    items: [
+      '“El Reto de Creadores” — YouTube Originals',
+      '“Mamá ya es mi Casa” — TelevisaUnivision',
+      '“El Secreto” — Serie vertical original de Light Channel',
+      '“Tengo Talento, Mucho Talento” — Estrella TV',
+      '“Alarma TV” — Estrella TV',
+    ],
+  },
+  en: {
+    title: 'Featured productions',
+    items: [
+      '“El Reto de Creadores” — YouTube Originals',
+      '“Mamá ya es mi Casa” — TelevisaUnivision',
+      '“El Secreto” — Light Channel original vertical series',
+      '“Tengo Talento, Mucho Talento” — Estrella TV',
+      '“Alarma TV” — Estrella TV',
+    ],
+  },
+};
+
+export default function ProduccionesDestacadas({ lang = 'es' }) {
+  const t = content[lang];
   return (
-    <section id="producciones-destacadas" className={styles.section}>
-      <h2 className={styles.title}>Producciones destacadas</h2>
+    <section className={styles.section}>
+      <h2 className={styles.title}>{t.title}</h2>
       <ul className={styles.list}>
-        <li>“El Reto de Creadores” — YouTube Originals</li>
-        <li>“Mamá ya es mi Casa” — TelevisaUnivision</li>
-        <li>“El Secreto” — Serie vertical original de Light Channel</li>
-        <li>“Tengo Talento, Mucho Talento” — Estrella TV</li>
-        <li>“Alarma TV” — Estrella TV</li>
+        {t.items.map((i) => (
+          <li key={i}>{i}</li>
+        ))}
       </ul>
+      <img
+        src="https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=1200&q=80"
+        alt="Camera setup"
+        className={styles.image}
+        loading="lazy"
+      />
     </section>
   );
 }

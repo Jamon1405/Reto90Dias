@@ -1,6 +1,8 @@
+
 .section {
   padding: 4rem 0;
   border-bottom: 1px solid #222;
+  animation: fadeIn 1s ease-in;
 }
 
 .hero {
@@ -21,4 +23,21 @@
   max-width: 800px;
   margin: 0 auto;
   text-align: center;
+}
+
+.image {
+  width: 100%;
+  margin-top: 2rem;
+  border-radius: 8px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

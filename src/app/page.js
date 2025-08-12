@@ -1,21 +1,11 @@
-import QuienesSomos from '../components/QuienesSomos';
-import CoreBusiness from '../components/CoreBusiness';
-import Infraestructura from '../components/Infraestructura';
-import ProduccionesDestacadas from '../components/ProduccionesDestacadas';
-import PropuestaValor from '../components/PropuestaValor';
-import EquipoDirectivo from '../components/EquipoDirectivo';
-import Contacto from '../components/Contacto';
+import Link from 'next/link';
+import styles from './page.module.css';
 
-export default function HomePage() {
+export default function LanguageSelect() {
   return (
-    <>
-      <QuienesSomos />
-      <CoreBusiness />
-      <Infraestructura />
-      <ProduccionesDestacadas />
-      <PropuestaValor />
-      <EquipoDirectivo />
-      <Contacto />
-    </>
+    <section className={styles.selector}>
+      <Link href="/es" className={styles.link}>Español</Link>
+      <Link href="/en" className={styles.link}>English</Link>
+    </section>
   );
 }
