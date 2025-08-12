@@ -1,7 +1,8 @@
 :root {
-  --background: #000;
+  --background: #57598c;
   --foreground: #fff;
-  --accent: #ff0050;
+  --accent: #ad60a9;
+  --primary: #075e7f;
   --font-sans: 'Montserrat', sans-serif;
 }
 
@@ -28,4 +29,5 @@ a {
 main {
   width: min(1200px, 90%);
   margin: 0 auto;
+  padding: 2rem 0;
 }

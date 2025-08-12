@@ -9,10 +9,8 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body className={montserrat.className}>
-        <main>{children}</main>
-      </body>
+    <html lang="es">
+      <body className={montserrat.className}>{children}</body>
     </html>
   );
 }

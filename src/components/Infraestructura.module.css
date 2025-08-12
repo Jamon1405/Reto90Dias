@@ -1,6 +1,6 @@
 .section {
   padding: 4rem 0;
-  border-bottom: 1px solid #222;
+  border-bottom: 1px solid var(--primary);
   animation: fadeIn 1s ease-in;
 }
 
@@ -33,6 +33,12 @@
 .image {
   width: 100%;
   margin-top: 2rem;
+  border-radius: 8px;
+}
+
+.video {
+  width: 100%;
+  margin-top: 1rem;
   border-radius: 8px;
 }
 

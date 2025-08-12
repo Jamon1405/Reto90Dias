@@ -42,12 +42,17 @@ export default function Infraestructura({ lang = 'es' }) {
           <li key={s}>{s}</li>
         ))}
       </ul>
-      <img
-        src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=80"
-        alt="LED wall"
-        className={styles.image}
-        loading="lazy"
-      />
-    </section>
-  );
-}
+        <img
+          src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=80"
+          alt="LED wall"
+          className={styles.image}
+          loading="lazy"
+        />
+        <video
+          src="https://www.w3schools.com/html/mov_bbb.mp4"
+          className={styles.video}
+          controls
+        />
+      </section>
+    );
+  }

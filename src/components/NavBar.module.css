@@ -2,11 +2,12 @@
   display: flex;
   gap: 1rem;
   align-items: center;
-  background: #111;
+  background: var(--primary);
   padding: 1rem;
   position: sticky;
   top: 0;
   z-index: 100;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .nav a {

@@ -24,30 +24,30 @@ const labels = {
   },
 };
 
-const paths = {
-  es: {
-    home: '/es',
-    about: '/es/quienes-somos',
-    core: '/es/core-business',
-    infra: '/es/infraestructura',
-    prod: '/es/producciones-destacadas',
-    value: '/es/propuesta-valor',
-    team: '/es/equipo-directivo',
-    contact: '/es/contacto',
-    switch: '/en',
-  },
-  en: {
-    home: '/en',
-    about: '/en/about',
-    core: '/en/core-business',
-    infra: '/en/infrastructure',
-    prod: '/en/featured-productions',
-    value: '/en/value-proposition',
-    team: '/en/leadership',
-    contact: '/en/contact',
-    switch: '/es',
-  },
-};
+  const paths = {
+    es: {
+      home: '/',
+      about: '/quienes-somos',
+      core: '/core-business',
+      infra: '/infraestructura',
+      prod: '/producciones-destacadas',
+      value: '/propuesta-valor',
+      team: '/equipo-directivo',
+      contact: '/contacto',
+      switch: '/en',
+    },
+    en: {
+      home: '/en',
+      about: '/en/about',
+      core: '/en/core-business',
+      infra: '/en/infrastructure',
+      prod: '/en/featured-productions',
+      value: '/en/value-proposition',
+      team: '/en/leadership',
+      contact: '/en/contact',
+      switch: '/',
+    },
+  };
 
 export default function NavBar({ lang = 'es' }) {
   const l = labels[lang];
