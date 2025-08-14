@@ -64,3 +64,16 @@
 .hidden {
   transform: translateY(-100%);
 }
+
+@media (max-width: 768px) {
+  .nav {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+  }
+
+  .spacer {
+    display: none;
+  }
+}

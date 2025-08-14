@@ -7,6 +7,11 @@ export const metadata = {
   description: 'Producción audiovisual inspirada en colorfilms.mx',
 };
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+};
+
 export default function RootLayout({ children }) {
   return (
     <html lang="es">
