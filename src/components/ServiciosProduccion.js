@@ -34,17 +34,6 @@ const content = {
           },
         ],
       },
-      led: {
-        label: 'Pantallas LED',
-        items: [
-          {
-            image: 'https://images.unsplash.com/photo-1508921912186-1d1a45ebb3c1?auto=format&fit=crop&w=1200&q=80',
-            label: 'Pantallas LED',
-            body:
-              'Muros LED que transforman el escenario en tiempo real para una inmersión total.',
-          },
-        ],
-      },
       produccion: {
         label: 'Producción',
         items: [
@@ -58,15 +47,61 @@ const content = {
             label: 'Equipo técnico',
             body: 'Operadores de cámara, sonido e iluminación con experiencia en set.',
           },
+          {
+            icon: '🗂️',
+            label: 'Coordinación logística',
+            body: 'Planeación de recursos, casting y manejo de locaciones.',
+          },
+          {
+            icon: '🎬',
+            label: 'Diseño de producción',
+            body: 'Construcción de sets, vestuario y arte con estética cuidada.',
+          },
         ],
       },
       post: {
         label: 'Post Producción',
         items: [
           {
-            icon: '🛠️',
-            label: 'Equipo de Producción y Post Producción',
-            body: 'Coordinadores y editores que cierran cada proyecto con calidad broadcast.',
+            icon: '✂️',
+            label: 'Edición',
+            body: 'Montaje narrativo y ritmo acorde al proyecto.',
+          },
+          {
+            icon: '🎨',
+            label: 'Corrección de color',
+            body: 'Grading profesional para un look cinematográfico.',
+          },
+          {
+            icon: '🧩',
+            label: 'VFX',
+            body: 'Composición digital y gráficos en 3D.',
+          },
+          {
+            icon: '🔊',
+            label: 'Diseño de audio',
+            body: 'Mezcla, foley y masterización para múltiples formatos.',
+          },
+        ],
+      },
+      led: {
+        label: 'Pantallas LED',
+        items: [
+          {
+            image: 'https://images.unsplash.com/photo-1508921912186-1d1a45ebb3c1?auto=format&fit=crop&w=1200&q=80',
+            label: 'Muros LED',
+            body:
+              'Paneles de alta resolución que transforman el escenario en tiempo real.',
+          },
+          {
+            icon: '🖥️',
+            label: 'Servidores de control',
+            body: 'Procesadores Brompton y Disguise para sincronía perfecta.',
+          },
+          {
+            icon: '🌐',
+            label: 'Escenarios virtuales',
+            body: 'Integración de entornos 3D en vivo con seguimiento de cámara.',
           },
         ],
       },
@@ -100,17 +135,6 @@ const content = {
           },
         ],
       },
-      led: {
-        label: 'LED Walls',
-        items: [
-          {
-            image: 'https://images.unsplash.com/photo-1508921912186-1d1a45ebb3c1?auto=format&fit=crop&w=1200&q=80',
-            label: 'LED Walls',
-            body:
-              'LED volumes that reshape scenery in real time for full immersion.',
-          },
-        ],
-      },
       produccion: {
         label: 'Production',
         items: [
@@ -122,7 +146,17 @@ const content = {
           {
             icon: '🎥',
             label: 'Technical crew',
-            body: 'Camera, sound and lighting operators seasoned on set.',
+            body: 'Seasoned camera, sound and lighting operators.',
+          },
+          {
+            icon: '🗂️',
+            label: 'Logistics coordination',
+            body: 'Resource planning, casting and location management.',
+          },
+          {
+            icon: '🎬',
+            label: 'Production design',
+            body: 'Set building, wardrobe and art with meticulous aesthetics.',
           },
         ],
       },
@@ -130,9 +164,45 @@ const content = {
         label: 'Post Production',
         items: [
           {
-            icon: '🛠️',
-            label: 'Production & Post team',
-            body: 'Coordinators and editors delivering broadcast-quality finishes.',
+            icon: '✂️',
+            label: 'Editing',
+            body: 'Narrative cutting and pacing tailored to each project.',
+          },
+          {
+            icon: '🎨',
+            label: 'Color grading',
+            body: 'Professional grading for a cinematic look.',
+          },
+          {
+            icon: '🧩',
+            label: 'VFX',
+            body: '3D graphics and digital compositing.',
+          },
+          {
+            icon: '🔊',
+            label: 'Sound design',
+            body: 'Mixing, foley and mastering for multiple formats.',
+          },
+        ],
+      },
+      led: {
+        label: 'LED Walls',
+        items: [
+          {
+            image: 'https://images.unsplash.com/photo-1508921912186-1d1a45ebb3c1?auto=format&fit=crop&w=1200&q=80',
+            label: 'LED Walls',
+            body:
+              'High‑resolution panels reshaping scenery in real time for full immersion.',
+          },
+          {
+            icon: '🖥️',
+            label: 'Control servers',
+            body: 'Brompton and Disguise processors for perfect sync.',
+          },
+          {
+            icon: '🌐',
+            label: 'Virtual backdrops',
+            body: 'Live 3D environments with camera tracking integration.',
           },
         ],
       },
