@@ -1,8 +1,8 @@
-export default function HomePage() {
+export default function NosotrosPage() {
   return (
     <div style={containerStyle}>
-      <h1>Inicio</h1>
-      <p>Bienvenido a nuestro sitio.</p>
+      <h1>Nosotros</h1>
+      <p>Conoce más sobre nuestro equipo y misión.</p>
     </div>
   );
 }

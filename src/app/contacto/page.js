@@ -1,8 +1,8 @@
-export default function HomePage() {
+export default function ContactoPage() {
   return (
     <div style={containerStyle}>
-      <h1>Inicio</h1>
-      <p>Bienvenido a nuestro sitio.</p>
+      <h1>Contacto</h1>
+      <p>Ponte en contacto con nosotros para más información.</p>
     </div>
   );
 }

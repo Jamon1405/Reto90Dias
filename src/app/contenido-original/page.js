@@ -1,8 +1,8 @@
-export default function HomePage() {
+export default function ContenidoOriginalPage() {
   return (
     <div style={containerStyle}>
-      <h1>Inicio</h1>
-      <p>Bienvenido a nuestro sitio.</p>
+      <h1>Contenido Original</h1>
+      <p>Proyectos y contenidos originales destacados.</p>
     </div>
   );
 }

@@ -1,8 +1,8 @@
-export default function HomePage() {
+export default function VirtualProductionPage() {
   return (
     <div style={containerStyle}>
-      <h1>Inicio</h1>
-      <p>Bienvenido a nuestro sitio.</p>
+      <h1>Virtual Production</h1>
+      <p>Explora nuestras soluciones de producción virtual.</p>
     </div>
   );
 }
