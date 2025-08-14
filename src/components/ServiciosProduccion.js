@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './ServiciosProduccion.module.css';
 
 const content = {
@@ -139,35 +139,64 @@ const content = {
 export default function ServiciosProduccion({ lang = 'es' }) {
   const t = content[lang];
   const [tab, setTab] = useState('foro');
+  const [forumIndex, setForumIndex] = useState(0);
   const current = t.tabs[tab];
+
+  useEffect(() => {
+    setForumIndex(0);
+  }, [tab]);
 
   return (
     <section className={styles.section}>
       <h2 className={styles.title}>{t.title}</h2>
-      <div className={styles.tabs}>
-        {Object.entries(t.tabs).map(([key, info]) => (
-          <button
-            key={key}
-            className={`${styles.tab} ${tab === key ? styles.tabActive : ''}`}
-            onClick={() => setTab(key)}
-          >
-            {info.label}
-          </button>
-        ))}
-      </div>
-      <div className={styles.grid}>
-        {current.items.map((item) => (
-          <div key={item.label} className={styles.card}>
-            {item.image ? (
-              <img src={item.image} alt="" className={styles.image} />
-            ) : (
-              <div className={styles.icon}>{item.icon}</div>
-            )}
-            <h3 className={styles.cardTitle}>{item.label}</h3>
-            <p className={styles.body}>{item.body}</p>
+        <div className={styles.tabs}>
+          {Object.entries(t.tabs).map(([key, info]) => (
+            <button
+              key={key}
+              className={`${styles.tab} ${tab === key ? styles.tabActive : ''}`}
+              onClick={() => setTab(key)}
+            >
+              {info.label}
+            </button>
+          ))}
+        </div>
+        {tab === 'foro' ? (
+          <>
+            <div className={styles.subTabs}>
+              {current.items.map((item, idx) => (
+                <button
+                  key={item.label}
+                  className={`${styles.tab} ${forumIndex === idx ? styles.tabActive : ''}`}
+                  onClick={() => setForumIndex(idx)}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+            <div className={styles.forumPane}>
+              <img
+                src={current.items[forumIndex].image}
+                alt=""
+                className={styles.forumImage}
+              />
+              <p className={styles.body}>{current.items[forumIndex].body}</p>
+            </div>
+          </>
+        ) : (
+          <div className={styles.grid}>
+            {current.items.map((item) => (
+              <div key={item.label} className={styles.card}>
+                {item.image ? (
+                  <img src={item.image} alt="" className={styles.image} />
+                ) : (
+                  <div className={styles.icon}>{item.icon}</div>
+                )}
+                <h3 className={styles.cardTitle}>{item.label}</h3>
+                <p className={styles.body}>{item.body}</p>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-    </section>
-  );
-}
+        )}
+      </section>
+    );
+  }
