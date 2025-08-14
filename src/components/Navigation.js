@@ -6,14 +6,20 @@ export default function Navigation() {
       <Link href="/" style={linkStyle}>
         Inicio
       </Link>
-      <Link href="/calendar" style={linkStyle}>
-        Calendario
+      <Link href="/servicios-de-produccion" style={linkStyle}>
+        Servicios de Producción
       </Link>
-      <Link href="/weight" style={linkStyle}>
-        Peso
+      <Link href="/contenido-original" style={linkStyle}>
+        Contenido Original
       </Link>
-      <Link href="/diet" style={linkStyle}>
-        Dieta
+      <Link href="/virtual-production" style={linkStyle}>
+        Virtual Production
+      </Link>
+      <Link href="/nosotros" style={linkStyle}>
+        Nosotros
+      </Link>
+      <Link href="/contacto" style={linkStyle}>
+        Contacto
       </Link>
     </nav>
   );
