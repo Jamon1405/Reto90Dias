@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import styles from './CoreBusiness.module.css';
 
 const content = {
@@ -23,11 +24,12 @@ export default function CoreBusiness({ lang = 'es' }) {
   const t = content[lang];
   return (
     <section className={styles.section}>
-      <img
+      <Image
         src="https://images.unsplash.com/photo-1535185384036-9f18e86e5f5c?auto=format&fit=crop&w=1600&q=80"
         alt="Production control room"
         className={styles.background}
-        loading="lazy"
+        fill
+        sizes="100vw"
       />
       <div className={styles.overlay}>
         <h2 className={styles.title}>{t.title}</h2>

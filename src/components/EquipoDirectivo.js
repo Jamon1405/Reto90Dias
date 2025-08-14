@@ -1,4 +1,5 @@
 "use client";
+import Image from 'next/image';
 import styles from './EquipoDirectivo.module.css';
 
 const content = {
@@ -70,7 +71,13 @@ export default function EquipoDirectivo({ lang = 'es' }) {
             rel="noopener noreferrer"
             className={styles.card}
           >
-            <img src={m.img} alt={m.name} className={styles.image} loading="lazy" />
+            <Image
+              src={m.img}
+              alt={m.name}
+              className={styles.image}
+              fill
+              sizes="(max-width: 600px) 100vw, 250px"
+            />
             <div className={styles.overlay}>
               <h3 className={styles.name}>{m.name}</h3>
               <p className={styles.role}>{m.role}</p>

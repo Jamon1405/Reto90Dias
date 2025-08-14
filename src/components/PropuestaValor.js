@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import styles from './PropuestaValor.module.css';
 
 const content = {
@@ -17,11 +18,12 @@ export default function PropuestaValor({ lang = 'es' }) {
   const t = content[lang];
   return (
     <section className={styles.section}>
-      <img
+      <Image
         src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1600&q=80"
         alt="Creative workspace"
         className={styles.background}
-        loading="lazy"
+        fill
+        sizes="100vw"
       />
       <div className={styles.overlay}>
         <h2 className={styles.title}>{t.title}</h2>

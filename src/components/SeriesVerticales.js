@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import styles from './SeriesVerticales.module.css';
 
 const content = {
@@ -37,7 +38,13 @@ export default function SeriesVerticales({ lang = 'es' }) {
       <ul className={styles.list}>
         {t.items.map((i) => (
           <li key={i.title} className={styles.item}>
-            <img src={i.image} alt={i.title} className={styles.image} />
+            <Image
+              src={i.image}
+              alt={i.title}
+              className={styles.image}
+              width={360}
+              height={640}
+            />
             <p>{i.title}</p>
           </li>
         ))}

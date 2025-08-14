@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import styles from './ServiciosProduccion.module.css';
 
 const content = {
@@ -134,10 +135,12 @@ export default function ServiciosProduccion({ lang = 'es' }) {
               ))}
             </div>
             <div className={styles.forumPane}>
-              <img
+              <Image
                 src={current.items[forumIndex].image}
                 alt=""
                 className={styles.forumImage}
+                width={600}
+                height={400}
               />
               <p className={styles.body}>{current.items[forumIndex].body}</p>
             </div>
@@ -147,7 +150,13 @@ export default function ServiciosProduccion({ lang = 'es' }) {
             {current.items.map((item) => (
               <div key={item.label} className={styles.card}>
                 {item.image ? (
-                  <img src={item.image} alt="" className={styles.image} />
+                  <Image
+                    src={item.image}
+                    alt=""
+                    className={styles.image}
+                    width={600}
+                    height={400}
+                  />
                 ) : (
                   <div className={styles.icon}>{item.icon}</div>
                 )}

@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import styles from './QuienesSomos.module.css';
 
 const content = {
@@ -17,11 +18,12 @@ export default function QuienesSomos({ lang = 'es' }) {
   const t = content[lang];
   return (
     <section className={styles.section}>
-      <img
+      <Image
         src="https://images.unsplash.com/photo-1581091870622-7d4b39ed64f0?auto=format&fit=crop&w=1600&q=80"
         alt="Studio setup"
         className={styles.background}
-        loading="lazy"
+        fill
+        sizes="100vw"
       />
       <div className={styles.overlay}>
         <h2 className={styles.title}>{t.title}</h2>
