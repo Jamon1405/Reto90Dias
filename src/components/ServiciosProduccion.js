@@ -11,19 +11,14 @@ const content = {
         label: 'Foro',
         items: [
           {
-            image: 'https://placehold.co/600x400?text=Foro+A',
-            label: 'Foro A',
-            body: 'Espacio insonorizado de 500 m² con ciclorama verde.',
+            image: 'https://placehold.co/600x400?text=Estudios',
+            label: 'Estudios/Foros',
+            body: 'Sets versátiles acondicionados para cualquier proyecto, con acústica controlada.',
           },
           {
-            image: 'https://placehold.co/600x400?text=Foro+B',
-            label: 'Foro B',
-            body: 'Foro con grúa motorizada y sistema de iluminación DMX.',
-          },
-          {
-            image: 'https://placehold.co/600x400?text=Backlot',
-            label: 'Backlot',
-            body: 'Exterior para sets modulares y escenas urbanas.',
+            image: 'https://placehold.co/600x400?text=LEDs',
+            label: 'Pantallas LED',
+            body: 'Muros LED que transforman el escenario en tiempo real para una inmersión total.',
           },
         ],
       },
@@ -31,19 +26,14 @@ const content = {
         label: 'Producción',
         items: [
           {
-            icon: '🎬',
-            label: 'Equipo',
-            body: 'Directores, fotógrafos y técnicos con experiencia internacional.',
+            icon: '🎨',
+            label: 'Equipo creativo',
+            body: 'Guionistas, directores y productores que materializan tu visión.',
           },
           {
             icon: '🎥',
-            label: 'Equipamiento',
-            body: 'Cámaras cinema, grúas y sistemas de motion control.',
-          },
-          {
-            icon: '🗺️',
-            label: 'Locaciones',
-            body: 'Coordinación y scouting para todo tipo de escenarios.',
+            label: 'Equipo técnico',
+            body: 'Operadores de cámara, sonido e iluminación con experiencia en set.',
           },
         ],
       },
@@ -51,19 +41,9 @@ const content = {
         label: 'Post Producción',
         items: [
           {
-            icon: '💻',
-            label: 'Edición',
-            body: 'Suites con flujos 4K HDR y colaboración remota.',
-          },
-          {
-            icon: '🎨',
-            label: 'Color',
-            body: 'Corrección de color con monitoreo calibrado en Dolby Vision.',
-          },
-          {
-            icon: '🪄',
-            label: 'VFX',
-            body: 'Integración de efectos visuales y composición avanzada.',
+            icon: '🛠️',
+            label: 'Equipo de Producción y Post Producción',
+            body: 'Coordinadores y editores que cierran cada proyecto con calidad broadcast.',
           },
         ],
       },
@@ -76,19 +56,14 @@ const content = {
         label: 'Stages',
         items: [
           {
-            image: 'https://placehold.co/600x400?text=Stage+A',
-            label: 'Stage A',
-            body: 'Soundproof 500 m² stage with green cyclorama.',
+            image: 'https://placehold.co/600x400?text=Stages',
+            label: 'Stages',
+            body: 'Versatile soundstages prepared for any project with controlled acoustics.',
           },
           {
-            image: 'https://placehold.co/600x400?text=Stage+B',
-            label: 'Stage B',
-            body: 'Stage with motorized crane and DMX lighting system.',
-          },
-          {
-            image: 'https://placehold.co/600x400?text=Backlot',
-            label: 'Backlot',
-            body: 'Outdoor area for modular sets and urban scenes.',
+            image: 'https://placehold.co/600x400?text=LED+Walls',
+            label: 'LED Walls',
+            body: 'LED volumes that reshape the scenery in real time for full immersion.',
           },
         ],
       },
@@ -96,19 +71,14 @@ const content = {
         label: 'Production',
         items: [
           {
-            icon: '🎬',
-            label: 'Crew',
-            body: 'Directors, DPs and technicians with global experience.',
+            icon: '🎨',
+            label: 'Creative team',
+            body: 'Writers, directors and producers bringing your vision to life.',
           },
           {
             icon: '🎥',
-            label: 'Gear',
-            body: 'Cinema cameras, cranes and motion control systems.',
-          },
-          {
-            icon: '🗺️',
-            label: 'Locations',
-            body: 'Scouting and coordination for any type of setting.',
+            label: 'Technical crew',
+            body: 'Camera, sound and lighting operators seasoned on set.',
           },
         ],
       },
@@ -116,19 +86,9 @@ const content = {
         label: 'Post Production',
         items: [
           {
-            icon: '💻',
-            label: 'Editing',
-            body: 'Suites with 4K HDR workflows and remote collaboration.',
-          },
-          {
-            icon: '🎨',
-            label: 'Color',
-            body: 'Color grading with calibrated Dolby Vision monitoring.',
-          },
-          {
-            icon: '🪄',
-            label: 'VFX',
-            body: 'Visual effects integration and advanced compositing.',
+            icon: '🛠️',
+            label: 'Production & Post team',
+            body: 'Coordinators and editors delivering broadcast-quality finishes.',
           },
         ],
       },
