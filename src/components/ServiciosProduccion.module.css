@@ -8,6 +8,27 @@
   margin-bottom: 2rem;
 }
 
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.tab {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.tabActive {
+  background: var(--accent);
+}
+
 .grid {
   display: grid;
   gap: 2rem;
@@ -37,4 +58,22 @@
 
 .body {
   margin: 0;
+}
+
+@media (max-width: 600px) {
+  .title {
+    font-size: 1.8rem;
+  }
+
+  .tabs {
+    flex-direction: column;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cardTitle {
+    font-size: 1.1rem;
+  }
 }
