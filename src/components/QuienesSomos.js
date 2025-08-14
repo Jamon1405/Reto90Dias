@@ -6,11 +6,15 @@ const content = {
     title: 'Quiénes somos',
     body:
       'En Light Channel vivimos para contar historias. Combinamos experiencia, tecnología y un equipo apasionado para producir contenidos que sorprenden y conectan con la audiencia.',
+    image:
+      'https://images.unsplash.com/photo-1581091870622-7d4b39ed64f0?auto=format&fit=crop&w=1600&q=80',
   },
   en: {
     title: 'About us',
     body:
       'At Light Channel we live to tell stories. We blend experience, technology and passion to deliver content that engages and inspires.',
+    image:
+      'https://images.unsplash.com/photo-1581091870622-7d4b39ed64f0?auto=format&fit=crop&w=1600&q=80',
   },
 };
 
@@ -19,8 +23,8 @@ export default function QuienesSomos({ lang = 'es' }) {
   return (
     <section className={styles.section}>
       <Image
-        src="https://images.unsplash.com/photo-1581091870622-7d4b39ed64f0?auto=format&fit=crop&w=1600&q=80"
-        alt="Studio setup"
+        src={t.image}
+        alt={t.title}
         className={styles.background}
         fill
         sizes="100vw"

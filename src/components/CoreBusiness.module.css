@@ -34,12 +34,34 @@
 .list {
   list-style: none;
   padding: 0;
-  line-height: 1.6;
-  font-size: 1.2rem;
+  display: grid;
+  gap: 1.5rem;
+  max-width: 700px;
+  margin: 0 auto;
 }
 
-.list li {
-  margin-bottom: 1rem;
+.item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  text-align: left;
+}
+
+.itemImage {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.itemTitle {
+  margin: 0 0 0.25rem;
+  font-size: 1.25rem;
+}
+
+.itemBody {
+  margin: 0;
+  line-height: 1.4;
 }
 
 @media (max-width: 600px) {
@@ -51,7 +73,16 @@
     font-size: 1.8rem;
   }
 
-  .list {
-    font-size: 1rem;
+  .item {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .itemTitle {
+    font-size: 1.1rem;
+  }
+
+  .itemBody {
+    font-size: 0.9rem;
   }
 }

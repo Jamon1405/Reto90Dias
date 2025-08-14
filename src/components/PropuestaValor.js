@@ -6,11 +6,15 @@ const content = {
     title: 'Nuestra propuesta de valor',
     body:
       'Transformamos ideas en experiencias memorables. Desde la preproducción hasta la post, nuestro enfoque integral garantiza resultados de alto impacto.',
+    image:
+      'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1600&q=80',
   },
   en: {
     title: 'Our value proposition',
     body:
       'We turn ideas into memorable experiences. From pre to post production, our end-to-end approach delivers high-impact results.',
+    image:
+      'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1600&q=80',
   },
 };
 
@@ -19,8 +23,8 @@ export default function PropuestaValor({ lang = 'es' }) {
   return (
     <section className={styles.section}>
       <Image
-        src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1600&q=80"
-        alt="Creative workspace"
+        src={t.image}
+        alt={t.title}
         className={styles.background}
         fill
         sizes="100vw"

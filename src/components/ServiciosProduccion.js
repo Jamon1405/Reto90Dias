@@ -12,12 +12,22 @@ const content = {
         label: 'Foro',
         items: [
           {
-            image: 'https://placehold.co/600x400?text=Estudios',
-            label: 'Estudios/Foros',
-            body: 'Sets versátiles acondicionados para cualquier proyecto, con acústica controlada.',
+            image: 'https://placehold.co/600x400?text=Foro+A',
+            label: 'Foro A',
+            body: 'Espacio principal con 600 m² y ciclorama blanco para producciones de gran escala.',
           },
           {
-            image: 'https://placehold.co/600x400?text=LEDs',
+            image: 'https://placehold.co/600x400?text=Foro+B',
+            label: 'Foro B',
+            body: 'Foro versátil de 400 m² ideal para programas de revista o comerciales.',
+          },
+          {
+            image: 'https://placehold.co/600x400?text=Foro+C',
+            label: 'Foro C',
+            body: 'Espacio íntimo de 200 m² perfecto para entrevistas y sets especializados.',
+          },
+          {
+            image: 'https://placehold.co/600x400?text=Pantalla+LED',
             label: 'Pantallas LED',
             body: 'Muros LED que transforman el escenario en tiempo real para una inmersión total.',
           },
@@ -57,13 +67,23 @@ const content = {
         label: 'Stages',
         items: [
           {
-            image: 'https://placehold.co/600x400?text=Stages',
-            label: 'Stages',
-            body: 'Versatile soundstages prepared for any project with controlled acoustics.',
+            image: 'https://placehold.co/600x400?text=Stage+A',
+            label: 'Stage A',
+            body: 'Main 600 m² stage with white cyclorama for large productions.',
           },
           {
-            image: 'https://placehold.co/600x400?text=LED+Walls',
-            label: 'LED Walls',
+            image: 'https://placehold.co/600x400?text=Stage+B',
+            label: 'Stage B',
+            body: 'Flexible 400 m² space ideal for talk shows or commercials.',
+          },
+          {
+            image: 'https://placehold.co/600x400?text=Stage+C',
+            label: 'Stage C',
+            body: 'Cozy 200 m² stage designed for interviews and specialty sets.',
+          },
+          {
+            image: 'https://placehold.co/600x400?text=LED+Wall',
+            label: 'LED Wall',
             body: 'LED volumes that reshape the scenery in real time for full immersion.',
           },
         ],

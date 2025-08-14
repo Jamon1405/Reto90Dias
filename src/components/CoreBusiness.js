@@ -5,17 +5,47 @@ const content = {
   es: {
     title: 'Nuestro core business',
     items: [
-      '<strong>Contenido Original</strong> – Formatos que rompen esquemas: talent shows, realities, noticias y series para cada pantalla.',
-      '<strong>Virtual Production</strong> – Escenarios digitales y pantallas LED que impulsan la creatividad y reducen costos.',
-      '<strong>Servicios de Producción 360</strong> – Desde la idea hasta la entrega final con infraestructura y talento de primer nivel.',
+      {
+        title: 'Contenido Original',
+        body:
+          'Formatos que rompen esquemas: talent shows, realities, noticias y series para cada pantalla.',
+        image: 'https://placehold.co/100x100?text=OC',
+      },
+      {
+        title: 'Virtual Production',
+        body:
+          'Escenarios digitales y pantallas LED que impulsan la creatividad y reducen costos.',
+        image: 'https://placehold.co/100x100?text=VP',
+      },
+      {
+        title: 'Servicios de Producción 360',
+        body:
+          'Desde la idea hasta la entrega final con infraestructura y talento de primer nivel.',
+        image: 'https://placehold.co/100x100?text=360',
+      },
     ],
   },
   en: {
     title: 'Our core business',
     items: [
-      '<strong>Original Content</strong> – Formats that break the mold: talent shows, reality, news and series for every screen.',
-      '<strong>Virtual Production</strong> – Digital sets and LED stages that boost creativity while cutting costs.',
-      '<strong>360° Production Services</strong> – From concept to delivery with top-tier infrastructure and talent.',
+      {
+        title: 'Original Content',
+        body:
+          'Formats that break the mold: talent shows, reality, news and series for every screen.',
+        image: 'https://placehold.co/100x100?text=OC',
+      },
+      {
+        title: 'Virtual Production',
+        body:
+          'Digital sets and LED stages that boost creativity while cutting costs.',
+        image: 'https://placehold.co/100x100?text=VP',
+      },
+      {
+        title: '360° Production Services',
+        body:
+          'From concept to delivery with top-tier infrastructure and talent.',
+        image: 'https://placehold.co/100x100?text=360',
+      },
     ],
   },
 };
@@ -35,7 +65,19 @@ export default function CoreBusiness({ lang = 'es' }) {
         <h2 className={styles.title}>{t.title}</h2>
         <ul className={styles.list}>
           {t.items.map((item) => (
-            <li key={item} dangerouslySetInnerHTML={{ __html: item }} />
+            <li key={item.title} className={styles.item}>
+              <Image
+                src={item.image}
+                alt=""
+                width={80}
+                height={80}
+                className={styles.itemImage}
+              />
+              <div className={styles.itemCopy}>
+                <h3 className={styles.itemTitle}>{item.title}</h3>
+                <p className={styles.itemBody}>{item.body}</p>
+              </div>
+            </li>
           ))}
         </ul>
       </div>
