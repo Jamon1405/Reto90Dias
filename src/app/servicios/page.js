@@ -1,8 +1,8 @@
-export default function HomePage() {
+export default function ServiciosPage() {
   return (
     <div style={containerStyle}>
-      <h1>Inicio</h1>
-      <p>Bienvenido a nuestro sitio.</p>
+      <h1>Servicios de Producción</h1>
+      <p>Información sobre nuestros servicios de producción.</p>
     </div>
   );
 }
