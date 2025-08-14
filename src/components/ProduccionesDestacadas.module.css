@@ -27,11 +27,12 @@
   border-radius: 12px;
 }
 
-.videoPlaceholder {
+.image {
   width: 100%;
   aspect-ratio: 16 / 9;
-  background: #333;
+  object-fit: cover;
   margin-bottom: 1rem;
+  display: block;
 }
 
 .item p {

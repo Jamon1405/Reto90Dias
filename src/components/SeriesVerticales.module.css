@@ -22,12 +22,13 @@
   text-align: center;
 }
 
-.videoPlaceholder {
+.image {
   width: 100%;
   max-width: 480px;
   aspect-ratio: 9 / 16;
-  background: #57598c;
+  object-fit: cover;
   margin-bottom: 1rem;
+  display: block;
 }
 
 .item p {
