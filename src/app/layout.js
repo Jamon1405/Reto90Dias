@@ -2,8 +2,8 @@ import './globals.css';
 import Navigation from '../components/Navigation'; // Barra de navegación
 
 export const metadata = {
-  title: 'JamFit - Programa de 90 días',
-  description: 'Tu programa de entrenamiento de 90 días',
+  title: 'Reto 90 Días',
+  description: 'Servicios de Producción y Contenido Original',
 };
 
 export default function RootLayout({ children }) {
