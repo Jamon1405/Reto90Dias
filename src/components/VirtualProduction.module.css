@@ -1,0 +1,33 @@
+.section {
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.title {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.body {
+  max-width: 800px;
+  margin: 0 auto 2rem;
+}
+
+.features {
+  list-style: none;
+  padding: 0;
+  margin: 0 auto 2rem;
+  max-width: 800px;
+  text-align: left;
+}
+
+.features li {
+  margin-bottom: 0.5rem;
+}
+
+.video {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  display: block;
+}

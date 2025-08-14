@@ -1,18 +1,16 @@
 import './globals.css';
-import Navigation from '../components/Navigation'; // Barra de navegación
+import { Montserrat } from 'next/font/google';
+const montserrat = Montserrat({ subsets: ['latin'], weight: ['400', '700'] });
 
 export const metadata = {
-  title: 'JamFit - Programa de 90 días',
-  description: 'Tu programa de entrenamiento de 90 días',
+  title: 'Light Channel',
+  description: 'Producción audiovisual inspirada en colorfilms.mx',
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="es">
-      <body>
-        <Navigation /> {/* Navegación */}
-        {children}      {/* Aquí se renderizan las páginas */}
-      </body>
+      <body className={montserrat.className}>{children}</body>
     </html>
   );
 }
