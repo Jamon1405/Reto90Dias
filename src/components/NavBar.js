@@ -56,6 +56,7 @@ export default function NavBar({ lang = 'es' }) {
   const p = paths[lang];
   const pathname = usePathname();
   const [hidden, setHidden] = useState(false);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     let lastY = window.scrollY;
@@ -77,31 +78,45 @@ export default function NavBar({ lang = 'es' }) {
 
   return (
     <nav className={`${styles.nav} ${hidden ? styles.hidden : ''}`}>
-      <Link href={p.home} className={`${styles.brand} ${linkClass(p.home)}`}>
-        Light Channel
-      </Link>
-        <Link href={p.about} className={linkClass(p.about)}>
+      <div className={styles.top}>
+        <Link href={p.home} className={`${styles.brand} ${linkClass(p.home)}`}>
+          Light Channel
+        </Link>
+        <button
+          className={styles.menuButton}
+          onClick={() => setOpen((o) => !o)}
+          aria-label="Toggle menu"
+        >
+          <span className={styles.menuIcon} />
+        </button>
+      </div>
+      <div className={`${styles.links} ${open ? styles.open : ''}`}>
+        <Link href={p.about} className={linkClass(p.about)} onClick={() => setOpen(false)}>
           {l.about}
         </Link>
-        <Link href={p.original} className={linkClass(p.original)}>
+        <Link href={p.original} className={linkClass(p.original)} onClick={() => setOpen(false)}>
           {l.original}
         </Link>
-        <Link href={p.virtual} className={linkClass(p.virtual)}>
+        <Link href={p.virtual} className={linkClass(p.virtual)} onClick={() => setOpen(false)}>
           {l.virtual}
         </Link>
-        <Link href={p.services} className={linkClass(p.services)}>
+        <Link href={p.services} className={linkClass(p.services)} onClick={() => setOpen(false)}>
           {l.services}
         </Link>
-        <Link href={p.team} className={linkClass(p.team)}>
+        <Link href={p.team} className={linkClass(p.team)} onClick={() => setOpen(false)}>
           {l.team}
         </Link>
-        <Link href={p.contact} className={linkClass(p.contact)}>
+        <Link href={p.contact} className={linkClass(p.contact)} onClick={() => setOpen(false)}>
           {l.contact}
         </Link>
-      <div className={styles.spacer} />
-      <Link href={p.switch} className={`${styles.lang} ${styles.link}`}>
-        {l.switchLabel}
-      </Link>
+        <Link
+          href={p.switch}
+          className={`${styles.lang} ${styles.link}`}
+          onClick={() => setOpen(false)}
+        >
+          {l.switchLabel}
+        </Link>
+      </div>
     </nav>
   );
 }
