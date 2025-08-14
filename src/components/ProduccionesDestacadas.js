@@ -6,7 +6,6 @@ const content = {
     items: [
       '“El Reto de Creadores” — YouTube Originals',
       '“Mamá ya es mi Casa” — TelevisaUnivision',
-      '“El Secreto” — Serie vertical original de Light Channel',
       '“Tengo Talento, Mucho Talento” — Estrella TV',
       '“Alarma TV” — Estrella TV',
     ],
@@ -16,7 +15,6 @@ const content = {
     items: [
       '“El Reto de Creadores” — YouTube Originals',
       '“Mamá ya es mi Casa” — TelevisaUnivision',
-      '“El Secreto” — Light Channel original vertical series',
       '“Tengo Talento, Mucho Talento” — Estrella TV',
       '“Alarma TV” — Estrella TV',
     ],

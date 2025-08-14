@@ -3,11 +3,11 @@ import styles from './SeriesVerticales.module.css';
 const content = {
   es: {
     title: 'Series verticales',
-    items: ['"El Secreto"', 'Otra serie vertical'],
+    items: ['“El Secreto” — Suspenso en 9:16', '“Detrás del Reto” — Acceso exclusivo'],
   },
   en: {
     title: 'Vertical series',
-    items: ['"El Secreto"', 'Another vertical series'],
+    items: ['“El Secreto” — 9:16 thriller', '“Behind the Challenge” — Exclusive access'],
   },
 };
 

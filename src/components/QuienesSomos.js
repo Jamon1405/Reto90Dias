@@ -4,12 +4,12 @@ const content = {
   es: {
     title: 'Quiénes somos',
     body:
-      'Light Channel es una empresa líder en entretenimiento con más de 25 años de trayectoria en la industria audiovisual. Nuestra experiencia abarca televisión, realities, series, conciertos, comerciales y eventos, respaldada por un equipo creativo y técnico de alto nivel, así como por infraestructura de última generación.',
+      'En Light Channel vivimos para contar historias. Combinamos experiencia, tecnología y un equipo apasionado para producir contenidos que sorprenden y conectan con la audiencia.',
   },
   en: {
     title: 'About us',
     body:
-      'Light Channel is a leading entertainment company with more than 25 years in the audiovisual industry. Our experience spans television, reality, series, concerts, commercials and events, backed by a high-level creative and technical team and state-of-the-art infrastructure.',
+      'At Light Channel we live to tell stories. We blend experience, technology and passion to deliver content that engages and inspires.',
   },
 };
 

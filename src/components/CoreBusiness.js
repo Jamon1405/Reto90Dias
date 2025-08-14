@@ -4,17 +4,17 @@ const content = {
   es: {
     title: 'Nuestro core business',
     items: [
-      '<strong>Contenido Original</strong> – Creación y desarrollo de formatos innovadores: talent shows, realities, noticieros, ficción, series verticales y más.',
-      '<strong>Virtual Production</strong> – Producción de comerciales, telenovelas, series y videoclips con tecnología LED y entornos virtuales que optimizan tiempos y costos.',
-      '<strong>Servicios de Producción 360</strong> – Soluciones integrales que incluyen preproducción, rodaje y postproducción, con acceso a estudios, foros, pantallas LED, equipo técnico y humano.',
+      '<strong>Contenido Original</strong> – Formatos que rompen esquemas: talent shows, realities, noticias y series para cada pantalla.',
+      '<strong>Virtual Production</strong> – Escenarios digitales y pantallas LED que impulsan la creatividad y reducen costos.',
+      '<strong>Servicios de Producción 360</strong> – Desde la idea hasta la entrega final con infraestructura y talento de primer nivel.',
     ],
   },
   en: {
     title: 'Our core business',
     items: [
-      '<strong>Original Content</strong> – Creation and development of innovative formats: talent shows, reality, news, fiction, vertical series and more.',
-      '<strong>Virtual Production</strong> – Production of commercials, soap operas, series and music videos with LED technology and virtual environments that optimize time and cost.',
-      '<strong>360° Production Services</strong> – Comprehensive solutions covering pre-production, shooting and post-production with access to studios, LED walls and skilled crews.',
+      '<strong>Original Content</strong> – Formats that break the mold: talent shows, reality, news and series for every screen.',
+      '<strong>Virtual Production</strong> – Digital sets and LED stages that boost creativity while cutting costs.',
+      '<strong>360° Production Services</strong> – From concept to delivery with top-tier infrastructure and talent.',
     ],
   },
 };
