@@ -9,27 +9,39 @@ const content = {
     title: 'Servicios de Producción',
     tabs: {
       foro: {
-        label: 'Foro',
+        label: 'Foros',
         items: [
           {
-            image: 'https://placehold.co/600x400?text=Foro+A',
-            label: 'Foro A',
-            body: 'Espacio principal con 600 m² y ciclorama blanco para producciones de gran escala.',
+            image:
+              'https://images.unsplash.com/photo-1526948128573-703ee1aeb6fa?auto=format&fit=crop&w=1200&q=80',
+            label: 'Estudios EGGM Argos',
+            body:
+              'Complejo con infraestructura de primer nivel para producciones de gran escala.',
           },
           {
-            image: 'https://placehold.co/600x400?text=Foro+B',
-            label: 'Foro B',
-            body: 'Foro versátil de 400 m² ideal para programas de revista o comerciales.',
+            image:
+              'https://images.unsplash.com/photo-1581276879432-15a63d16c6ac?auto=format&fit=crop&w=1200&q=80',
+            label: 'Estudio 7 Digital',
+            body:
+              'Foro versátil con integración digital ideal para programas de revista o comerciales.',
           },
           {
-            image: 'https://placehold.co/600x400?text=Foro+C',
-            label: 'Foro C',
-            body: 'Espacio íntimo de 200 m² perfecto para entrevistas y sets especializados.',
+            image:
+              'https://images.unsplash.com/photo-1582711012124-a41f0c40e605?auto=format&fit=crop&w=1200&q=80',
+            label: 'Foro UC Roma',
+            body:
+              'Espacio histórico adaptado para entrevistas y sets especializados.',
           },
+        ],
+      },
+      led: {
+        label: 'Pantallas LED',
+        items: [
           {
-            image: 'https://placehold.co/600x400?text=Pantalla+LED',
+            image: 'https://images.unsplash.com/photo-1508921912186-1d1a45ebb3c1?auto=format&fit=crop&w=1200&q=80',
             label: 'Pantallas LED',
-            body: 'Muros LED que transforman el escenario en tiempo real para una inmersión total.',
+            body:
+              'Muros LED que transforman el escenario en tiempo real para una inmersión total.',
           },
         ],
       },
@@ -67,24 +79,35 @@ const content = {
         label: 'Stages',
         items: [
           {
-            image: 'https://placehold.co/600x400?text=Stage+A',
-            label: 'Stage A',
-            body: 'Main 600 m² stage with white cyclorama for large productions.',
+            image:
+              'https://images.unsplash.com/photo-1526948128573-703ee1aeb6fa?auto=format&fit=crop&w=1200&q=80',
+            label: 'EGGM Argos Studios',
+            body:
+              'Complex with top-tier infrastructure for large-scale productions.',
           },
           {
-            image: 'https://placehold.co/600x400?text=Stage+B',
-            label: 'Stage B',
-            body: 'Flexible 400 m² space ideal for talk shows or commercials.',
+            image:
+              'https://images.unsplash.com/photo-1581276879432-15a63d16c6ac?auto=format&fit=crop&w=1200&q=80',
+            label: 'Studio 7 Digital',
+            body:
+              'Flexible digital stage ideal for talk shows or commercials.',
           },
           {
-            image: 'https://placehold.co/600x400?text=Stage+C',
-            label: 'Stage C',
-            body: 'Cozy 200 m² stage designed for interviews and specialty sets.',
+            image:
+              'https://images.unsplash.com/photo-1582711012124-a41f0c40e605?auto=format&fit=crop&w=1200&q=80',
+            label: 'UC Roma Stage',
+            body: 'Historic space adapted for interviews and specialty sets.',
           },
+        ],
+      },
+      led: {
+        label: 'LED Walls',
+        items: [
           {
-            image: 'https://placehold.co/600x400?text=LED+Wall',
-            label: 'LED Wall',
-            body: 'LED volumes that reshape the scenery in real time for full immersion.',
+            image: 'https://images.unsplash.com/photo-1508921912186-1d1a45ebb3c1?auto=format&fit=crop&w=1200&q=80',
+            label: 'LED Walls',
+            body:
+              'LED volumes that reshape scenery in real time for full immersion.',
           },
         ],
       },
