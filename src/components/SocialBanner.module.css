@@ -34,6 +34,7 @@
 
 .icon {
   transition: transform 0.3s;
+  animation: float 3s ease-in-out infinite;
 }
 
 .link:hover {
@@ -42,6 +43,7 @@
 }
 
 .link:hover .icon {
+  animation-play-state: paused;
   transform: scale(1.2);
 }
 
@@ -54,5 +56,28 @@
   }
   100% {
     background-position: 0% 50%;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@media (max-width: 600px) {
+  .banner {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
+
+  .list {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
   }
 }
