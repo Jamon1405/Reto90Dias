@@ -1,8 +1,8 @@
-.section {
-  padding: 6rem 2rem;
-  color: #fff;
-  text-align: center;
-}
+  .section {
+    padding: 6rem 2rem;
+    color: var(--foreground);
+    text-align: center;
+  }
 
 .title {
   font-size: 2.6rem;

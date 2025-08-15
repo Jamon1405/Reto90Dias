@@ -14,23 +14,23 @@ const content = {
           {
             image:
               'https://images.unsplash.com/photo-1526948128573-703ee1aeb6fa?auto=format&fit=crop&w=1200&q=80',
-            label: 'Estudios EGGM Argos',
+            label: 'Estudio VP GGM Digital',
             body:
-              'Complejo con infraestructura de primer nivel para producciones de gran escala.',
+              '336 m² de espacio creativo con 7 metros de altura, puente de iluminación y Elephant Door para acceso de gran formato. Ideal para producciones virtuales y proyectos de alto nivel técnico.',
           },
           {
             image:
               'https://images.unsplash.com/photo-1581276879432-15a63d16c6ac?auto=format&fit=crop&w=1200&q=80',
-            label: 'Estudio 7 Digital',
+            label: 'Estudio VP 7 Digital',
             body:
-              'Foro versátil con integración digital ideal para programas de revista o comerciales.',
+              'Foro de 14 x 10 metros y 6 metros de altura, equipado con ciclorama. Perfecto para sets virtuales, filmaciones y contenido digital de alta calidad.',
           },
           {
             image:
               'https://images.unsplash.com/photo-1582711012124-a41f0c40e605?auto=format&fit=crop&w=1200&q=80',
-            label: 'Foro UC Roma',
+            label: 'Estudio UC',
             body:
-              'Espacio histórico adaptado para entrevistas y sets especializados.',
+              'Foro de 17 x 17 metros y 7 metros de altura, con tramoya y ubicado dentro de la Universidad de la Comunicación, en la Colonia Roma. Un espacio versátil para conciertos, shows y producciones audiovisuales.',
           },
         ],
       },
@@ -88,6 +88,18 @@ const content = {
         label: 'Pantallas LED',
         items: [
           {
+            icon: '🚀',
+            label: 'Pioneros en tecnología LED en México',
+            body:
+              'Lideramos la innovación desde nuestros inicios, ofreciendo soluciones de iluminación con la más alta tecnología LED del mercado.',
+          },
+          {
+            icon: '📦',
+            label: 'Inventario sin precedentes',
+            body:
+              'Contamos con más de 150 millones de LEDs disponibles, listos para integrarse en proyectos de cualquier escala.',
+          },
+          {
             image: 'https://images.unsplash.com/photo-1508921912186-1d1a45ebb3c1?auto=format&fit=crop&w=1200&q=80',
             label: 'Muros LED',
             body:
@@ -116,22 +128,23 @@ const content = {
           {
             image:
               'https://images.unsplash.com/photo-1526948128573-703ee1aeb6fa?auto=format&fit=crop&w=1200&q=80',
-            label: 'EGGM Argos Studios',
+            label: 'VP GGM Digital Studio',
             body:
-              'Complex with top-tier infrastructure for large-scale productions.',
+              '336 m² of creative space with 7 m high ceiling, lighting bridge and elephant door for large-format access. Ideal for virtual productions and technically demanding projects.',
           },
           {
             image:
               'https://images.unsplash.com/photo-1581276879432-15a63d16c6ac?auto=format&fit=crop&w=1200&q=80',
-            label: 'Studio 7 Digital',
+            label: 'VP 7 Digital Studio',
             body:
-              'Flexible digital stage ideal for talk shows or commercials.',
+              '14 x 10 m stage with 6 m height and cyclorama. Perfect for virtual sets, shoots and high-quality digital content.',
           },
           {
             image:
               'https://images.unsplash.com/photo-1582711012124-a41f0c40e605?auto=format&fit=crop&w=1200&q=80',
-            label: 'UC Roma Stage',
-            body: 'Historic space adapted for interviews and specialty sets.',
+            label: 'UC Studio',
+            body:
+              '17 x 17 m stage with 7 m height and rigging, located inside the University of Communication in Colonia Roma. A versatile space for concerts, shows and audiovisual productions.',
           },
         ],
       },
@@ -188,6 +201,18 @@ const content = {
       led: {
         label: 'LED Walls',
         items: [
+          {
+            icon: '🚀',
+            label: 'Pioneers in LED technology in Mexico',
+            body:
+              'We have led innovation from the start, offering lighting solutions with the highest LED technology in the market.',
+          },
+          {
+            icon: '📦',
+            label: 'Unrivaled inventory',
+            body:
+              'More than 150 million LEDs ready to integrate into projects of any scale.',
+          },
           {
             image: 'https://images.unsplash.com/photo-1508921912186-1d1a45ebb3c1?auto=format&fit=crop&w=1200&q=80',
             label: 'LED Walls',
