@@ -2,6 +2,7 @@ import FadeInSection from '@/components/FadeInSection';
 import QuienesSomos from '@/components/QuienesSomos';
 import CoreBusiness from '@/components/CoreBusiness';
 import PropuestaValor from '@/components/PropuestaValor';
+import AboutHighlights from '@/components/AboutHighlights';
 
 export default function Page() {
   return (
@@ -14,6 +15,9 @@ export default function Page() {
       </FadeInSection>
       <FadeInSection>
         <PropuestaValor lang="es" />
+      </FadeInSection>
+      <FadeInSection>
+        <AboutHighlights lang="es" />
       </FadeInSection>
     </>
   );
