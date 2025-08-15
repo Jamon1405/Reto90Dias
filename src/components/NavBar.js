@@ -1,8 +1,16 @@
 "use client";
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { FaInstagram, FaEnvelope, FaGlobe, FaRegLightbulb } from 'react-icons/fa';
+import {
+  FaInstagram,
+  FaEnvelope,
+  FaGlobe,
+  FaRegLightbulb,
+  FaBars,
+  FaTimes,
+} from 'react-icons/fa';
 import styles from './NavBar.module.css';
 
 const labels = {
@@ -53,6 +61,7 @@ export default function NavBar({ lang = 'es' }) {
   const l = labels[lang];
   const p = paths[lang];
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
 
   const linkClass = (path) =>
     pathname === path ? `${styles.link} ${styles.active}` : styles.link;
@@ -63,48 +72,57 @@ export default function NavBar({ lang = 'es' }) {
         <FaRegLightbulb className={styles.logoIcon} />
         <span className={styles.logoText}>LIGHT CHANNEL</span>
       </Link>
-      <div className={styles.links}>
-        <Link href={p.about} className={linkClass(p.about)}>
-          {l.about}
-        </Link>
-        <Link href={p.original} className={linkClass(p.original)}>
-          {l.original}
-        </Link>
-        <Link href={p.virtual} className={linkClass(p.virtual)}>
-          {l.virtual}
-        </Link>
-        <Link href={p.services} className={linkClass(p.services)}>
-          {l.services}
-        </Link>
-        <Link href={p.team} className={linkClass(p.team)}>
-          {l.team}
-        </Link>
-        <Link href={p.contact} className={linkClass(p.contact)}>
-          {l.contact}
-        </Link>
-      </div>
-      <div className={styles.icons}>
-        <Link
-          href="https://instagram.com"
-          className={styles.icon}
-          aria-label="Instagram"
-        >
-          <FaInstagram />
-        </Link>
-        <Link
-          href="mailto:info@example.com"
-          className={styles.icon}
-          aria-label="Email"
-        >
-          <FaEnvelope />
-        </Link>
-        <Link href={p.switch} className={`${styles.icon} ${styles.langSwitcher}`}>
-          <FaGlobe />
-          <span className={styles.langLabel}>
-            {lang === 'es' ? 'English' : 'Español'}
-          </span>
-          <span className={styles.arrow}>▾</span>
-        </Link>
+      <button
+        className={styles.menuToggle}
+        onClick={() => setOpen(!open)}
+        aria-label="Toggle menu"
+      >
+        {open ? <FaTimes /> : <FaBars />}
+      </button>
+      <div className={open ? `${styles.menu} ${styles.open}` : styles.menu}>
+        <div className={styles.links}>
+          <Link href={p.about} className={linkClass(p.about)}>
+            {l.about}
+          </Link>
+          <Link href={p.original} className={linkClass(p.original)}>
+            {l.original}
+          </Link>
+          <Link href={p.virtual} className={linkClass(p.virtual)}>
+            {l.virtual}
+          </Link>
+          <Link href={p.services} className={linkClass(p.services)}>
+            {l.services}
+          </Link>
+          <Link href={p.team} className={linkClass(p.team)}>
+            {l.team}
+          </Link>
+          <Link href={p.contact} className={linkClass(p.contact)}>
+            {l.contact}
+          </Link>
+        </div>
+        <div className={styles.icons}>
+          <Link
+            href="https://instagram.com"
+            className={styles.icon}
+            aria-label="Instagram"
+          >
+            <FaInstagram />
+          </Link>
+          <Link
+            href="mailto:info@example.com"
+            className={styles.icon}
+            aria-label="Email"
+          >
+            <FaEnvelope />
+          </Link>
+          <Link href={p.switch} className={`${styles.icon} ${styles.langSwitcher}`}>
+            <FaGlobe />
+            <span className={styles.langLabel}>
+              {lang === 'es' ? 'English' : 'Español'}
+            </span>
+            <span className={styles.arrow}>▾</span>
+          </Link>
+        </div>
       </div>
     </nav>
   );
