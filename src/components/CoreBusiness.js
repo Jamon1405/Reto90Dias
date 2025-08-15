@@ -1,20 +1,45 @@
+import Image from 'next/image';
 import styles from './CoreBusiness.module.css';
 
 const content = {
   es: {
     title: 'Nuestro core business',
     items: [
-      '<strong>Contenido Original</strong> – Creación y desarrollo de formatos innovadores: talent shows, realities, noticieros, ficción, series verticales y más.',
-      '<strong>Virtual Production</strong> – Producción de comerciales, telenovelas, series y videoclips con tecnología LED y entornos virtuales que optimizan tiempos y costos.',
-      '<strong>Servicios de Producción 360</strong> – Soluciones integrales que incluyen preproducción, rodaje y postproducción, con acceso a estudios, foros, pantallas LED, equipo técnico y humano.',
+      {
+        title: 'Contenido Original',
+        body:
+          'Formatos que rompen esquemas: talent shows, realities, noticias y series para cada pantalla.',
+      },
+      {
+        title: 'Virtual Production',
+        body:
+          'Escenarios digitales y pantallas LED que impulsan la creatividad y reducen costos.',
+      },
+      {
+        title: 'Servicios de Producción 360',
+        body:
+          'Desde la idea hasta la entrega final con infraestructura y talento de primer nivel.',
+      },
     ],
   },
   en: {
     title: 'Our core business',
     items: [
-      '<strong>Original Content</strong> – Creation and development of innovative formats: talent shows, reality, news, fiction, vertical series and more.',
-      '<strong>Virtual Production</strong> – Production of commercials, soap operas, series and music videos with LED technology and virtual environments that optimize time and cost.',
-      '<strong>360° Production Services</strong> – Comprehensive solutions covering pre-production, shooting and post-production with access to studios, LED walls and skilled crews.',
+      {
+        title: 'Original Content',
+        body:
+          'Formats that break the mold: talent shows, reality, news and series for every screen.',
+      },
+      {
+        title: 'Virtual Production',
+        body:
+          'Digital sets and LED stages that boost creativity while cutting costs.',
+      },
+      {
+        title: '360° Production Services',
+        body:
+          'From concept to delivery with top-tier infrastructure and talent.',
+      },
     ],
   },
 };
@@ -23,17 +48,21 @@ export default function CoreBusiness({ lang = 'es' }) {
   const t = content[lang];
   return (
     <section className={styles.section}>
-      <img
+      <Image
         src="https://images.unsplash.com/photo-1535185384036-9f18e86e5f5c?auto=format&fit=crop&w=1600&q=80"
         alt="Production control room"
         className={styles.background}
-        loading="lazy"
+        fill
+        sizes="100vw"
       />
       <div className={styles.overlay}>
         <h2 className={styles.title}>{t.title}</h2>
         <ul className={styles.list}>
           {t.items.map((item) => (
-            <li key={item} dangerouslySetInnerHTML={{ __html: item }} />
+            <li key={item.title} className={styles.item}>
+              <h3 className={styles.itemTitle}>{item.title}</h3>
+              <p className={styles.itemBody}>{item.body}</p>
+            </li>
           ))}
         </ul>
       </div>

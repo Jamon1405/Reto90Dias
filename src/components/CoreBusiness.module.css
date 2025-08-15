@@ -25,8 +25,8 @@
 }
 
 .title {
-  font-size: 2rem;
-  margin-bottom: 1rem;
+  font-size: 2.4rem;
+  margin-bottom: 1.5rem;
   text-transform: uppercase;
   letter-spacing: 2px;
 }
@@ -34,9 +34,44 @@
 .list {
   list-style: none;
   padding: 0;
-  line-height: 1.6;
+  display: grid;
+  gap: 1.5rem;
+  max-width: 700px;
+  margin: 0 auto;
 }
 
-.list li {
-  margin-bottom: 1rem;
+.item {
+  text-align: left;
+}
+
+.itemTitle {
+  margin: 0 0 0.25rem;
+  font-size: 1.25rem;
+}
+
+.itemBody {
+  margin: 0;
+  line-height: 1.4;
+}
+
+@media (max-width: 600px) {
+  .overlay {
+    padding: 1rem;
+  }
+
+  .title {
+    font-size: 1.8rem;
+  }
+
+  .item {
+    text-align: center;
+  }
+
+  .itemTitle {
+    font-size: 1.1rem;
+  }
+
+  .itemBody {
+    font-size: 0.9rem;
+  }
 }

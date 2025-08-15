@@ -3,7 +3,7 @@
   --foreground: #fff;
   --accent: #ad60a9;
   --primary: #075e7f;
-  --font-sans: 'Montserrat', sans-serif;
+  --font-sans: 'Poppins', sans-serif;
 }
 
 html {
@@ -50,4 +50,9 @@ main {
   width: 100%;
   margin: 0;
   padding: 0;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
 }

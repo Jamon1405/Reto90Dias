@@ -1,15 +1,20 @@
+import Image from 'next/image';
 import styles from './PropuestaValor.module.css';
 
 const content = {
   es: {
     title: 'Nuestra propuesta de valor',
     body:
-      'En Light Channel combinamos creatividad, innovación tecnológica y experiencia para llevar las ideas a su máxima expresión. Evolucionamos con las nuevas formas de consumir contenido, explorando formatos verticales, experiencias inmersivas y producciones híbridas que conectan con las audiencias actuales.',
+      'Transformamos ideas en experiencias memorables. Desde la preproducción hasta la post, nuestro enfoque integral garantiza resultados de alto impacto.',
+    image:
+      'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1600&q=80',
   },
   en: {
     title: 'Our value proposition',
     body:
-      "At Light Channel we blend creativity, technological innovation and experience to bring ideas to their fullest expression. We evolve with new ways of consuming content, exploring vertical formats, immersive experiences and hybrid productions that connect with today's audiences.",
+      'We turn ideas into memorable experiences. From pre to post production, our end-to-end approach delivers high-impact results.',
+    image:
+      'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1600&q=80',
   },
 };
 
@@ -17,11 +22,12 @@ export default function PropuestaValor({ lang = 'es' }) {
   const t = content[lang];
   return (
     <section className={styles.section}>
-      <img
-        src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1600&q=80"
-        alt="Creative workspace"
+      <Image
+        src={t.image}
+        alt={t.title}
         className={styles.background}
-        loading="lazy"
+        fill
+        sizes="100vw"
       />
       <div className={styles.overlay}>
         <h2 className={styles.title}>{t.title}</h2>
