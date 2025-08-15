@@ -1,10 +1,10 @@
 import FadeInSection from '@/components/FadeInSection';
-import AboutTabs from '@/components/AboutTabs';
+import AboutCarousel from '@/components/AboutCarousel';
 
 export default function Page() {
   return (
     <FadeInSection>
-      <AboutTabs lang="es" />
+      <AboutCarousel lang="es" />
     </FadeInSection>
   );
 }

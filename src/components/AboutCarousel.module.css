@@ -1,0 +1,104 @@
+.carousel {
+  position: relative;
+  width: 100%;
+  min-height: 500px;
+  overflow: hidden;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.active {
+  opacity: 1;
+}
+
+.image {
+  object-fit: cover;
+  z-index: -1;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  padding: 2rem;
+}
+
+.title {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.body {
+  max-width: 800px;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-width: 800px;
+}
+
+.listItem + .listItem {
+  margin-top: 1rem;
+}
+
+.itemTitle {
+  font-size: 1.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.itemBody {
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.dots {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+}
+
+.dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  border: none;
+  background: #fff;
+  opacity: 0.4;
+  cursor: pointer;
+}
+
+.activeDot {
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .body, .itemBody {
+    font-size: 0.9rem;
+  }
+
+  .itemTitle {
+    font-size: 1.1rem;
+  }
+}
