@@ -1,15 +1,15 @@
 
-.banner {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
-  padding: 1.5rem;
-  background: linear-gradient(90deg, var(--primary), var(--accent), #57598c);
-  background-size: 300% 300%;
-  animation: bannerGradient 8s ease infinite;
-  color: #fff;
-}
+  .banner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: linear-gradient(90deg, var(--background), var(--accent));
+    background-size: 300% 300%;
+    animation: bannerGradient 8s ease infinite;
+    color: var(--foreground);
+  }
 
 .label {
   font-weight: 700;
@@ -23,14 +23,14 @@
   padding: 0;
 }
 
-.link {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: #fff;
-  text-decoration: none;
-  transition: transform 0.3s, color 0.3s;
-}
+  .link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--foreground);
+    text-decoration: none;
+    transition: transform 0.3s, color 0.3s;
+  }
 
 .icon {
   transition: transform 0.3s;

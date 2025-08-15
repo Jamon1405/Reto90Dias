@@ -16,21 +16,21 @@
   margin-bottom: 2rem;
 }
 
-.tab {
-  padding: 0.5rem 1rem;
-  border: none;
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-  border-radius: 4px;
-  cursor: pointer;
-  font-family: inherit;
-  transition: background 0.3s;
-}
+  .tab {
+    padding: 0.5rem 1rem;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--foreground);
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.3s;
+  }
 
-.tabActive {
-  background: var(--accent);
-  color: #000;
-}
+  .tabActive {
+    background: var(--accent);
+    color: #fff;
+  }
 
 .grid {
   display: grid;
