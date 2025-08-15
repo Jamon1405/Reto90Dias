@@ -13,8 +13,6 @@ const content = {
         title: 'Quiénes somos',
         body:
           'Con dos décadas en la industria, hemos acumulado más de 223,000 minutos en TV y 7,500 horas backstage, participando en giras y producciones de alto nivel. Nuestro equipo altamente capacitado y la tecnología más avanzada nos permiten ofrecer resultados impecables en cada proyecto.',
-        image:
-          'https://images.unsplash.com/photo-1556767576-cf9c4a1e4911?auto=format&fit=crop&w=1600&q=80',
         cta: 'Conoce más',
         href: '/contacto',
       },
@@ -48,8 +46,6 @@ const content = {
         title: 'Who we are',
         body:
           'With two decades in the industry, we have amassed over 223,000 minutes on TV and 7,500 backstage hours in high-level productions. Our trained team and cutting-edge technology ensure flawless results every time.',
-        image:
-          'https://images.unsplash.com/photo-1556767576-cf9c4a1e4911?auto=format&fit=crop&w=1600&q=80',
         cta: 'Learn more',
         href: '/en/contact',
       },
@@ -83,9 +79,18 @@ export default function AboutSections({ lang = 'es' }) {
     <section className={styles.wrapper}>
       <h1 className={styles.mainTitle}>{title}</h1>
       {blocks.map((block) => (
-        <div key={block.key} className={styles.block}>
-          <Image src={block.image} alt={block.title} fill className={styles.image} />
-          <div className={styles.overlay}>
+        <div
+          key={block.key}
+          className={
+            block.image ? styles.block : `${styles.block} ${styles.noImage}`
+          }
+        >
+          {block.image && (
+            <Image src={block.image} alt={block.title} fill className={styles.image} />
+          )}
+          <div
+            className={block.image ? styles.overlay : styles.textOnly}
+          >
             <h2 className={styles.title}>{block.title}</h2>
             <p className={styles.body}>{block.body}</p>
             <Link href={block.href} className={styles.button}>

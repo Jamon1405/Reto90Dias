@@ -81,22 +81,46 @@ export default function NavBar({ lang = 'es' }) {
       </button>
       <div className={open ? `${styles.menu} ${styles.open}` : styles.menu}>
         <div className={styles.links}>
-          <Link href={p.about} className={linkClass(p.about)}>
+          <Link
+            href={p.about}
+            className={linkClass(p.about)}
+            onClick={() => setOpen(false)}
+          >
             {l.about}
           </Link>
-          <Link href={p.original} className={linkClass(p.original)}>
+          <Link
+            href={p.original}
+            className={linkClass(p.original)}
+            onClick={() => setOpen(false)}
+          >
             {l.original}
           </Link>
-          <Link href={p.virtual} className={linkClass(p.virtual)}>
+          <Link
+            href={p.virtual}
+            className={linkClass(p.virtual)}
+            onClick={() => setOpen(false)}
+          >
             {l.virtual}
           </Link>
-          <Link href={p.services} className={linkClass(p.services)}>
+          <Link
+            href={p.services}
+            className={linkClass(p.services)}
+            onClick={() => setOpen(false)}
+          >
             {l.services}
           </Link>
-          <Link href={p.team} className={linkClass(p.team)}>
+          <Link
+            href={p.team}
+            className={linkClass(p.team)}
+            onClick={() => setOpen(false)}
+          >
             {l.team}
           </Link>
-          <Link href={p.contact} className={linkClass(p.contact)}>
+          <Link
+            href={p.contact}
+            className={linkClass(p.contact)}
+            onClick={() => setOpen(false)}
+          >
             {l.contact}
           </Link>
         </div>
@@ -105,6 +129,7 @@ export default function NavBar({ lang = 'es' }) {
             href="https://instagram.com"
             className={styles.icon}
             aria-label="Instagram"
+            onClick={() => setOpen(false)}
           >
             <FaInstagram />
           </Link>
@@ -112,10 +137,15 @@ export default function NavBar({ lang = 'es' }) {
             href="mailto:info@example.com"
             className={styles.icon}
             aria-label="Email"
+            onClick={() => setOpen(false)}
           >
             <FaEnvelope />
           </Link>
-          <Link href={p.switch} className={`${styles.icon} ${styles.langSwitcher}`}>
+          <Link
+            href={p.switch}
+            className={`${styles.icon} ${styles.langSwitcher}`}
+            onClick={() => setOpen(false)}
+          >
             <FaGlobe />
             <span className={styles.langLabel}>
               {lang === 'es' ? 'English' : 'Español'}

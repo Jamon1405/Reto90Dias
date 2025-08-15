@@ -18,12 +18,14 @@
   font-size: 1.5rem;
   margin-left: auto;
   cursor: pointer;
+  z-index: 1100;
 }
 
 .menu {
   display: flex;
   align-items: center;
   margin-left: auto;
+  z-index: 1000;
 }
 
 .logo {
