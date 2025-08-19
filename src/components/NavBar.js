@@ -63,8 +63,34 @@ export default function NavBar({ lang = 'es' }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [hidden, setHidden] = useState(true);
+  const [isTouch, setIsTouch] = useState(false);
 
   useEffect(() => {
+    const touch = window.matchMedia('(pointer: coarse)').matches;
+    setIsTouch(touch);
+    if (touch) {
+      setHidden(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isTouch) {
+      let lastY = window.scrollY;
+      const handleScroll = () => {
+        const currentY = window.scrollY;
+        if (currentY > lastY && !open) {
+          setHidden(true);
+        } else {
+          setHidden(false);
+        }
+        lastY = currentY;
+      };
+      window.addEventListener('scroll', handleScroll);
+      return () => {
+        window.removeEventListener('scroll', handleScroll);
+      };
+    }
+
     const reveal = (e) => {
       const y = 'touches' in e ? e.touches[0]?.clientY : e.clientY;
       if (y <= 20) {
@@ -84,7 +110,7 @@ export default function NavBar({ lang = 'es' }) {
       window.removeEventListener('touchstart', reveal);
       window.removeEventListener('scroll', conceal);
     };
-  }, [open]);
+  }, [isTouch, open]);
 
   const toggleMenu = () => {
     const next = !open;
@@ -92,7 +118,7 @@ export default function NavBar({ lang = 'es' }) {
     if (next) {
       setHidden(false);
     } else {
-      setHidden(true);
+      setHidden(isTouch ? false : true);
     }
   };
 
