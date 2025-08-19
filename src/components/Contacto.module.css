@@ -1,12 +1,12 @@
-.section {
-  position: relative;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  color: #fff;
-}
+  .section {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--foreground);
+  }
 
 .background {
   position: absolute;
@@ -41,12 +41,12 @@
   margin-bottom: 0.5rem;
 }
 
-.list a {
-  color: #fff;
-  text-decoration: none;
-  border-bottom: 1px solid var(--accent);
-  transition: color 0.3s, border-color 0.3s;
-}
+  .list a {
+    color: var(--foreground);
+    text-decoration: none;
+    border-bottom: 1px solid var(--accent);
+    transition: color 0.3s, border-color 0.3s;
+  }
 
 .list a:hover {
   color: var(--accent);

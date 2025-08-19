@@ -1,9 +1,10 @@
 :root {
   --background: #000;
-  --foreground: #fff;
-  --accent: #ad60a9;
-  --primary: #075e7f;
+  --foreground: #f5f5f7;
+  --accent: #0a84ff;
+  --primary: #1d1d1f;
   --font-sans: 'Poppins', sans-serif;
+  --font-heading: 'Montserrat', sans-serif;
 }
 
 html {
@@ -16,25 +17,11 @@ html {
 
 body {
   margin: 0;
-  background: linear-gradient(135deg, #000, #57598c, #075e7f);
-  background-size: 400% 400%;
-  animation: gradient 30s ease infinite;
+  background: linear-gradient(135deg, #000, #1c1c1e);
   color: var(--foreground);
   font-family: var(--font-sans);
   line-height: 1.6;
   overflow-x: hidden;
-}
-
-@keyframes gradient {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
 }
 
 a {
@@ -43,7 +30,7 @@ a {
 }
 
 a:hover {
-  color: var(--primary);
+  color: var(--foreground);
 }
 
 main {
@@ -55,4 +42,13 @@ main {
 img {
   max-width: 100%;
   height: auto;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
 }
