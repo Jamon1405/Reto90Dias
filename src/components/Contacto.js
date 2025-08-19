@@ -4,15 +4,17 @@ import styles from './Contacto.module.css';
 const content = {
   es: {
     title: 'Contacto',
-      intro: 'Escríbenos a:',
-      phone: 'Tel: +1 555 0100',
-      location: 'Ciudad de México',
+    intro: 'Escríbenos a:',
+    email: 'info@light-channel.com',
+    addressTitle: 'Dirección:',
+    address: 'Agustín M. Chávez 1, Santa Fe, CDMX',
   },
   en: {
     title: 'Contact',
-      intro: 'Write to us at:',
-      phone: 'Tel: +1 555 0100',
-      location: 'Mexico City',
+    intro: 'Write to us at:',
+    email: 'info@light-channel.com',
+    addressTitle: 'Address:',
+    address: 'Agustín M. Chávez 1, Santa Fe, Mexico City',
   },
 };
 
@@ -30,16 +32,19 @@ export default function Contacto({ lang = 'es' }) {
       <div className={styles.overlay}>
         <h2 className={styles.title}>{t.title}</h2>
         <p>{t.intro}</p>
-          <ul className={styles.list}>
-            <li>
-              <a href="mailto:mth@light-channel.com">mth@light-channel.com</a>
-            </li>
-            <li>
-              <a href="mailto:mbatz@light-channel.com">mbatz@light-channel.com</a>
-            </li>
-          </ul>
-          <p>{t.phone}</p>
-          <p>{t.location}</p>
+        <p>
+          <a className={styles.email} href={`mailto:${t.email}`}>{t.email}</a>
+        </p>
+        <p className={styles.addressTitle}>{t.addressTitle}</p>
+        <p>{t.address}</p>
+        <div className={styles.mapWrapper}>
+          <iframe
+            className={styles.map}
+            src="https://maps.google.com/maps?q=Agust%C3%ADn%20M.%20Ch%C3%A1vez%201%2C%20Santa%20Fe%2C%20CDMX&output=embed"
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+        </div>
       </div>
     </section>
   );
