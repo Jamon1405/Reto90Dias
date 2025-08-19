@@ -148,7 +148,7 @@ export default function NavBar({ lang = 'es' }) {
         </div>
         <div className={styles.icons}>
           <Link
-            href="https://instagram.com"
+            href="https://www.instagram.com/_lightchannel/"
             className={styles.icon}
             aria-label="Instagram"
             onClick={() => setOpen(false)}
