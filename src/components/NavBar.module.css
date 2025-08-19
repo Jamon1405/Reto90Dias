@@ -15,6 +15,7 @@
 
 .hidden {
   transform: translateY(-100%);
+  pointer-events: none;
 }
 
   .menuToggle {
@@ -42,7 +43,7 @@
   }
 
 .logoImage {
-  height: 80px;
+  height: 100px;
   width: auto;
 }
 
@@ -151,6 +152,6 @@
   }
 
   .logoImage {
-    height: 60px;
+    height: 70px;
   }
 }
