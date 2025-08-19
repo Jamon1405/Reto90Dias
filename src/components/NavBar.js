@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -62,12 +62,28 @@ export default function NavBar({ lang = 'es' }) {
   const p = paths[lang];
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const current = window.scrollY;
+      if (current > lastScrollY.current && current > 50 && !open) {
+        setHidden(true);
+      } else {
+        setHidden(false);
+      }
+      lastScrollY.current = current;
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [open]);
 
   const linkClass = (path) =>
     pathname === path ? `${styles.link} ${styles.active}` : styles.link;
 
   return (
-    <nav className={styles.nav}>
+    <nav className={`${styles.nav} ${hidden ? styles.hidden : ''}`}>
       <Link href={p.home} className={styles.logo}>
         <Image
           src="/Logo Light Channel.png"

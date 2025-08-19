@@ -25,13 +25,16 @@ export default function Hero({ lang = 'es' }) {
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-    const handleEnded = () => {
+    const restart = () => {
       video.currentTime = 0;
       void video.play();
     };
-    video.addEventListener('ended', handleEnded);
+    restart();
+    video.addEventListener('ended', restart);
+    video.addEventListener('pause', restart);
     return () => {
-      video.removeEventListener('ended', handleEnded);
+      video.removeEventListener('ended', restart);
+      video.removeEventListener('pause', restart);
     };
   }, []);
 
