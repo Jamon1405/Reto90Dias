@@ -72,8 +72,8 @@ export default function NavBar({ lang = 'es' }) {
         <Image
           src="/Logo Light Channel.png"
           alt="Light Channel"
-          width={160}
-          height={40}
+          width={200}
+          height={50}
           priority
           className={styles.logoImage}
         />
