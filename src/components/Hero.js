@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import styles from './Hero.module.css';
 
@@ -18,9 +19,25 @@ const content = {
 
 export default function Hero({ lang = 'es' }) {
   const t = content[lang];
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const handleEnded = () => {
+      video.currentTime = 0;
+      void video.play();
+    };
+    video.addEventListener('ended', handleEnded);
+    return () => {
+      video.removeEventListener('ended', handleEnded);
+    };
+  }, []);
+
   return (
     <section className={styles.hero}>
       <video
+        ref={videoRef}
         className={styles.video}
         autoPlay
         muted
