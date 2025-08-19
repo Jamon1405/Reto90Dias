@@ -64,7 +64,7 @@ export default function NavBar({ lang = 'es' }) {
     <nav className={styles.nav}>
       <Link href={p.home} className={styles.logo}>
         <Image
-          src="/light-channel-logo.png"
+          src="/Logo Light Channel.png"
           alt="Light Channel logo"
           width={140}
           height={40}

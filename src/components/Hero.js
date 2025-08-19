@@ -26,7 +26,7 @@ export default function Hero({ lang = 'es' }) {
         muted
         loop
         playsInline
-        src="/Logo%20Animado.mp4"
+        src="/Logo Animado.mp4"
       />
       <div className={styles.overlay}>
         <h1 className={styles.title}>{t.title}</h1>
