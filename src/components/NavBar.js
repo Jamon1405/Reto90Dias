@@ -2,12 +2,12 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   FaInstagram,
   FaEnvelope,
   FaGlobe,
-  FaRegLightbulb,
   FaBars,
   FaTimes,
 } from 'react-icons/fa';
@@ -69,8 +69,14 @@ export default function NavBar({ lang = 'es' }) {
   return (
     <nav className={styles.nav}>
       <Link href={p.home} className={styles.logo}>
-        <FaRegLightbulb className={styles.logoIcon} />
-        <span className={styles.logoText}>LIGHT CHANNEL</span>
+        <Image
+          src="/Logo Light Channel.png"
+          alt="Light Channel"
+          width={160}
+          height={40}
+          priority
+          className={styles.logoImage}
+        />
       </Link>
       <button
         className={styles.menuToggle}

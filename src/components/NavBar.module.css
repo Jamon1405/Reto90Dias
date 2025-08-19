@@ -31,18 +31,12 @@
   .logo {
     display: flex;
     align-items: center;
-    color: var(--foreground);
     text-decoration: none;
-    letter-spacing: 2px;
-    font-weight: 700;
   }
 
-.logoIcon {
-  margin-right: 0.5rem;
-}
-
-.logoText {
-  font-size: 1.2rem;
+.logoImage {
+  height: 40px;
+  width: auto;
 }
 
 .links {
