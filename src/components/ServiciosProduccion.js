@@ -241,6 +241,7 @@ export default function ServiciosProduccion({ lang = 'es' }) {
   useEffect(() => {
     const opens = document.querySelectorAll('[data-open]');
     const closes = document.querySelectorAll('[data-close]');
+    const modals = document.querySelectorAll('.modal');
     const onOpen = (e) => {
       const sel = e.currentTarget.getAttribute('data-open');
       const modal = document.querySelector(sel);
@@ -251,11 +252,18 @@ export default function ServiciosProduccion({ lang = 'es' }) {
       const modal = document.querySelector(sel);
       if (modal) modal.classList.remove('open');
     };
+    const onOverlay = (e) => {
+      if (e.target.classList.contains('modal')) {
+        e.target.classList.remove('open');
+      }
+    };
     opens.forEach((b) => b.addEventListener('click', onOpen));
     closes.forEach((b) => b.addEventListener('click', onClose));
+    modals.forEach((m) => m.addEventListener('click', onOverlay));
     return () => {
       opens.forEach((b) => b.removeEventListener('click', onOpen));
       closes.forEach((b) => b.removeEventListener('click', onClose));
+      modals.forEach((m) => m.removeEventListener('click', onOverlay));
     };
   }, [lang]);
 
@@ -412,12 +420,13 @@ export default function ServiciosProduccion({ lang = 'es' }) {
               </div>
               <div className="txt">
                 <h2 className="h2">{c.title}</h2>
-                {c.items.map((it) => (
-                  <div key={it.label} className="item">
-                    <h3 className="h3">{it.label}</h3>
-                    <p className="p">{it.body}</p>
-                  </div>
-                ))}
+                <ul>
+                  {c.items.map((it) => (
+                    <li key={it.label} className="p">
+                      <strong>{it.label}</strong> {it.body}
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
           </section>

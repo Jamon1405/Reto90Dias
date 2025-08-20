@@ -6,13 +6,15 @@
 .h2,.h3{font-size:clamp(24px,3vw,30px);line-height:1.25;margin:0 0 8px}
 .p{margin-top:12px;font-size:18px;line-height:1.7}
 .ph{aspect-ratio:16/9;background:#e5e5e5;border-radius:16px;display:flex;align-items:center;justify-content:center;color:#666}
-.subnav{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.9);backdrop-filter:saturate(180%) blur(6px);border-bottom:1px solid #eee;display:flex;gap:16px;padding:12px 32px}
-.subnav a{text-decoration:none;color:inherit;padding:4px 8px}
+.subnav{position:sticky;top:0;z-index:20;background:rgba(0,0,0,.8);backdrop-filter:saturate(180%) blur(6px);border-bottom:1px solid #333;display:flex;gap:16px;padding:12px 32px}
+.subnav a{text-decoration:none;color:var(--foreground);padding:4px 8px}
 .table{width:100%;border-collapse:collapse;margin-top:24px}
 .table th,.table td{border:1px solid #e5e5e5;padding:12px 14px;text-align:left;font-size:15px}
 .table thead th{background:#fafafa;font-weight:600}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;padding:24px}
 .modal.open{display:flex}
-.modal-card{max-width:960px;width:100%;background:#fff;border-radius:16px;padding:24px}
+.modal-card{max-width:960px;width:100%;background:#fff;border-radius:16px;padding:24px;color:var(--primary)}
+.modal-card .button{margin-top:16px}
+.txt ul{margin-top:12px;padding-left:20px;list-style:disc}
 .button{display:inline-block;padding:.75rem 1.5rem;background:var(--accent);color:#fff;text-transform:uppercase;font-weight:700;letter-spacing:1px;text-decoration:none}
 .button:hover{opacity:.9}
