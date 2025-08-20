@@ -90,9 +90,10 @@ export default function VirtualProduction({ lang = 'es' }) {
           </ul>
         </div>
         <video
-          src="https://www.w3schools.com/html/mov_bbb.mp4"
+          src="/VideoVS.mp4"
           className={styles.video}
           controls
+          preload="metadata"
         />
       </div>
     </section>

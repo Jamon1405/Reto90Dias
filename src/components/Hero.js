@@ -1,26 +1,25 @@
 "use client";
-import { useEffect, useRef } from 'react';
-import Link from 'next/link';
+import { useEffect, useRef, useState } from 'react';
 import styles from './Hero.module.css';
+import VideoModal from './VideoModal';
 
 const content = {
   es: {
     title: 'Light Channel',
     tagline: 'Producción sin límites',
     cta: 'Ver trabajo',
-    ctaLink: '/work',
   },
   en: {
     title: 'Light Channel',
     tagline: 'Production without limits',
     cta: 'See work',
-    ctaLink: '/en/work',
   },
 };
 
 export default function Hero({ lang = 'es' }) {
   const t = content[lang];
   const videoRef = useRef(null);
+  const [showReel, setShowReel] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -53,10 +52,20 @@ export default function Hero({ lang = 'es' }) {
       <div className={styles.overlay}>
         <h1 className={styles.title}>{t.title}</h1>
         <p className={styles.tagline}>{t.tagline}</p>
-        <Link href={t.ctaLink} className={styles.cta}>
+        <button
+          type="button"
+          onClick={() => setShowReel(true)}
+          className={styles.cta}
+        >
           {t.cta}
-        </Link>
+        </button>
       </div>
+      {showReel && (
+        <VideoModal
+          src="/VideoReel.mp4"
+          onClose={() => setShowReel(false)}
+        />
+      )}
     </section>
   );
 }
