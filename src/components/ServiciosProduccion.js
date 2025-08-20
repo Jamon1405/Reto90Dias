@@ -252,7 +252,7 @@ export default function ServiciosProduccion({ lang = 'es' }) {
           {Object.entries(t.tabs).map(([key, info]) => (
             <button
               key={key}
-              className={`${styles.tab} ${tab === key ? styles.tabActive : ''}`}
+              className={`${styles.mainTab} ${tab === key ? styles.mainTabActive : ''}`}
               onClick={() => setTab(key)}
             >
               {info.label}
