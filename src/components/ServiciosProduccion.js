@@ -222,6 +222,10 @@ const content = {
 
 export default function ServiciosProduccion({ lang = 'es' }) {
   const t = content[lang];
+  const labels = {
+    es: { gallery: 'Galería', video: 'Video' },
+    en: { gallery: 'Gallery', video: 'Video' },
+  }[lang];
 
   useEffect(() => {
     const opens = document.querySelectorAll('[data-open]');
@@ -304,11 +308,13 @@ export default function ServiciosProduccion({ lang = 'es' }) {
                           </li>
                         ))}
                       </ul>
+                      <h4 className="modal-subtitle">{labels.gallery}</h4>
                       <div className="ph" aria-label={`Galería ${f.name}`}>
-                        {/* [IMG-GALLERY-{slug}] */}
+                        [{labels.gallery.toUpperCase()}]
                       </div>
+                      <h4 className="modal-subtitle">{labels.video}</h4>
                       <div className="ph" aria-label={`Video ${f.name}`}>
-                        {/* [VIDEO-{slug}] */}
+                        [{labels.video.toUpperCase()}]
                       </div>
                       <button className="button" data-close={`#modal-${slug}`}>
                         {lang === 'es' ? 'Cerrar' : 'Close'}

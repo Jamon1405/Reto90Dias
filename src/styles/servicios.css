@@ -19,5 +19,7 @@
 
 .forum-thumbs{display:grid;grid-template-columns:1fr;gap:32px}
 @media(min-width:960px){.forum-thumbs{grid-template-columns:repeat(2,1fr)}}
-.forum-thumb{width:100%;position:relative;border:none;background:none;padding:0;cursor:pointer}
-.forum-thumb span{position:absolute;bottom:8px;left:8px;color:#fff;font-weight:600}
+.forum-thumb{width:100%;position:relative;border:none;background:none;padding:0;cursor:pointer;overflow:hidden;border-radius:16px;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.forum-thumb::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.6),transparent)}
+.forum-thumb span{position:absolute;bottom:16px;left:16px;color:#fff;font-weight:700;font-size:1.75rem;text-shadow:0 2px 4px rgba(0,0,0,.6)}
+.modal-subtitle{margin-top:24px;margin-bottom:8px;font-weight:600;font-size:20px}
