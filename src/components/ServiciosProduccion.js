@@ -259,7 +259,7 @@ export default function ServiciosProduccion({ lang = 'es' }) {
   return (
     <section className="servicios">
       {/* HERO */}
-      <header className="section">
+      <header className="hero">
         <h1 className="h1">{t.hero.title}</h1>
         {t.hero.intro && <p className="p">{t.hero.intro}</p>}
       </header>
@@ -267,7 +267,11 @@ export default function ServiciosProduccion({ lang = 'es' }) {
       {t.categories.map((c, idx) => {
         if (c.slug === 'foros' || c.slug === 'stages') {
           return (
-            <section key={c.slug} id={c.slug} className="section">
+            <section
+              key={c.slug}
+              id={c.slug}
+              className={`section ${idx === 0 ? 'first' : ''}`}
+            >
               <h2 className="h2">{c.title}</h2>
               <div className="forum-thumbs">
                 {c.forums.map((f, i) => {
@@ -328,7 +332,11 @@ export default function ServiciosProduccion({ lang = 'es' }) {
         }
 
         return (
-          <section key={c.slug} id={c.slug} className="section">
+          <section
+            key={c.slug}
+            id={c.slug}
+            className={`section ${idx === 0 ? 'first' : ''}`}
+          >
             <div className={`grid ${idx % 2 === 1 ? 'swap' : ''}`}>
               <div className="img ph" aria-label={`Imagen sección ${c.title}`}>
                 {/* [IMG-${c.slug} 16:9] */}

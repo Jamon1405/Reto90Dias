@@ -10,7 +10,7 @@ export default function Page() {
       </header>
 
       {/* BLOCK 1 */}
-      <section className="section">
+      <section className="section first">
         <div className="grid">
           <div className="img img-ph" role="img" aria-label="IMG-01 16:9 minimum 1600×900 — backstage/control room">
             {/* [IMG-01 16:9 minimum 1600×900 — backstage/control room] */}
