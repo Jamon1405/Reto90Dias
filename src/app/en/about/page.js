@@ -7,9 +7,6 @@ export default function Page() {
       {/* HERO */}
       <header className="hero">
         <h1 className="h1">About us</h1>
-        <p className="p">
-          With two decades in the industry, we have amassed over 223,000 minutes on TV and 7,500 backstage hours in high-level productions.
-        </p>
       </header>
 
       {/* BLOCK 1 */}
@@ -68,13 +65,11 @@ export default function Page() {
 
       {/* CTA PRE-FOOTER */}
       <section className="section">
-        <div className="grid">
-          <div className="txt center">
-            <h3 className="h3">Let&apos;s work together</h3>
-            <Link href="/en/contact" className="button">
-              Contact us
-            </Link>
-          </div>
+        <div className="txt center">
+          <h3 className="h3">Let&apos;s work together</h3>
+          <Link href="/en/contact" className="button">
+            Contact us
+          </Link>
         </div>
       </section>
     </section>

@@ -11,5 +11,5 @@
 .button:hover{opacity:.9}
 .center{text-align:center;margin:0 auto}
 
-.hero{padding:120px 0;text-align:center;background:linear-gradient(135deg,#111,#1c1c1e);border-radius:24px}
-.hero .p{max-width:720px;margin:0 auto}
+.hero{padding:120px 0;text-align:center}
+
