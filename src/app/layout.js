@@ -1,8 +1,18 @@
 import './globals.css';
-import { Poppins, Montserrat } from 'next/font/google';
+import { Inter, Playfair_Display } from 'next/font/google';
 
-const poppins = Poppins({ subsets: ['latin'], weight: ['400', '600'], variable: '--font-sans' });
-const montserrat = Montserrat({ subsets: ['latin'], weight: ['700'], variable: '--font-heading' });
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['300', '400', '500'],
+  variable: '--font-sans',
+  display: 'swap',
+});
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  weight: ['700'],
+  variable: '--font-heading',
+  display: 'swap',
+});
 
 export const metadata = {
   title: 'Light Channel',
@@ -17,7 +27,7 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
       <html lang="es">
-        <body className={`${poppins.variable} ${montserrat.variable}`}>{children}</body>
+        <body className={`${inter.variable} ${playfair.variable}`}>{children}</body>
       </html>
   );
 }
