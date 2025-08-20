@@ -14,8 +14,6 @@ const content = {
       {
         slug: 'foros',
         title: 'Foros',
-        snippet:
-          '336 m² de espacio creativo con 7 metros de altura, puente de iluminación y Elephant Door para acceso de gran formato.',
         forums: [
           {
             name: 'Estudio VP GGM Digital',
@@ -54,8 +52,6 @@ const content = {
       {
         slug: 'produccion',
         title: 'Producción',
-        snippet:
-          'Guionistas, directores y productores que materializan tu visión.',
         items: [
           {
             label: 'Equipo creativo',
@@ -78,7 +74,6 @@ const content = {
       {
         slug: 'post',
         title: 'Post Producción',
-        snippet: 'Montaje narrativo y ritmo acorde al proyecto.',
         items: [
           { label: 'Edición', body: 'Montaje narrativo y ritmo acorde al proyecto.' },
           {
@@ -95,8 +90,6 @@ const content = {
       {
         slug: 'led',
         title: 'Pantallas LED',
-        snippet:
-          'Lideramos la innovación desde nuestros inicios, ofreciendo soluciones de iluminación con la más alta tecnología LED del mercado.',
         items: [
           {
             label: 'Pioneros en tecnología LED en México',
@@ -129,8 +122,6 @@ const content = {
       {
         slug: 'stages',
         title: 'Stages',
-        snippet:
-          '336 m² of creative space with 7 m high ceiling, lighting bridge and elephant door for large-format access.',
         forums: [
           {
             name: 'VP GGM Digital Studio',
@@ -169,7 +160,6 @@ const content = {
       {
         slug: 'production',
         title: 'Production',
-        snippet: 'Writers, directors and producers bringing your vision to life.',
         items: [
           {
             label: 'Creative team',
@@ -192,7 +182,6 @@ const content = {
       {
         slug: 'post',
         title: 'Post Production',
-        snippet: 'Narrative cutting and pacing tailored to each project.',
         items: [
           { label: 'Editing', body: 'Narrative cutting and pacing tailored to each project.' },
           {
@@ -209,8 +198,6 @@ const content = {
       {
         slug: 'led',
         title: 'LED Walls',
-        snippet:
-          'We have led innovation from the start, offering lighting solutions with the highest LED technology in the market.',
         items: [
           {
             label: 'Pioneers in LED technology in Mexico',
@@ -274,34 +261,6 @@ export default function ServiciosProduccion({ lang = 'es' }) {
         <h1 className="h1">{t.hero.title}</h1>
         <p className="p">{t.hero.intro}</p>
       </header>
-
-      {/* SUB-NAV */}
-      <nav className="subnav">
-        {t.categories.map((c) => (
-          <a key={c.slug} href={`#${c.slug}`}>
-            {c.title}
-          </a>
-        ))}
-      </nav>
-
-      {/* GRID CATEGORÍAS */}
-      <section className="section">
-        <div className="grid">
-          {t.categories.map((c) => (
-            <article key={c.slug} className="md:col-span-6">
-              <div className="ph" aria-label={`Imagen card ${c.title}`}>
-                {/* [IMG-CARD-{c.slug} 16:9] */}
-              </div>
-              <h3 className="h3">{c.title}</h3>
-              <p className="p">{c.snippet}</p>
-              <a href={`#${c.slug}`} className="button">
-                {c.title}
-              </a>
-            </article>
-          ))}
-        </div>
-      </section>
-
       {/* SECCIONES */}
       {t.categories.map((c, idx) => {
         if (c.slug === 'foros' || c.slug === 'stages') {
