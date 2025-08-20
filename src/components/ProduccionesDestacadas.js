@@ -66,13 +66,22 @@ export default function ProduccionesDestacadas({ lang = 'es' }) {
                 className={styles.button}
                 onClick={() => setVideoSrc(i.video)}
               >
-                <Image
-                  src={i.image}
-                  alt={i.title}
+                <video
+                  src={i.video}
+                  poster={i.image}
                   className={styles.image}
                   width={800}
                   height={450}
+                  muted
+                  loop
+                  playsInline
+                  onMouseEnter={(e) => e.currentTarget.play()}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.pause();
+                    e.currentTarget.currentTime = 0;
+                  }}
                 />
+                <span className={styles.playIcon}>▶</span>
                 <p>{i.title}</p>
               </button>
             ) : (

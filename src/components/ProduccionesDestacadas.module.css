@@ -35,6 +35,7 @@
   color: inherit;
   text-align: inherit;
   cursor: pointer;
+  position: relative;
 }
 
 .image {
@@ -43,6 +44,16 @@
   object-fit: cover;
   margin-bottom: 1rem;
   display: block;
+}
+
+.playIcon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 3rem;
+  color: white;
+  pointer-events: none;
 }
 
 .item p {
