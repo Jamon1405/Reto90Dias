@@ -7,8 +7,7 @@ const content = {
   es: {
     hero: {
       title: 'Servicios de Producción',
-      intro:
-        '336 m² de espacio creativo con 7 metros de altura, puente de iluminación y Elephant Door para acceso de gran formato.',
+      intro: '',
     },
     categories: [
       {
@@ -115,8 +114,7 @@ const content = {
   en: {
     hero: {
       title: 'Production Services',
-      intro:
-        '336 m² of creative space with 7 m high ceiling, lighting bridge and elephant door for large-format access.',
+      intro: '',
     },
     categories: [
       {
@@ -259,7 +257,7 @@ export default function ServiciosProduccion({ lang = 'es' }) {
       {/* HERO */}
       <header className="section">
         <h1 className="h1">{t.hero.title}</h1>
-        <p className="p">{t.hero.intro}</p>
+        {t.hero.intro && <p className="p">{t.hero.intro}</p>}
       </header>
       {/* SECCIONES */}
       {t.categories.map((c, idx) => {

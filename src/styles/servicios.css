@@ -17,7 +17,7 @@
 .button{display:inline-block;padding:.75rem 1.5rem;background:var(--accent);color:#fff;text-transform:uppercase;font-weight:700;letter-spacing:1px;text-decoration:none}
 .button:hover{opacity:.9}
 
-.forum-thumbs{display:flex;flex-direction:column;gap:32px}
-@media(min-width:960px){.forum-thumbs{flex-direction:row}}
-.forum-thumb{flex:1;position:relative;border:none;background:none;padding:0;cursor:pointer}
+.forum-thumbs{display:grid;grid-template-columns:1fr;gap:32px}
+@media(min-width:960px){.forum-thumbs{grid-template-columns:repeat(2,1fr)}}
+.forum-thumb{width:100%;position:relative;border:none;background:none;padding:0;cursor:pointer}
 .forum-thumb span{position:absolute;bottom:8px;left:8px;color:#fff;font-weight:600}
