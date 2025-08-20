@@ -7,7 +7,15 @@
   align-items: center;
   padding: 1rem 2rem;
   background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   z-index: 1000;
+  transition: transform 0.3s ease;
+}
+
+.hidden {
+  transform: translateY(-100%);
+  pointer-events: none;
 }
 
   .menuToggle {
@@ -31,18 +39,12 @@
   .logo {
     display: flex;
     align-items: center;
-    color: var(--foreground);
     text-decoration: none;
-    letter-spacing: 2px;
-    font-weight: 700;
   }
 
-.logoIcon {
-  margin-right: 0.5rem;
-}
-
-.logoText {
-  font-size: 1.2rem;
+.logoImage {
+  height: 100px;
+  width: auto;
 }
 
 .links {
@@ -147,5 +149,9 @@
     margin-left: 0;
     margin-top: auto;
     gap: 1.5rem;
+  }
+
+  .logoImage {
+    height: 70px;
   }
 }

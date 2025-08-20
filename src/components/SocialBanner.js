@@ -1,23 +1,47 @@
 "use client";
 import styles from './SocialBanner.module.css';
 import FadeInSection from './FadeInSection';
-import { FaInstagram, FaYoutube, FaFacebook } from 'react-icons/fa';
+import { FaInstagram, FaYoutube, FaLinkedin } from 'react-icons/fa';
 
 const content = {
   es: {
     follow: 'Síguenos',
     links: [
-      { label: 'Instagram', href: '#', Icon: FaInstagram },
-      { label: 'YouTube', href: '#', Icon: FaYoutube },
-      { label: 'Facebook', href: '#', Icon: FaFacebook },
+      {
+        label: 'Instagram',
+        href: 'https://www.instagram.com/_lightchannel/',
+        Icon: FaInstagram,
+      },
+      {
+        label: 'YouTube',
+        href: 'https://www.youtube.com/@LightChannelMex',
+        Icon: FaYoutube,
+      },
+      {
+        label: 'LinkedIn',
+        href: 'https://www.linkedin.com/company/light-channel/posts/?feedView=all',
+        Icon: FaLinkedin,
+      },
     ],
   },
   en: {
     follow: 'Follow us',
     links: [
-      { label: 'Instagram', href: '#', Icon: FaInstagram },
-      { label: 'YouTube', href: '#', Icon: FaYoutube },
-      { label: 'Facebook', href: '#', Icon: FaFacebook },
+      {
+        label: 'Instagram',
+        href: 'https://www.instagram.com/_lightchannel/',
+        Icon: FaInstagram,
+      },
+      {
+        label: 'YouTube',
+        href: 'https://www.youtube.com/@LightChannelMex',
+        Icon: FaYoutube,
+      },
+      {
+        label: 'LinkedIn',
+        href: 'https://www.linkedin.com/company/light-channel/posts/?feedView=all',
+        Icon: FaLinkedin,
+      },
     ],
   },
 };

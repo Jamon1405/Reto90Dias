@@ -1,3 +1,5 @@
+"use client";
+import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import styles from './Hero.module.css';
 
@@ -18,15 +20,35 @@ const content = {
 
 export default function Hero({ lang = 'es' }) {
   const t = content[lang];
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const restart = () => {
+      video.currentTime = 0;
+      void video.play();
+    };
+    restart();
+    video.addEventListener('ended', restart);
+    video.addEventListener('pause', restart);
+    return () => {
+      video.removeEventListener('ended', restart);
+      video.removeEventListener('pause', restart);
+    };
+  }, []);
+
   return (
     <section className={styles.hero}>
       <video
+        ref={videoRef}
         className={styles.video}
         autoPlay
         muted
         loop
         playsInline
-        src="https://videos.pexels.com/video-files/1526908/1526908-uhd_2560_1440_25fps.mp4"
+        preload="auto"
+        src="/Logo Animado.mp4"
       />
       <div className={styles.overlay}>
         <h1 className={styles.title}>{t.title}</h1>

@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   FaInstagram,
   FaEnvelope,
   FaGlobe,
-  FaRegLightbulb,
   FaBars,
   FaTimes,
 } from 'react-icons/fa';
@@ -62,19 +62,87 @@ export default function NavBar({ lang = 'es' }) {
   const p = paths[lang];
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [hidden, setHidden] = useState(true);
+  const [isTouch, setIsTouch] = useState(false);
+
+  useEffect(() => {
+    const touch = window.matchMedia('(pointer: coarse)').matches;
+    setIsTouch(touch);
+    if (touch) {
+      setHidden(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isTouch) {
+      let lastY = window.scrollY;
+      const handleScroll = () => {
+        const currentY = window.scrollY;
+        if (currentY > lastY && !open) {
+          setHidden(true);
+        } else {
+          setHidden(false);
+        }
+        lastY = currentY;
+      };
+      window.addEventListener('scroll', handleScroll);
+      return () => {
+        window.removeEventListener('scroll', handleScroll);
+      };
+    }
+
+    const reveal = (e) => {
+      const y = 'touches' in e ? e.touches[0]?.clientY : e.clientY;
+      if (y <= 20) {
+        setHidden(false);
+      }
+    };
+    const conceal = () => {
+      if (!open) {
+        setHidden(true);
+      }
+    };
+    window.addEventListener('mousemove', reveal);
+    window.addEventListener('touchstart', reveal);
+    window.addEventListener('scroll', conceal);
+    return () => {
+      window.removeEventListener('mousemove', reveal);
+      window.removeEventListener('touchstart', reveal);
+      window.removeEventListener('scroll', conceal);
+    };
+  }, [isTouch, open]);
+
+  const toggleMenu = () => {
+    const next = !open;
+    setOpen(next);
+    if (next) {
+      setHidden(false);
+    } else {
+      setHidden(isTouch ? false : true);
+    }
+  };
 
   const linkClass = (path) =>
     pathname === path ? `${styles.link} ${styles.active}` : styles.link;
 
   return (
-    <nav className={styles.nav}>
+    <nav
+      className={`${styles.nav} ${hidden ? styles.hidden : ''}`}
+      onMouseLeave={() => !open && setHidden(true)}
+    >
       <Link href={p.home} className={styles.logo}>
-        <FaRegLightbulb className={styles.logoIcon} />
-        <span className={styles.logoText}>LIGHT CHANNEL</span>
+        <Image
+          src="/Logo Light Channel.png"
+          alt="Light Channel"
+          width={400}
+          height={100}
+          priority
+          className={styles.logoImage}
+        />
       </Link>
       <button
         className={styles.menuToggle}
-        onClick={() => setOpen(!open)}
+        onClick={toggleMenu}
         aria-label="Toggle menu"
       >
         {open ? <FaTimes /> : <FaBars />}
@@ -84,52 +152,73 @@ export default function NavBar({ lang = 'es' }) {
           <Link
             href={p.about}
             className={linkClass(p.about)}
-            onClick={() => setOpen(false)}
+            onClick={() => {
+              setOpen(false);
+              setHidden(true);
+            }}
           >
             {l.about}
           </Link>
           <Link
             href={p.original}
             className={linkClass(p.original)}
-            onClick={() => setOpen(false)}
+            onClick={() => {
+              setOpen(false);
+              setHidden(true);
+            }}
           >
             {l.original}
           </Link>
           <Link
             href={p.virtual}
             className={linkClass(p.virtual)}
-            onClick={() => setOpen(false)}
+            onClick={() => {
+              setOpen(false);
+              setHidden(true);
+            }}
           >
             {l.virtual}
           </Link>
           <Link
             href={p.services}
             className={linkClass(p.services)}
-            onClick={() => setOpen(false)}
+            onClick={() => {
+              setOpen(false);
+              setHidden(true);
+            }}
           >
             {l.services}
           </Link>
           <Link
             href={p.team}
             className={linkClass(p.team)}
-            onClick={() => setOpen(false)}
+            onClick={() => {
+              setOpen(false);
+              setHidden(true);
+            }}
           >
             {l.team}
           </Link>
           <Link
             href={p.contact}
             className={linkClass(p.contact)}
-            onClick={() => setOpen(false)}
+            onClick={() => {
+              setOpen(false);
+              setHidden(true);
+            }}
           >
             {l.contact}
           </Link>
         </div>
         <div className={styles.icons}>
           <Link
-            href="https://instagram.com"
+            href="https://www.instagram.com/_lightchannel/"
             className={styles.icon}
             aria-label="Instagram"
-            onClick={() => setOpen(false)}
+            onClick={() => {
+              setOpen(false);
+              setHidden(true);
+            }}
           >
             <FaInstagram />
           </Link>
@@ -137,14 +226,20 @@ export default function NavBar({ lang = 'es' }) {
             href="mailto:info@example.com"
             className={styles.icon}
             aria-label="Email"
-            onClick={() => setOpen(false)}
+            onClick={() => {
+              setOpen(false);
+              setHidden(true);
+            }}
           >
             <FaEnvelope />
           </Link>
           <Link
             href={p.switch}
             className={`${styles.icon} ${styles.langSwitcher}`}
-            onClick={() => setOpen(false)}
+            onClick={() => {
+              setOpen(false);
+              setHidden(true);
+            }}
           >
             <FaGlobe />
             <span className={styles.langLabel}>
