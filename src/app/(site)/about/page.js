@@ -5,10 +5,7 @@ export default function Page() {
   return (
     <section className="about">
       {/* HERO */}
-      <header className="section">
-        <div className="img-ph" role="img" aria-label="IMG-HERO 16:9 mínimo 1600×900">
-          {/* [IMG-HERO 16:9 mínimo 1600×900] */}
-        </div>
+      <header className="hero">
         <h1 className="h1">Sobre nosotros</h1>
         <p className="p">
           Con dos décadas en la industria, hemos acumulado más de 223,000 minutos en TV y 7,500 horas backstage, participando en giras y producciones de alto nivel.
