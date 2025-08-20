@@ -271,9 +271,6 @@ export default function ServiciosProduccion({ lang = 'es' }) {
     <section className="servicios">
       {/* HERO */}
       <header className="section">
-        <div className="ph" aria-label="Imagen hero">
-          {/* [IMG-HERO 16:9] */}
-        </div>
         <h1 className="h1">{t.hero.title}</h1>
         <p className="p">{t.hero.intro}</p>
       </header>
@@ -311,15 +308,38 @@ export default function ServiciosProduccion({ lang = 'es' }) {
           return (
             <section key={c.slug} id={c.slug} className="section">
               <h2 className="h2">{c.title}</h2>
-              <div className="grid">
+              <div className="forum-thumbs">
                 {c.forums.map((f, i) => {
                   const slug = `${c.slug}-${i}`;
                   return (
-                    <article key={slug} className="md:col-span-6">
-                      <div className="ph" aria-label={`Imagen foro ${f.name}`}>
-                        {/* [IMG-FORO-{slug} 16:9] */}
-                      </div>
-                      <h3 className="h3">{f.name}</h3>
+                    <button
+                      key={slug}
+                      className="forum-thumb ph"
+                      data-open={`#modal-${slug}`}
+                      aria-label={f.name}
+                    >
+                      {/* [IMG-FORO-{slug} 16:9] */}
+                      <span>{f.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              {c.forums.map((f, i) => {
+                const slug = `${c.slug}-${i}`;
+                return (
+                  <div
+                    key={slug}
+                    id={`modal-${slug}`}
+                    className="modal"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby={`modaltitle-${slug}`}
+                  >
+                    <div className="modal-card">
+                      <h3 id={`modaltitle-${slug}`} className="h3">
+                        {f.name}
+                      </h3>
+                      <p className="p">{f.description}</p>
                       <ul>
                         {f.specs.map((s) => (
                           <li key={s} className="p">
@@ -327,87 +347,19 @@ export default function ServiciosProduccion({ lang = 'es' }) {
                           </li>
                         ))}
                       </ul>
-                      <button className="button" data-open={`#modal-${slug}`}>
-                        Ver ficha técnica
-                      </button>
-
-                      <div
-                        id={`modal-${slug}`}
-                        className="modal"
-                        role="dialog"
-                        aria-modal="true"
-                        aria-labelledby={`modaltitle-${slug}`}
-                      >
-                        <div className="modal-card">
-                          <h3 id={`modaltitle-${slug}`} className="h3">
-                            {f.name}
-                          </h3>
-                          <table className="table">
-                            <thead>
-                              <tr>
-                                <th>Atributo</th>
-                                <th>Valor</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {f.specs.map((s) => {
-                                const parts = s.split(':');
-                                if (parts.length > 1) {
-                                  return (
-                                    <tr key={s}>
-                                      <td>{parts[0]}</td>
-                                      <td>{parts[1].trim()}</td>
-                                    </tr>
-                                  );
-                                }
-                                return (
-                                  <tr key={s}>
-                                    <td>Especificación</td>
-                                    <td>{s}</td>
-                                  </tr>
-                                );
-                              })}
-                            </tbody>
-                          </table>
-                          <div className="ph" aria-label="Galería foro">
-                            {/* [IMG-GALLERY-{slug}] */}
-                          </div>
-                          <button className="button" data-close={`#modal-${slug}`}>
-                            Cerrar
-                          </button>
-                        </div>
+                      <div className="ph" aria-label={`Galería ${f.name}`}>
+                        {/* [IMG-GALLERY-{slug}] */}
                       </div>
-                    </article>
-                  );
-                })}
-              </div>
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Atributo</th>
-                    {c.forums.map((f) => (
-                      <th key={f.name}>{f.name}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {['Superficie', 'Altura'].map((attr) => (
-                    <tr key={attr}>
-                      <td>{attr}</td>
-                      {c.forums.map((f) => {
-                        let val = '';
-                        if (attr === 'Superficie') {
-                          val = f.specs.find((s) => s.includes('m²') || s.includes('metro')) || '';
-                        }
-                        if (attr === 'Altura') {
-                          val = f.specs.find((s) => s.includes('altura')) || '';
-                        }
-                        return <td key={f.name + attr}>{val}</td>;
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      <div className="ph" aria-label={`Video ${f.name}`}>
+                        {/* [VIDEO-{slug}] */}
+                      </div>
+                      <button className="button" data-close={`#modal-${slug}`}>
+                        {lang === 'es' ? 'Cerrar' : 'Close'}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </section>
           );
         }
