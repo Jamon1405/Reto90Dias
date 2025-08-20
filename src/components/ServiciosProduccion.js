@@ -1,309 +1,446 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from 'react';
-import Image from 'next/image';
-import styles from './ServiciosProduccion.module.css';
+import { useEffect } from 'react';
+import Link from 'next/link';
 
 const content = {
   es: {
-    title: 'Servicios de Producción',
-    tabs: {
-      foro: {
-        label: 'Foros',
-        items: [
+    hero: {
+      title: 'Servicios de Producción',
+      intro:
+        '336 m² de espacio creativo con 7 metros de altura, puente de iluminación y Elephant Door para acceso de gran formato.',
+    },
+    categories: [
+      {
+        slug: 'foros',
+        title: 'Foros',
+        snippet:
+          '336 m² de espacio creativo con 7 metros de altura, puente de iluminación y Elephant Door para acceso de gran formato.',
+        forums: [
           {
-            image:
-              'https://images.unsplash.com/photo-1526948128573-703ee1aeb6fa?auto=format&fit=crop&w=1200&q=80',
-            label: 'Estudio VP GGM Digital',
-            body:
-              '336 m² de espacio creativo con 7 metros de altura, puente de iluminación y Elephant Door para acceso de gran formato. Ideal para producciones virtuales y proyectos de alto nivel técnico.',
+            name: 'Estudio VP GGM Digital',
+            specs: [
+              '336 m² de espacio creativo',
+              '7 metros de altura',
+              'puente de iluminación',
+              'Elephant Door para acceso de gran formato',
+            ],
+            description:
+              'Ideal para producciones virtuales y proyectos de alto nivel técnico.',
           },
           {
-            image:
-              'https://images.unsplash.com/photo-1581276879432-15a63d16c6ac?auto=format&fit=crop&w=1200&q=80',
-            label: 'Estudio VP 7 Digital',
-            body:
-              'Foro de 14 x 10 metros y 6 metros de altura, equipado con ciclorama. Perfecto para sets virtuales, filmaciones y contenido digital de alta calidad.',
+            name: 'Estudio VP 7 Digital',
+            specs: [
+              'Foro de 14 x 10 metros',
+              '6 metros de altura',
+              'equipado con ciclorama',
+            ],
+            description:
+              'Perfecto para sets virtuales, filmaciones y contenido digital de alta calidad.',
           },
           {
-            image:
-              'https://images.unsplash.com/photo-1582711012124-a41f0c40e605?auto=format&fit=crop&w=1200&q=80',
-            label: 'Estudio UC',
-            body:
-              'Foro de 17 x 17 metros y 7 metros de altura, con tramoya y ubicado dentro de la Universidad de la Comunicación, en la Colonia Roma. Un espacio versátil para conciertos, shows y producciones audiovisuales.',
+            name: 'Estudio UC',
+            specs: [
+              'Foro de 17 x 17 metros',
+              '7 metros de altura',
+              'con tramoya',
+              'ubicado dentro de la Universidad de la Comunicación, en la Colonia Roma',
+            ],
+            description:
+              'Un espacio versátil para conciertos, shows y producciones audiovisuales.',
           },
         ],
       },
-      produccion: {
-        label: 'Producción',
+      {
+        slug: 'produccion',
+        title: 'Producción',
+        snippet:
+          'Guionistas, directores y productores que materializan tu visión.',
         items: [
           {
-            icon: '🎨',
             label: 'Equipo creativo',
             body: 'Guionistas, directores y productores que materializan tu visión.',
           },
           {
-            icon: '🎥',
             label: 'Equipo técnico',
             body: 'Operadores de cámara, sonido e iluminación con experiencia en set.',
           },
           {
-            icon: '🗂️',
             label: 'Coordinación logística',
             body: 'Planeación de recursos, casting y manejo de locaciones.',
           },
           {
-            icon: '🎬',
             label: 'Diseño de producción',
             body: 'Construcción de sets, vestuario y arte con estética cuidada.',
           },
         ],
       },
-      post: {
-        label: 'Post Producción',
+      {
+        slug: 'post',
+        title: 'Post Producción',
+        snippet: 'Montaje narrativo y ritmo acorde al proyecto.',
         items: [
+          { label: 'Edición', body: 'Montaje narrativo y ritmo acorde al proyecto.' },
           {
-            icon: '✂️',
-            label: 'Edición',
-            body: 'Montaje narrativo y ritmo acorde al proyecto.',
-          },
-          {
-            icon: '🎨',
             label: 'Corrección de color',
             body: 'Grading profesional para un look cinematográfico.',
           },
+          { label: 'VFX', body: 'Composición digital y gráficos en 3D.' },
           {
-            icon: '🧩',
-            label: 'VFX',
-            body: 'Composición digital y gráficos en 3D.',
-          },
-          {
-            icon: '🔊',
             label: 'Diseño de audio',
             body: 'Mezcla, foley y masterización para múltiples formatos.',
           },
         ],
       },
-      led: {
-        label: 'Pantallas LED',
+      {
+        slug: 'led',
+        title: 'Pantallas LED',
+        snippet:
+          'Lideramos la innovación desde nuestros inicios, ofreciendo soluciones de iluminación con la más alta tecnología LED del mercado.',
         items: [
           {
-            icon: '🚀',
             label: 'Pioneros en tecnología LED en México',
-            body:
-              'Lideramos la innovación desde nuestros inicios, ofreciendo soluciones de iluminación con la más alta tecnología LED del mercado.',
+            body: 'Lideramos la innovación desde nuestros inicios, ofreciendo soluciones de iluminación con la más alta tecnología LED del mercado.',
           },
           {
-            icon: '📦',
             label: 'Inventario sin precedentes',
-            body:
-              'Contamos con más de 150 millones de LEDs disponibles, listos para integrarse en proyectos de cualquier escala.',
+            body: 'Contamos con más de 150 millones de LEDs disponibles, listos para integrarse en proyectos de cualquier escala.',
           },
+          { label: 'Muros LED', body: 'Paneles de alta resolución que transforman el escenario en tiempo real.' },
           {
-            image: 'https://images.unsplash.com/photo-1508921912186-1d1a45ebb3c1?auto=format&fit=crop&w=1200&q=80',
-            label: 'Muros LED',
-            body:
-              'Paneles de alta resolución que transforman el escenario en tiempo real.',
-          },
-          {
-            icon: '🖥️',
             label: 'Servidores de control',
             body: 'Procesadores Brompton y Disguise para sincronía perfecta.',
           },
           {
-            icon: '🌐',
             label: 'Escenarios virtuales',
             body: 'Integración de entornos 3D en vivo con seguimiento de cámara.',
           },
         ],
       },
-    },
+    ],
   },
   en: {
-    title: 'Production Services',
-    tabs: {
-      foro: {
-        label: 'Stages',
-        items: [
+    hero: {
+      title: 'Production Services',
+      intro:
+        '336 m² of creative space with 7 m high ceiling, lighting bridge and elephant door for large-format access.',
+    },
+    categories: [
+      {
+        slug: 'stages',
+        title: 'Stages',
+        snippet:
+          '336 m² of creative space with 7 m high ceiling, lighting bridge and elephant door for large-format access.',
+        forums: [
           {
-            image:
-              'https://images.unsplash.com/photo-1526948128573-703ee1aeb6fa?auto=format&fit=crop&w=1200&q=80',
-            label: 'VP GGM Digital Studio',
-            body:
-              '336 m² of creative space with 7 m high ceiling, lighting bridge and elephant door for large-format access. Ideal for virtual productions and technically demanding projects.',
+            name: 'VP GGM Digital Studio',
+            specs: [
+              '336 m² of creative space',
+              '7 m high ceiling',
+              'lighting bridge',
+              'elephant door for large-format access',
+            ],
+            description:
+              'Ideal for virtual productions and technically demanding projects.',
           },
           {
-            image:
-              'https://images.unsplash.com/photo-1581276879432-15a63d16c6ac?auto=format&fit=crop&w=1200&q=80',
-            label: 'VP 7 Digital Studio',
-            body:
-              '14 x 10 m stage with 6 m height and cyclorama. Perfect for virtual sets, shoots and high-quality digital content.',
+            name: 'VP 7 Digital Studio',
+            specs: [
+              '14 x 10 m stage',
+              '6 m height',
+              'cyclorama equipped',
+            ],
+            description:
+              'Perfect for virtual sets, shoots and high-quality digital content.',
           },
           {
-            image:
-              'https://images.unsplash.com/photo-1582711012124-a41f0c40e605?auto=format&fit=crop&w=1200&q=80',
-            label: 'UC Studio',
-            body:
-              '17 x 17 m stage with 7 m height and rigging, located inside the University of Communication in Colonia Roma. A versatile space for concerts, shows and audiovisual productions.',
+            name: 'UC Studio',
+            specs: [
+              '17 x 17 m stage',
+              '7 m height',
+              'rigging',
+              'located inside the University of Communication in Colonia Roma',
+            ],
+            description:
+              'A versatile space for concerts, shows and audiovisual productions.',
           },
         ],
       },
-      produccion: {
-        label: 'Production',
+      {
+        slug: 'production',
+        title: 'Production',
+        snippet: 'Writers, directors and producers bringing your vision to life.',
         items: [
           {
-            icon: '🎨',
             label: 'Creative team',
             body: 'Writers, directors and producers bringing your vision to life.',
           },
           {
-            icon: '🎥',
             label: 'Technical crew',
             body: 'Seasoned camera, sound and lighting operators.',
           },
           {
-            icon: '🗂️',
             label: 'Logistics coordination',
             body: 'Resource planning, casting and location management.',
           },
           {
-            icon: '🎬',
             label: 'Production design',
             body: 'Set building, wardrobe and art with meticulous aesthetics.',
           },
         ],
       },
-      post: {
-        label: 'Post Production',
+      {
+        slug: 'post',
+        title: 'Post Production',
+        snippet: 'Narrative cutting and pacing tailored to each project.',
         items: [
+          { label: 'Editing', body: 'Narrative cutting and pacing tailored to each project.' },
           {
-            icon: '✂️',
-            label: 'Editing',
-            body: 'Narrative cutting and pacing tailored to each project.',
-          },
-          {
-            icon: '🎨',
             label: 'Color grading',
             body: 'Professional grading for a cinematic look.',
           },
+          { label: 'VFX', body: '3D graphics and digital compositing.' },
           {
-            icon: '🧩',
-            label: 'VFX',
-            body: '3D graphics and digital compositing.',
-          },
-          {
-            icon: '🔊',
             label: 'Sound design',
             body: 'Mixing, foley and mastering for multiple formats.',
           },
         ],
       },
-      led: {
-        label: 'LED Walls',
+      {
+        slug: 'led',
+        title: 'LED Walls',
+        snippet:
+          'We have led innovation from the start, offering lighting solutions with the highest LED technology in the market.',
         items: [
           {
-            icon: '🚀',
             label: 'Pioneers in LED technology in Mexico',
-            body:
-              'We have led innovation from the start, offering lighting solutions with the highest LED technology in the market.',
+            body: 'We have led innovation from the start, offering lighting solutions with the highest LED technology in the market.',
           },
           {
-            icon: '📦',
             label: 'Unrivaled inventory',
-            body:
-              'More than 150 million LEDs ready to integrate into projects of any scale.',
+            body: 'More than 150 million LEDs ready to integrate into projects of any scale.',
           },
+          { label: 'LED Walls', body: 'High‑resolution panels reshaping scenery in real time for full immersion.' },
           {
-            image: 'https://images.unsplash.com/photo-1508921912186-1d1a45ebb3c1?auto=format&fit=crop&w=1200&q=80',
-            label: 'LED Walls',
-            body:
-              'High‑resolution panels reshaping scenery in real time for full immersion.',
-          },
-          {
-            icon: '🖥️',
             label: 'Control servers',
             body: 'Brompton and Disguise processors for perfect sync.',
           },
           {
-            icon: '🌐',
             label: 'Virtual backdrops',
             body: 'Live 3D environments with camera tracking integration.',
           },
         ],
       },
-    },
+    ],
   },
 };
 
 export default function ServiciosProduccion({ lang = 'es' }) {
   const t = content[lang];
-  const [tab, setTab] = useState('foro');
-  const [forumIndex, setForumIndex] = useState(0);
-  const current = t.tabs[tab];
 
   useEffect(() => {
-    setForumIndex(0);
-  }, [tab]);
+    const opens = document.querySelectorAll('[data-open]');
+    const closes = document.querySelectorAll('[data-close]');
+    const onOpen = (e) => {
+      const sel = e.currentTarget.getAttribute('data-open');
+      const modal = document.querySelector(sel);
+      if (modal) modal.classList.add('open');
+    };
+    const onClose = (e) => {
+      const sel = e.currentTarget.getAttribute('data-close');
+      const modal = document.querySelector(sel);
+      if (modal) modal.classList.remove('open');
+    };
+    opens.forEach((b) => b.addEventListener('click', onOpen));
+    closes.forEach((b) => b.addEventListener('click', onClose));
+    return () => {
+      opens.forEach((b) => b.removeEventListener('click', onOpen));
+      closes.forEach((b) => b.removeEventListener('click', onClose));
+    };
+  }, [lang]);
 
   return (
-    <section className={styles.section}>
-      <h2 className={styles.title}>{t.title}</h2>
-        <div className={styles.tabs}>
-          {Object.entries(t.tabs).map(([key, info]) => (
-            <button
-              key={key}
-              className={`${styles.mainTab} ${tab === key ? styles.mainTabActive : ''}`}
-              onClick={() => setTab(key)}
-            >
-              {info.label}
-            </button>
+    <section className="servicios">
+      {/* HERO */}
+      <header className="section">
+        <div className="ph" aria-label="Imagen hero">
+          {/* [IMG-HERO 16:9] */}
+        </div>
+        <h1 className="h1">{t.hero.title}</h1>
+        <p className="p">{t.hero.intro}</p>
+      </header>
+
+      {/* SUB-NAV */}
+      <nav className="subnav">
+        {t.categories.map((c) => (
+          <a key={c.slug} href={`#${c.slug}`}>
+            {c.title}
+          </a>
+        ))}
+      </nav>
+
+      {/* GRID CATEGORÍAS */}
+      <section className="section">
+        <div className="grid">
+          {t.categories.map((c) => (
+            <article key={c.slug} className="md:col-span-6">
+              <div className="ph" aria-label={`Imagen card ${c.title}`}>
+                {/* [IMG-CARD-{c.slug} 16:9] */}
+              </div>
+              <h3 className="h3">{c.title}</h3>
+              <p className="p">{c.snippet}</p>
+              <a href={`#${c.slug}`} className="button">
+                {c.title}
+              </a>
+            </article>
           ))}
         </div>
-        {tab === 'foro' ? (
-          <>
-            <div className={styles.subTabs}>
-              {current.items.map((item, idx) => (
-                <button
-                  key={item.label}
-                  className={`${styles.tab} ${forumIndex === idx ? styles.tabActive : ''}`}
-                  onClick={() => setForumIndex(idx)}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-            <div className={styles.forumPane}>
-              <Image
-                src={current.items[forumIndex].image}
-                alt=""
-                className={styles.forumImage}
-                width={600}
-                height={400}
-              />
-              <p className={styles.body}>{current.items[forumIndex].body}</p>
-            </div>
-          </>
-        ) : (
-          <div className={styles.grid}>
-            {current.items.map((item) => (
-              <div key={item.label} className={styles.card}>
-                {item.image ? (
-                  <Image
-                    src={item.image}
-                    alt=""
-                    className={styles.image}
-                    width={600}
-                    height={400}
-                  />
-                ) : (
-                  <div className={styles.icon}>{item.icon}</div>
-                )}
-                <h3 className={styles.cardTitle}>{item.label}</h3>
-                <p className={styles.body}>{item.body}</p>
-              </div>
-            ))}
-          </div>
-        )}
       </section>
-    );
-  }
+
+      {/* SECCIONES */}
+      {t.categories.map((c, idx) => {
+        if (c.slug === 'foros' || c.slug === 'stages') {
+          return (
+            <section key={c.slug} id={c.slug} className="section">
+              <h2 className="h2">{c.title}</h2>
+              <div className="grid">
+                {c.forums.map((f, i) => {
+                  const slug = `${c.slug}-${i}`;
+                  return (
+                    <article key={slug} className="md:col-span-6">
+                      <div className="ph" aria-label={`Imagen foro ${f.name}`}>
+                        {/* [IMG-FORO-{slug} 16:9] */}
+                      </div>
+                      <h3 className="h3">{f.name}</h3>
+                      <ul>
+                        {f.specs.map((s) => (
+                          <li key={s} className="p">
+                            {s}
+                          </li>
+                        ))}
+                      </ul>
+                      <button className="button" data-open={`#modal-${slug}`}>
+                        Ver ficha técnica
+                      </button>
+
+                      <div
+                        id={`modal-${slug}`}
+                        className="modal"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby={`modaltitle-${slug}`}
+                      >
+                        <div className="modal-card">
+                          <h3 id={`modaltitle-${slug}`} className="h3">
+                            {f.name}
+                          </h3>
+                          <table className="table">
+                            <thead>
+                              <tr>
+                                <th>Atributo</th>
+                                <th>Valor</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {f.specs.map((s) => {
+                                const parts = s.split(':');
+                                if (parts.length > 1) {
+                                  return (
+                                    <tr key={s}>
+                                      <td>{parts[0]}</td>
+                                      <td>{parts[1].trim()}</td>
+                                    </tr>
+                                  );
+                                }
+                                return (
+                                  <tr key={s}>
+                                    <td>Especificación</td>
+                                    <td>{s}</td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                          <div className="ph" aria-label="Galería foro">
+                            {/* [IMG-GALLERY-{slug}] */}
+                          </div>
+                          <button className="button" data-close={`#modal-${slug}`}>
+                            Cerrar
+                          </button>
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Atributo</th>
+                    {c.forums.map((f) => (
+                      <th key={f.name}>{f.name}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {['Superficie', 'Altura'].map((attr) => (
+                    <tr key={attr}>
+                      <td>{attr}</td>
+                      {c.forums.map((f) => {
+                        let val = '';
+                        if (attr === 'Superficie') {
+                          val = f.specs.find((s) => s.includes('m²') || s.includes('metro')) || '';
+                        }
+                        if (attr === 'Altura') {
+                          val = f.specs.find((s) => s.includes('altura')) || '';
+                        }
+                        return <td key={f.name + attr}>{val}</td>;
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </section>
+          );
+        }
+
+        return (
+          <section key={c.slug} id={c.slug} className="section">
+            <div className={`grid ${idx % 2 === 1 ? 'swap' : ''}`}>
+              <div className="img ph" aria-label={`Imagen sección ${c.title}`}>
+                {/* [IMG-${c.slug} 16:9] */}
+              </div>
+              <div className="txt">
+                <h2 className="h2">{c.title}</h2>
+                {c.items.map((it) => (
+                  <div key={it.label} className="item">
+                    <h3 className="h3">{it.label}</h3>
+                    <p className="p">{it.body}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        );
+      })}
+
+      {/* CTA FINAL */}
+      <section className="section">
+        <div className="grid">
+          <div className="txt">
+            <h3 className="h2">
+              {lang === 'es' ? 'Trabajemos juntos' : "Let's work together"}
+            </h3>
+            <Link
+              href={lang === 'es' ? '/contacto' : '/en/contact'}
+              className="button"
+            >
+              {lang === 'es' ? 'Contáctanos' : 'Contact us'}
+            </Link>
+          </div>
+        </div>
+      </section>
+    </section>
+  );
+}
+

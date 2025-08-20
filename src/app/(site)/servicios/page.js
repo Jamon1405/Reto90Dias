@@ -1,12 +1,6 @@
-import FadeInSection from '@/components/FadeInSection';
 import ServiciosProduccion from '@/components/ServiciosProduccion';
+import '@/styles/servicios.css';
 
 export default function Page() {
-  return (
-    <>
-      <FadeInSection>
-        <ServiciosProduccion lang="es" />
-      </FadeInSection>
-    </>
-  );
+  return <ServiciosProduccion lang="es" />;
 }
