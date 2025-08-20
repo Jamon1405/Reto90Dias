@@ -63,15 +63,6 @@ export default function Page() {
         </div>
       </section>
 
-      {/* CTA PRE-FOOTER */}
-      <section className="section">
-        <div className="txt center">
-          <h3 className="h3">Let&apos;s work together</h3>
-          <Link href="/en/contact" className="button">
-            Contact us
-          </Link>
-        </div>
-      </section>
     </section>
   );
 }

@@ -9,7 +9,5 @@
 .img-ph{aspect-ratio:16/9;background:#e5e5e5;border-radius:16px;display:flex;align-items:center;justify-content:center;color:#666}
 .button{display:inline-block;padding:.75rem 1.5rem;background:var(--accent);color:#fff;text-transform:uppercase;font-weight:700;letter-spacing:1px;text-decoration:none}
 .button:hover{opacity:.9}
-.center{text-align:center;margin:0 auto}
-
 .hero{padding:120px 0;text-align:center}
 
