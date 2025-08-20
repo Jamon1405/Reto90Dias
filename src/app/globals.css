@@ -3,8 +3,8 @@
   --foreground: #f5f5f7;
   --accent: #0a84ff;
   --primary: #1d1d1f;
-  --font-sans: 'Inter', sans-serif;
-  --font-heading: 'Playfair Display', serif;
+  --font-sans: 'Manrope', sans-serif;
+  --font-heading: 'Space Grotesk', sans-serif;
 }
 
 html {
@@ -20,7 +20,7 @@ body {
   background: linear-gradient(135deg, #000, #1c1c1e);
   color: var(--foreground);
   font-family: var(--font-sans);
-  font-weight: 300;
+  font-weight: 400;
   line-height: 1.7;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;

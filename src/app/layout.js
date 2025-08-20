@@ -1,13 +1,13 @@
 import './globals.css';
-import { Inter, Playfair_Display } from 'next/font/google';
+import { Manrope, Space_Grotesk } from 'next/font/google';
 
-const inter = Inter({
+const manrope = Manrope({
   subsets: ['latin'],
   weight: ['300', '400', '500'],
   variable: '--font-sans',
   display: 'swap',
 });
-const playfair = Playfair_Display({
+const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
   weight: ['700'],
   variable: '--font-heading',
@@ -27,7 +27,7 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
       <html lang="es">
-        <body className={`${inter.variable} ${playfair.variable}`}>{children}</body>
+        <body className={`${manrope.variable} ${spaceGrotesk.variable}`}>{children}</body>
       </html>
   );
 }
