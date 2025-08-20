@@ -27,6 +27,16 @@
   border-radius: 12px;
 }
 
+.button {
+  display: block;
+  border: none;
+  padding: 0;
+  background: none;
+  color: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+
 .image {
   width: 100%;
   aspect-ratio: 16 / 9;
