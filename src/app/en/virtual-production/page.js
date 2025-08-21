@@ -1,10 +1,6 @@
-import FadeInSection from '@/components/FadeInSection';
 import VirtualProduction from '@/components/VirtualProduction';
+import '@/styles/virtual.css';
 
 export default function Page() {
-  return (
-    <FadeInSection>
-      <VirtualProduction lang="en" />
-    </FadeInSection>
-  );
+  return <VirtualProduction lang="en" />;
 }
