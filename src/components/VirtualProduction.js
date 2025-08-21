@@ -78,24 +78,13 @@ export default function VirtualProduction({ lang = 'es' }) {
     <section className="virtual">
       {/* HERO */}
       <header className="section first">
-        <div className="grid">
-          <div
-            className="img ph"
-            role="img"
-            aria-label="IMG/VIDEO-HERO 16:9 mínimo 1600×900"
-          >
-            {/* [IMG/VIDEO-HERO 16:9 mínimo 1600×900] */}
-          </div>
-          <div className="txt">
-            <h1 className="h1">{t.title}</h1>
-            <p className="p">{t.intro}</p>
-            <ul className="benefits">
-              {t.benefits.map((b) => (
-                <li key={b}>{b}</li>
-              ))}
-            </ul>
-          </div>
-        </div>
+        <h1 className="h1">{t.title}</h1>
+        <p className="p">{t.intro}</p>
+        <ul className="benefits">
+          {t.benefits.map((b) => (
+            <li key={b}>{b}</li>
+          ))}
+        </ul>
       </header>
 
       {t.categories.map((c, i) => {
