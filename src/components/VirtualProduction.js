@@ -1,10 +1,12 @@
-import React from 'react';
+'use client';
+import React, { useState } from 'react';
 
 const content = {
   es: {
     title: 'Virtual Production',
     intro:
       'Combinamos escenarios digitales y pantallas LED para rodajes flexibles que mantienen la esencia de tu historia.',
+    cta: 'Contáctanos',
     categories: [
       {
         label: 'Comerciales',
@@ -37,6 +39,7 @@ const content = {
     title: 'Virtual Production',
     intro:
       'We blend digital environments and LED walls for flexible shoots that keep your story front and center.',
+    cta: 'Contact us',
     categories: [
       {
         label: 'Commercials',
@@ -73,70 +76,81 @@ function slugify(text) {
 
 export default function VirtualProduction({ lang = 'es' }) {
   const t = content[lang];
+  const [active, setActive] = useState(slugify(t.categories[0].label));
+  const contactLink = lang === 'es' ? '/contacto' : '/en/contact';
+
   return (
     <section className="virtual">
       {/* HERO */}
       <header className="section first">
-        <div
-          className="ph"
-          role="img"
-          aria-label="IMG/VIDEO-HERO 16:9 mínimo 1600×900"
-        >
-          {/* [IMG/VIDEO-HERO 16:9 mínimo 1600×900] */}
+        <div className="grid">
+          <div
+            className="img ph"
+            role="img"
+            aria-label="IMG/VIDEO-HERO 16:9 mínimo 1600×900"
+          >
+            {/* [IMG/VIDEO-HERO 16:9 mínimo 1600×900] */}
+          </div>
+          <div className="txt">
+            <h1 className="h1">{t.title}</h1>
+            <p className="p">{t.intro}</p>
+            <a href={contactLink} className="button">
+              {t.cta}
+            </a>
+          </div>
         </div>
-        <h1 className="h1">{t.title}</h1>
-        <p className="p">{t.intro}</p>
       </header>
 
-      {/* GRID DE APLICACIONES */}
-      <section id="aplicaciones" className="section">
-        <div className="grid">
+      {/* CTA sticky mobile */}
+      <a href={contactLink} className="button cta-mobile">
+        {t.cta}
+      </a>
+
+      {/* APLICACIONES */}
+      <section className="section">
+        <div className="chips">
           {t.categories.map((c) => {
             const slug = slugify(c.label);
             return (
-              <article key={c.label} className="card">
-                <div
-                  className="ph"
-                  role="img"
-                  aria-label={`IMG-CARD-${slug} 16:9`}
-                >
-                  {/* [IMG-CARD-${slug} 16:9] */}
-                </div>
-                <h3 className="h3">{c.label}</h3>
-                <p className="p">{c.body}</p>
-                <a href={`#${slug}`} className="button">
-                  {c.label}
-                </a>
-              </article>
+              <button
+                key={slug}
+                type="button"
+                className={`chip${active === slug ? ' active' : ''}`}
+                onClick={() => setActive(slug)}
+              >
+                {c.label}
+              </button>
             );
           })}
         </div>
-      </section>
-
-      {/* SECCIONES ALTERNADAS */}
-      {t.categories.map((c, idx) => {
-        const slug = slugify(c.label);
-        return (
-          <section id={slug} className="section" key={slug}>
-            <div className={`grid ${idx % 2 ? 'swap' : ''}`}>
-              <div
-                className="img ph"
-                role="img"
-                aria-label={`IMG-${slug} 16:9`}
-              >
-                {/* [IMG-${slug} 16:9] */}
-              </div>
-              <div className="txt">
-                <h2 className="h2">{c.label}</h2>
-                <p className="p">{c.body}</p>
+        {t.categories.map((c) => {
+          const slug = slugify(c.label);
+          return (
+            <div
+              key={slug}
+              id={slug}
+              className={`panel${active === slug ? ' open' : ''}`}
+            >
+              <div className="grid">
+                <div
+                  className="img ph"
+                  role="img"
+                  aria-label={`IMG-${slug} 16:9`}
+                >
+                  {/* [IMG-${slug} 16:9] */}
+                </div>
+                <div className="txt">
+                  <h3 className="h3">{c.label}</h3>
+                  <p className="p">{c.body}</p>
+                </div>
               </div>
             </div>
-          </section>
-        );
-      })}
+          );
+        })}
+      </section>
 
       {/* BENEFICIOS */}
-      <section id="beneficios" className="section">
+      <section className="section">
         <div className="tiles">
           {t.benefits.map((b) => {
             const slug = slugify(b);
@@ -154,6 +168,13 @@ export default function VirtualProduction({ lang = 'es' }) {
             );
           })}
         </div>
+      </section>
+
+      {/* CTA FINAL */}
+      <section className="section final-cta">
+        <a href={contactLink} className="button">
+          {t.cta}
+        </a>
       </section>
     </section>
   );
