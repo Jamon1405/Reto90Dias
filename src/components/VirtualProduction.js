@@ -78,13 +78,15 @@ export default function VirtualProduction({ lang = 'es' }) {
     <section className="virtual">
       {/* HERO */}
       <header className="section first">
-        <h1 className="h1">{t.title}</h1>
-        <p className="p">{t.intro}</p>
-        <ul className="benefits">
-          {t.benefits.map((b) => (
-            <li key={b}>{b}</li>
-          ))}
-        </ul>
+        <div className="intro">
+          <h1 className="h1">{t.title}</h1>
+          <p className="p">{t.intro}</p>
+          <ul className="benefits">
+            {t.benefits.map((b) => (
+              <li key={b}>{b}</li>
+            ))}
+          </ul>
+        </div>
       </header>
 
       {t.categories.map((c, i) => {
