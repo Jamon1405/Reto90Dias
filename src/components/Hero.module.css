@@ -52,3 +52,17 @@
 .cta:hover {
   background: var(--primary);
 }
+
+.logos {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.logo {
+  width: auto;
+  height: auto;
+  max-width: 100px;
+}
