@@ -1,0 +1,11 @@
+.virtual{max-width:1280px;margin:0 auto;padding:0 32px}
+.section{padding:96px 0}
+.section.first{padding-top:48px;display:flex;justify-content:center}
+.section.first .intro{max-width:720px;text-align:center}
+.grid{display:grid;grid-template-columns:1fr;gap:32px;align-items:center}
+@media(min-width:960px){.grid{grid-template-columns:repeat(12,1fr)}.img{grid-column:span 7}.txt{grid-column:span 5}.swap .img{order:2}}
+.h1{font-size:clamp(40px,6vw,56px);line-height:1.2;margin:0 0 16px}
+.h3{font-size:clamp(24px,3vw,30px);line-height:1.25;margin:0 0 16px}
+.p{margin-top:12px;font-size:18px;line-height:1.7}
+.ph{aspect-ratio:16/9;background:#e5e5e5;border-radius:16px;display:flex;align-items:center;justify-content:center;color:#666}
+.section.first .benefits{margin-top:24px;padding-left:20px;list-style:disc;text-align:left}

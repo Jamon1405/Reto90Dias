@@ -1,10 +1,12 @@
-import FadeInSection from '@/components/FadeInSection';
 import VirtualProduction from '@/components/VirtualProduction';
+import SocialBanner from '@/components/SocialBanner';
+import '@/styles/virtual.css';
 
 export default function Page() {
   return (
-    <FadeInSection>
+    <>
       <VirtualProduction lang="es" />
-    </FadeInSection>
+      <SocialBanner lang="es" />
+    </>
   );
 }

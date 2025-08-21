@@ -1,19 +1,22 @@
 .wrapper {
   display: flex;
   flex-direction: column;
+  padding: 4rem 2rem;
+  background: var(--background);
+  color: var(--foreground);
 }
 
 .mainTitle {
-  font-size: 3rem;
   text-align: center;
-  margin: 4rem 0 2rem;
+  font-size: 2rem;
+  margin-bottom: 2rem;
   text-transform: uppercase;
   letter-spacing: 2px;
 }
 
 .block {
   position: relative;
-  height: 80vh;
+  min-height: 60vh;
   margin-bottom: 2rem;
 }
 
@@ -24,18 +27,22 @@
 
   .overlay {
     position: absolute;
-    bottom: 10%;
-    left: 10%;
-    max-width: 400px;
-    color: var(--foreground);
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
     background: rgba(0, 0, 0, 0.4);
     padding: 1.5rem;
+    color: var(--foreground);
   }
 
   .noImage {
     background: #1c1c1e;
     color: var(--foreground);
     height: auto;
+    min-height: 0;
     padding: 4rem 1rem;
     display: flex;
     align-items: center;
@@ -48,6 +55,10 @@
     color: var(--foreground);
     max-width: 800px;
     text-align: center;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
 .title {
@@ -75,36 +86,29 @@
   opacity: 0.9;
 }
 
-@media (max-width: 768px) {
-  .mainTitle {
-    font-size: 2rem;
-    margin: 2rem 0 1rem;
-  }
+  @media (max-width: 768px) {
+    .mainTitle {
+      font-size: 1.5rem;
+      margin: 1rem 0;
+    }
 
-  .block {
-    height: 60vh;
-  }
+    .overlay {
+      padding: 1rem;
+    }
 
-  .overlay {
-    bottom: 5%;
-    left: 5%;
-    max-width: 90%;
-    padding: 1rem;
-  }
+    .title {
+      font-size: 1.5rem;
+    }
 
-  .title {
-    font-size: 1.5rem;
-  }
+    .body {
+      font-size: 0.9rem;
+    }
 
-  .body {
-    font-size: 0.9rem;
-  }
+    .button {
+      padding: 0.5rem 1rem;
+    }
 
-  .button {
-    padding: 0.5rem 1rem;
+    .noImage {
+      padding: 2rem 1rem;
+    }
   }
-
-  .noImage {
-    padding: 2rem 1rem;
-  }
-}

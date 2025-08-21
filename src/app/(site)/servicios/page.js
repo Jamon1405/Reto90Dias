@@ -1,12 +1,12 @@
-import FadeInSection from '@/components/FadeInSection';
 import ServiciosProduccion from '@/components/ServiciosProduccion';
+import SocialBanner from '@/components/SocialBanner';
+import '@/styles/servicios.css';
 
 export default function Page() {
   return (
     <>
-      <FadeInSection>
-        <ServiciosProduccion lang="es" />
-      </FadeInSection>
+      <ServiciosProduccion lang="es" />
+      <SocialBanner lang="es" />
     </>
   );
 }
