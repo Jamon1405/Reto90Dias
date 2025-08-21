@@ -19,7 +19,7 @@ const content = {
             specs: [
               '336 m² de espacio creativo',
               '7 metros de altura',
-              'puente de iluminación',
+              'Puente de iluminación',
               'Elephant Door para acceso de gran formato',
             ],
             description:
@@ -30,7 +30,7 @@ const content = {
             specs: [
               'Foro de 14 x 10 metros',
               '6 metros de altura',
-              'equipado con ciclorama',
+              'Equipado con ciclorama',
             ],
             description:
               'Perfecto para sets virtuales, filmaciones y contenido digital de alta calidad.',
@@ -40,8 +40,8 @@ const content = {
             specs: [
               'Foro de 17 x 17 metros',
               '7 metros de altura',
-              'con tramoya',
-              'ubicado dentro de la Universidad de la Comunicación, en la Colonia Roma',
+              'Con tramoya',
+              'Ubicado dentro de la Universidad de la Comunicación, en la Colonia Roma',
             ],
             description:
               'Un espacio versátil para conciertos, shows y producciones audiovisuales.',
@@ -126,8 +126,8 @@ const content = {
             specs: [
               '336 m² of creative space',
               '7 m high ceiling',
-              'lighting bridge',
-              'elephant door for large-format access',
+              'Lighting bridge',
+              'Elephant Door for large-format access',
             ],
             description:
               'Ideal for virtual productions and technically demanding projects.',
@@ -137,7 +137,7 @@ const content = {
             specs: [
               '14 x 10 m stage',
               '6 m height',
-              'cyclorama equipped',
+              'Cyclorama equipped',
             ],
             description:
               'Perfect for virtual sets, shoots and high-quality digital content.',
@@ -147,8 +147,8 @@ const content = {
             specs: [
               '17 x 17 m stage',
               '7 m height',
-              'rigging',
-              'located inside the University of Communication in Colonia Roma',
+              'Rigging',
+              'Located inside the University of Communication in Colonia Roma',
             ],
             description:
               'A versatile space for concerts, shows and audiovisual productions.',
