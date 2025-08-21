@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useRef, useState, useEffect } from 'react';
 
-// Local bilingual copy
+// Localized copy in Spanish and English
 const copy = {
   es: {
     uploadVideo: 'Sube tu video a /public/virtual-sizzle.mp4',
@@ -13,18 +13,9 @@ const copy = {
     ctaDemo: 'Ver demo (60s)',
     ctaQuote: 'Cotizar proyecto',
     benefits: [
-      {
-        title: 'Menos traslados, más rodaje.',
-        body: 'Reduce logística y tiempos.',
-      },
-      {
-        title: 'Luz y clima bajo control.',
-        body: 'Golden hour, cuando quieras.',
-      },
-      {
-        title: 'Iteración creativa al instante.',
-        body: 'Cambia set y cámara en tiempo real.',
-      },
+      ['Menos traslados, más rodaje.', 'Reduce logística y tiempos.'],
+      ['Luz y clima bajo control.', 'Golden hour, cuando quieras.'],
+      ['Iteración creativa al instante.', 'Cambia set y cámara en tiempo real.'],
     ],
     demoChips: [
       { label: 'Comerciales', time: 5 }, // TODO: ajustar timestamps
@@ -32,28 +23,16 @@ const copy = {
       { label: 'Videoclips', time: 32 },
       { label: 'Running shots', time: 45 },
     ],
-    howSteps: [
-      { title: 'Previz', body: 'look dev, arte y pruebas en Unreal.' },
-      { title: 'Rodaje', body: 'muro LED, tracking y playback sincronizado.' },
-      { title: 'Post', body: 'ajustes finos, color y comp ligera.' },
+    steps: [
+      ['Previz', 'look dev, arte y pruebas en Unreal.'],
+      ['Rodaje', 'muro LED, tracking y playback sincronizado.'],
+      ['Post', 'ajustes finos, color y comp ligera.'],
     ],
     useCases: [
-      {
-        label: 'Comerciales',
-        body: 'Anuncios inmersivos en tiempo récord.',
-      },
-      {
-        label: 'Running shots',
-        body: 'Vehículos en movimiento dentro de entornos virtuales realistas.',
-      },
-      {
-        label: 'Series',
-        body: 'Mundos persistentes que ahorran tiempo de montaje.',
-      },
-      {
-        label: 'Videoclips',
-        body: 'Visuales audaces generados en tiempo real.',
-      },
+      ['Comerciales', 'Anuncios inmersivos en tiempo récord.'],
+      ['Running shots', 'Vehículos en movimiento dentro de entornos virtuales realistas.'],
+      ['Series', 'Mundos persistentes que ahorran tiempo de montaje.'],
+      ['Videoclips', 'Visuales audaces generados en tiempo real.'],
     ],
     specs: [
       'Foro LED',
@@ -72,18 +51,9 @@ const copy = {
     ctaDemo: 'Watch demo (60s)',
     ctaQuote: 'Get a quote',
     benefits: [
-      {
-        title: 'Less travel, more shooting.',
-        body: 'Cut logistics and time.',
-      },
-      {
-        title: 'Light and weather under control.',
-        body: 'Golden hour, on demand.',
-      },
-      {
-        title: 'Instant creative iteration.',
-        body: 'Change set and camera in real time.',
-      },
+      ['Less travel, more shooting.', 'Cut logistics and time.'],
+      ['Light and weather under control.', 'Golden hour, on demand.'],
+      ['Instant creative iteration.', 'Change set and camera in real time.'],
     ],
     demoChips: [
       { label: 'Commercials', time: 5 }, // TODO: adjust timestamps
@@ -91,28 +61,16 @@ const copy = {
       { label: 'Music videos', time: 32 },
       { label: 'Running shots', time: 45 },
     ],
-    howSteps: [
-      { title: 'Previz', body: 'look dev, art and tests in Unreal.' },
-      { title: 'Shoot', body: 'LED wall, tracking and synced playback.' },
-      { title: 'Post', body: 'fine tweaks, color and light comp.' },
+    steps: [
+      ['Previz', 'look dev, art and tests in Unreal.'],
+      ['Shoot', 'LED wall, tracking and synced playback.'],
+      ['Post', 'fine tweaks, color and light comp.'],
     ],
     useCases: [
-      {
-        label: 'Commercials',
-        body: 'Immersive ads delivered in record time.',
-      },
-      {
-        label: 'Running shots',
-        body: 'Vehicles captured in lifelike virtual routes.',
-      },
-      {
-        label: 'Series',
-        body: 'Persistent worlds that save set-up time.',
-      },
-      {
-        label: 'Music videos',
-        body: 'Bold visuals rendered in real time.',
-      },
+      ['Commercials', 'Immersive ads delivered in record time.'],
+      ['Running shots', 'Vehicles captured in lifelike virtual routes.'],
+      ['Series', 'Persistent worlds that save set-up time.'],
+      ['Music videos', 'Bold visuals rendered in real time.'],
     ],
     specs: [
       'LED stage',
@@ -133,22 +91,22 @@ export default function VirtualPage() {
   const t = (key) => copy[lang][key];
 
   return (
-    <>
-      <Hero t={t} isEN={isEN} />
+    <div className="space-y-24">
+      <Hero t={t} />
       <Benefits t={t} />
       <Demo t={t} />
-      <HowItWorks t={t} />
-      <UseCasesAccordion t={t} />
-      <SpecsRow t={t} />
-      <TestimonialCta t={t} lang={lang} />
-    </>
+      <Workflow t={t} />
+      <UseCases t={t} />
+      <Specs t={t} />
+      <FinalCTA t={t} lang={lang} />
+    </div>
   );
 }
 
-// Hero section with background video and language toggle
-function Hero({ t, isEN }) {
+// Hero with background video and overlay text
+function Hero({ t }) {
   const videoRef = useRef(null);
-  const [videoError, setVideoError] = useState(false);
+  const [error, setError] = useState(false);
   const [showControls, setShowControls] = useState(false);
 
   useEffect(() => {
@@ -162,19 +120,10 @@ function Hero({ t, isEN }) {
   }, []);
 
   return (
-    <section className="relative flex items-center justify-center py-12 md:py-24">
-      <div className="absolute top-4 right-4">
-        <Link
-          href={isEN ? '/virtual' : '/en/virtual'}
-          className="text-sm text-white underline hover:no-underline"
-          aria-label={isEN ? 'Ver en español' : 'View in English'}
-        >
-          {isEN ? 'ES' : 'EN'}
-        </Link>
-      </div>
-      {videoError ? (
-        <div className="w-full aspect-video bg-gray-200 flex items-center justify-center rounded-xl">
-          <p className="text-gray-600 text-sm md:text-base">{t('uploadVideo')}</p>
+    <section className="relative mx-auto w-full max-w-6xl px-4">
+      {error ? (
+        <div className="aspect-video w-full rounded-xl bg-gray-200 flex items-center justify-center">
+          <p className="text-sm text-gray-600 md:text-base">{t('uploadVideo')}</p>
         </div>
       ) : (
         <video
@@ -186,48 +135,51 @@ function Hero({ t, isEN }) {
           preload="metadata"
           controls={showControls}
           controlsList="nodownload noremoteplayback"
-          poster="/virtual-sizzle.jpg" // TODO: replace with real poster
-          onError={() => setVideoError(true)}
-          className="w-full h-auto rounded-xl object-cover"
+          poster="/virtual-sizzle.jpg" // TODO: reemplazar con poster real
+          onError={() => setError(true)}
+          className="aspect-video w-full rounded-xl object-cover"
         >
-          <source src="/virtual-sizzle.mp4" type="video/mp4" /> {/* TODO: video path */}
+          <source src="/virtual-sizzle.mp4" type="video/mp4" /> {/* TODO: ruta del video */}
         </video>
       )}
-      <div className="absolute inset-0 bg-black/40 rounded-xl" aria-hidden="true" />
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white px-4">
-        <h1 className="text-4xl md:text-6xl font-bold drop-shadow-lg">{t('heroTitle')}</h1>
-        <p className="mt-4 text-lg md:text-xl max-w-2xl drop-shadow">{t('heroSubtitle')}</p>
-        <div className="mt-8 flex flex-col sm:flex-row gap-4">
+        <h1 className="text-4xl font-bold md:text-6xl">{t('heroTitle')}</h1>
+        <p className="mt-4 max-w-2xl text-lg md:text-xl">{t('heroSubtitle')}</p>
+        <div className="mt-8 flex flex-col gap-4 sm:flex-row">
           <a
             href="#demo"
-            className="px-6 py-3 bg-white text-black rounded-full font-semibold hover:bg-gray-200 transition"
+            className="rounded-full bg-white px-6 py-3 font-semibold text-black transition hover:bg-gray-200"
           >
             {t('ctaDemo')}
           </a>
           <a
-            href="#contact" // TODO: update with real contact link
-            className="px-6 py-3 bg-transparent border border-white rounded-full font-semibold hover:bg-white hover:text-black transition"
+            href="#contact" // TODO: enlazar a sección o mail de contacto real
+            className="rounded-full border border-white px-6 py-3 font-semibold text-white transition hover:bg-white hover:text-black"
           >
             {t('ctaQuote')}
           </a>
         </div>
       </div>
+      <div className="absolute inset-0 rounded-xl bg-black/40" aria-hidden="true" />
     </section>
   );
 }
 
-// Benefits grid
+// Three benefit tiles
 function Benefits({ t }) {
   return (
-    <section className="py-12 md:py-24 px-4">
-      <div className="max-w-5xl mx-auto grid gap-6 md:grid-cols-3">
-        {t('benefits').map((b) => (
+    <section className="mx-auto max-w-6xl px-4" aria-labelledby="benefits-title">
+      <h2 id="benefits-title" className="sr-only">
+        Beneficios
+      </h2>
+      <div className="grid gap-6 md:grid-cols-3">
+        {t('benefits').map(([title, body]) => (
           <div
-            key={b.title}
-            className="bg-white rounded-2xl shadow-sm hover:shadow-md transition p-6"
+            key={title}
+            className="rounded-2xl bg-white p-6 shadow-sm transition hover:shadow-md"
           >
-            <h3 className="text-xl font-semibold mb-2">{b.title}</h3>
-            <p className="text-base">{b.body}</p>
+            <h3 className="mb-2 text-xl font-semibold">{title}</h3>
+            <p className="text-base">{body}</p>
           </div>
         ))}
       </div>
@@ -235,11 +187,11 @@ function Benefits({ t }) {
   );
 }
 
-// Demo video with chips
+// Demo video with timestamp chips
 function Demo({ t }) {
   const videoRef = useRef(null);
+  const [error, setError] = useState(false);
   const [showControls, setShowControls] = useState(false);
-  const [videoError, setVideoError] = useState(false);
 
   useEffect(() => {
     const vid = videoRef.current;
@@ -251,7 +203,7 @@ function Demo({ t }) {
     }
   }, []);
 
-  const seekTo = (seconds) => {
+  const seek = (seconds) => {
     if (videoRef.current) {
       videoRef.current.currentTime = seconds;
       videoRef.current.play().catch(() => {});
@@ -259,56 +211,60 @@ function Demo({ t }) {
   };
 
   return (
-    <section id="demo" className="py-12 md:py-24 px-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex flex-wrap gap-2 justify-center mb-6">
-          {t('demoChips').map((chip) => (
-            <button
-              key={chip.label}
-              onClick={() => seekTo(chip.time)}
-              className="px-4 py-2 bg-gray-200 rounded-full text-sm hover:bg-gray-300 transition"
-              aria-label={chip.label}
-            >
-              {chip.label}
-            </button>
-          ))}
-        </div>
-        {videoError ? (
-          <div className="w-full aspect-video bg-gray-200 flex items-center justify-center rounded-xl">
-            <p className="text-gray-600 text-sm md:text-base">{t('uploadVideo')}</p>
-          </div>
-        ) : (
-          <video
-            ref={videoRef}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="metadata"
-            controls={showControls}
-            controlsList="nodownload noremoteplayback"
-            poster="/virtual-sizzle.jpg" // TODO: replace with real poster
-            onError={() => setVideoError(true)}
-            className="w-full h-auto rounded-xl object-cover"
+    <section id="demo" className="mx-auto max-w-4xl px-4" aria-labelledby="demo-title">
+      <h2 id="demo-title" className="sr-only">
+        Demo
+      </h2>
+      <div className="mb-6 flex flex-wrap justify-center gap-2">
+        {t('demoChips').map((chip) => (
+          <button
+            key={chip.label}
+            onClick={() => seek(chip.time)}
+            className="rounded-full bg-gray-200 px-4 py-2 text-sm transition hover:bg-gray-300"
+            aria-label={chip.label}
           >
-            <source src="/virtual-sizzle.mp4" type="video/mp4" /> {/* TODO: video path */}
-          </video>
-        )}
+            {chip.label}
+          </button>
+        ))}
       </div>
+      {error ? (
+        <div className="aspect-video w-full rounded-xl bg-gray-200 flex items-center justify-center">
+          <p className="text-sm text-gray-600 md:text-base">{t('uploadVideo')}</p>
+        </div>
+      ) : (
+        <video
+          ref={videoRef}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          controls={showControls}
+          controlsList="nodownload noremoteplayback"
+          poster="/virtual-sizzle.jpg" // TODO: reemplazar con poster real
+          onError={() => setError(true)}
+          className="aspect-video w-full rounded-xl object-cover"
+        >
+          <source src="/virtual-sizzle.mp4" type="video/mp4" /> {/* TODO: ruta del video */}
+        </video>
+      )}
     </section>
   );
 }
 
 // How it works steps
-function HowItWorks({ t }) {
+function Workflow({ t }) {
   return (
-    <section className="py-12 md:py-24 px-4 bg-gray-50">
-      <div className="max-w-5xl mx-auto grid gap-8 md:grid-cols-3">
-        {t('howSteps').map((step, idx) => (
-          <div key={step.title} className="text-left">
-            <div className="text-5xl font-bold text-gray-300">{idx + 1}</div>
-            <h3 className="text-xl font-semibold mt-4 mb-2">{step.title}</h3>
-            <p className="text-base">{step.body}</p>
+    <section className="mx-auto max-w-6xl px-4" aria-labelledby="workflow-title">
+      <h2 id="workflow-title" className="sr-only">
+        Cómo funciona
+      </h2>
+      <div className="grid gap-8 md:grid-cols-3">
+        {t('steps').map(([title, body], i) => (
+          <div key={title} className="text-left">
+            <div className="text-5xl font-bold text-gray-300">{i + 1}</div>
+            <h3 className="mt-4 mb-2 text-xl font-semibold">{title}</h3>
+            <p className="text-base">{body}</p>
           </div>
         ))}
       </div>
@@ -316,27 +272,28 @@ function HowItWorks({ t }) {
   );
 }
 
-// Use cases accordion
-function UseCasesAccordion({ t }) {
+// Compact accordion of use cases
+function UseCases({ t }) {
   const [open, setOpen] = useState(null);
   const toggle = (idx) => setOpen(open === idx ? null : idx);
 
   return (
-    <section className="py-12 md:py-24 px-4">
-      <div className="max-w-3xl mx-auto divide-y">
-        {t('useCases').map((item, idx) => (
-          <div key={item.label}>
+    <section className="mx-auto max-w-3xl px-4" aria-labelledby="usecases-title">
+      <h2 id="usecases-title" className="sr-only">
+        Casos de uso
+      </h2>
+      <div className="divide-y">
+        {t('useCases').map(([label, body], idx) => (
+          <div key={label}>
             <button
-              className="w-full flex justify-between items-center py-4 text-left"
               onClick={() => toggle(idx)}
+              className="flex w-full items-center justify-between py-4 text-left"
               aria-expanded={open === idx}
             >
-              <span className="font-semibold">{item.label}</span>
+              <span className="font-semibold">{label}</span>
               <span>{open === idx ? '-' : '+'}</span>
             </button>
-            {open === idx && (
-              <p className="pb-4 text-base">{item.body}</p>
-            )}
+            {open === idx && <p className="pb-4 text-base">{body}</p>}
           </div>
         ))}
       </div>
@@ -344,11 +301,14 @@ function UseCasesAccordion({ t }) {
   );
 }
 
-// Specs row
-function SpecsRow({ t }) {
+// Specs listed in a single row
+function Specs({ t }) {
   return (
-    <section className="py-12 md:py-24 px-4 bg-gray-50">
-      <ul className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 text-center text-sm md:text-base">
+    <section className="mx-auto max-w-6xl px-4" aria-labelledby="specs-title">
+      <h2 id="specs-title" className="sr-only">
+        Specs
+      </h2>
+      <ul className="grid gap-4 text-center text-sm sm:grid-cols-2 md:grid-cols-5 md:text-base">
         {t('specs').map((spec) => (
           <li key={spec} className="p-2">
             {spec}
@@ -359,15 +319,15 @@ function SpecsRow({ t }) {
   );
 }
 
-// Testimonial and final CTA
-function TestimonialCta({ t, lang }) {
-  const contactHref = lang === 'en' ? '/en/contact' : '/contacto'; // TODO: replace with real contact link
+// Testimonial and final call to action
+function FinalCTA({ t, lang }) {
+  const contactHref = lang === 'en' ? '/en/contact' : '/contacto'; // TODO: actualizar con enlace real de contacto
   return (
-    <section id="contact" className="py-12 md:py-24 px-4 text-center">
-      <p className="max-w-2xl mx-auto italic mb-8">{t('testimonial')}</p>
+    <section id="contact" className="mx-auto max-w-3xl px-4 text-center">
+      <p className="mx-auto mb-8 max-w-2xl italic">{t('testimonial')}</p>
       <Link
         href={contactHref}
-        className="inline-block px-6 py-3 bg-black text-white rounded-full font-semibold hover:bg-gray-800 transition"
+        className="inline-block rounded-full bg-black px-6 py-3 font-semibold text-white transition hover:bg-gray-800"
       >
         {t('ctaFinal')}
       </Link>
