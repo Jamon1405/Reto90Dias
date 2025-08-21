@@ -18,7 +18,7 @@ const labels = {
     home: 'Home',
     about: 'Sobre nosotros',
     original: 'Contenido original',
-    virtual: 'Virtual Production',
+    virtual: 'Producción Virtual',
     services: 'Servicios de Producción',
     team: 'Equipo',
     contact: 'Contacto',

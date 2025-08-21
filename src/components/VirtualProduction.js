@@ -3,7 +3,7 @@ import React from 'react';
 
 const content = {
   es: {
-    title: 'Virtual Production',
+    title: 'Producción Virtual',
     intro:
       'Combinamos escenarios digitales y pantallas LED para rodajes flexibles que mantienen la esencia de tu historia.',
     categories: [
