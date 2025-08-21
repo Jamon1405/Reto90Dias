@@ -356,22 +356,6 @@ export default function ServiciosProduccion({ lang = 'es' }) {
         );
       })}
 
-      {/* CTA FINAL */}
-      <section className="section">
-        <div className="grid">
-          <div className="txt">
-            <h3 className="h2">
-              {lang === 'es' ? 'Trabajemos juntos' : "Let's work together"}
-            </h3>
-            <Link
-              href={lang === 'es' ? '/contacto' : '/en/contact'}
-              className="button"
-            >
-              {lang === 'es' ? 'Contáctanos' : 'Contact us'}
-            </Link>
-          </div>
-        </div>
-      </section>
     </section>
   );
 }
