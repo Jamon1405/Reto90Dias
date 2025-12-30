@@ -57,7 +57,9 @@ function normalizeManual(entries: ActivityManualEntry[] | undefined) {
   }));
 }
 
-function getPhase(date: string) {
+type Phase = 'PRE-SEASON' | 'SEASON' | 'POST-SEASON';
+
+function getPhase(date: string): Phase {
   if (date < SEASON_START) return 'PRE-SEASON';
   if (date <= TARGET_DATE) return 'SEASON';
   return 'POST-SEASON';
