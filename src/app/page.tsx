@@ -115,9 +115,14 @@ export default function Page() {
     suppsJson: {} as Record<string, boolean>,
   });
 
-  const [gymState, setGymState] = useState({
+  const [gymState, setGymState] = useState<{
+    workout: string;
+    activityJson: { entries: ActivityEntry[] };
+    treadmill: { speed: number; incline: number; minutes: number };
+    quickMinutes: number;
+  }>({
     workout: '',
-    activityJson: { entries: [] as ActivityEntry[] },
+    activityJson: { entries: [] },
     treadmill: { speed: 0, incline: 0, minutes: 0 },
     quickMinutes: 0,
   });
@@ -161,7 +166,7 @@ export default function Page() {
     };
     const nextGym = {
       workout: dayLog.workout ?? '',
-      activityJson: dayLog.activityJson ?? { entries: [] },
+      activityJson: { entries: dayLog.activityJson?.entries ?? [] },
     };
     const nextFuel = {
       macrosJson: dayLog.macrosJson ?? { meatGrams: 0, eggs: 0, butterGrams: 0 },
