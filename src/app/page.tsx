@@ -122,6 +122,9 @@ export default function Page() {
     };
   } | null>(null);
   const [showDiag, setShowDiag] = useState(false);
+  const meta = data?.meta;
+  const seasonLabel = meta?.season ?? '--';
+  const daysLeftLabel = meta ? String(meta.daysLeft) : '--';
 
   const [bioState, setBioState] = useState({
     weight: 0,
@@ -632,21 +635,21 @@ export default function Page() {
             <p className="text-xs text-slate-400">ERP Biométrico · CDMX LOCK</p>
           </div>
           <div className="flex items-center gap-3 text-xs">
-            {data?.meta.dbStatus && (
+            {meta?.dbStatus && (
               <span
                 className={`px-3 py-1 rounded-full border ${
-                  data.meta.dbStatus === 'UP'
+                  meta.dbStatus === 'UP'
                     ? 'border-success/60 text-success'
                     : 'border-danger/60 text-danger'
                 }`}
               >
-                DB: {data.meta.dbStatus}
+                DB: {meta.dbStatus}
               </span>
             )}
             <span className="px-3 py-1 rounded-full border border-slateborder bg-slatebase">
-              {data.meta.season}
+              {seasonLabel}
             </span>
-            <span className="text-slate-300">HYROX - {data.meta.daysLeft} días</span>
+            <span className="text-slate-300">HYROX - {daysLeftLabel} días</span>
           </div>
         </div>
         <div className="flex flex-wrap items-center justify-between gap-3">
