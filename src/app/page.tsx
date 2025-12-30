@@ -362,7 +362,7 @@ export default function Page() {
       const diag = {
         url: '/api/ping',
         status: err?.name === 'TimeoutError' ? 'timeout' : 'network',
-        body: err?.message ?? 'Ping error',
+        body: String(err?.message ?? 'Ping error'),
         timestamp: new Date().toISOString(),
       };
       setBootError({ type: 'PING', message: 'Backend no responde', diag });
@@ -372,11 +372,12 @@ export default function Page() {
       await fetchDashboard();
     } catch (err: any) {
       const diag =
-        (err as { diag?: { url: string; status: number; body: string; timestamp: string } }).diag ??
+        (err as { diag?: { url: string; status: number | 'timeout' | 'network'; body: string; timestamp: string } })
+          .diag ??
         {
           url: '/api/dashboard',
           status: err?.name === 'TimeoutError' ? 'timeout' : 'network',
-          body: err?.message ?? 'Dashboard error',
+          body: String(err?.message ?? 'Dashboard error'),
           timestamp: new Date().toISOString(),
         };
       setBootError({ type: 'DASHBOARD', message: err?.message ?? 'Error cargando dashboard', diag });
