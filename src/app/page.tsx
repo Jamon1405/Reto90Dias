@@ -125,6 +125,7 @@ export default function Page() {
   const meta = data?.meta;
   const seasonLabel = meta?.season ?? '--';
   const daysLeftLabel = meta ? String(meta.daysLeft) : '--';
+  const fastStartMs = meta?.fastStartMs ?? null;
 
   const [bioState, setBioState] = useState({
     weight: 0,
@@ -757,7 +758,7 @@ export default function Page() {
             <div className="border border-slateborder bg-slatepanel/80 rounded-xl p-4">
               <h2 className="text-xs tracking-[0.3em] text-slate-400">FASTING</h2>
               <div className="mt-3 text-lg font-semibold">
-                {data.meta.fastStartMs ? `${fastElapsed.toFixed(2)} h` : `${dayLog.fastHours} h`}
+                {fastStartMs ? `${fastElapsed.toFixed(2)} h` : `${dayLog.fastHours} h`}
               </div>
               <div className="mt-3 flex gap-2">
                 <button
