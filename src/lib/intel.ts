@@ -14,7 +14,9 @@ function daysInMonth(monthKey: string) {
   return { start, end };
 }
 
-export function computeMonthlyPnL(days: TitanDay[], monthKey: string) {
+type DaySummary = Pick<TitanDay, 'date' | 'calIn' | 'calOut' | 'water' | 'fastHours' | 'weight' | 'flags'>;
+
+export function computeMonthlyPnL(days: DaySummary[], monthKey: string) {
   const { start, end } = daysInMonth(monthKey);
   const monthDays = days.filter((day) => day.date >= start && day.date <= end);
   const totalIn = monthDays.reduce((sum, day) => sum + day.calIn, 0);
@@ -26,7 +28,7 @@ export function computeMonthlyPnL(days: TitanDay[], monthKey: string) {
   return { totalIn, totalOut, totalNet, daysLogged, deficitDays, avgNet };
 }
 
-export function computeDeficitBank(days: TitanDay[]) {
+export function computeDeficitBank(days: DaySummary[]) {
   const deficitAccumulated = days.reduce((sum, day) => sum + Math.max(0, -computeNet(day.calIn, day.calOut)), 0);
   const estimatedKgLostIfMaintained = deficitAccumulated / 7700;
   const last7 = [...days]
@@ -37,7 +39,7 @@ export function computeDeficitBank(days: TitanDay[]) {
   return { deficitAccumulated, estimatedKgLostIfMaintained, dailyDeficitAvg7 };
 }
 
-export function computeProjection(days: TitanDay[], currentWeight: number) {
+export function computeProjection(days: DaySummary[], currentWeight: number) {
   const { dailyDeficitAvg7 } = computeDeficitBank(days);
   if (dailyDeficitAvg7 <= 0) {
     return { dailyDeficitAvg7, projections: null as null | Record<string, number> };
@@ -51,7 +53,7 @@ export function computeProjection(days: TitanDay[], currentWeight: number) {
   return { dailyDeficitAvg7, projections };
 }
 
-export function computeRiskSummary(days: TitanDay[]) {
+export function computeRiskSummary(days: DaySummary[]) {
   const last14 = [...days].sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, 14);
   const counts = {
     WEIGHT_UP_ON_DEFICIT: 0,
@@ -68,7 +70,7 @@ export function computeRiskSummary(days: TitanDay[]) {
   return counts;
 }
 
-export function computeMissingDays(days: TitanDay[]) {
+export function computeMissingDays(days: DaySummary[]) {
   const start = '2025-12-30';
   const today = todayISOInTZ();
   const set = new Set(days.map((day) => day.date));
@@ -81,14 +83,14 @@ export function computeMissingDays(days: TitanDay[]) {
   return missing;
 }
 
-export function computeWaterCompliance(days: TitanDay[]) {
+export function computeWaterCompliance(days: DaySummary[]) {
   const last7 = [...days].sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, 7);
   if (last7.length === 0) return 0;
   const compliant = last7.filter((day) => day.water >= 8).length;
   return Math.round((compliant / last7.length) * 100);
 }
 
-export function computeWeightTrend(days: TitanDay[]) {
+export function computeWeightTrend(days: DaySummary[]) {
   const sorted = [...days].filter((day) => day.weight > 0).sort((a, b) => (a.date < b.date ? -1 : 1));
   return sorted.map((day) => day.weight);
 }
