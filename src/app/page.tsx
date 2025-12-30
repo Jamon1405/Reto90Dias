@@ -128,6 +128,7 @@ export default function Page() {
   const fastStartMs = meta?.fastStartMs ?? null;
   const lastWeight = data?.user?.lastWeight ?? 0;
   const historyRows = data?.history ?? [];
+  const calendarDays = data?.calendar ?? [];
 
   const [bioState, setBioState] = useState({
     weight: 0,
@@ -1146,7 +1147,7 @@ export default function Page() {
           <div className="border border-slateborder bg-slatepanel/80 rounded-xl p-4">
             <h2 className="text-xs tracking-[0.3em] text-slate-400">MONTH CALENDAR</h2>
             <div className="mt-3 grid grid-cols-7 gap-2 text-[10px]">
-              {data.calendar.map((day) => (
+              {calendarDays.map((day) => (
                 <div
                   key={day.date}
                   className={`h-16 rounded-lg border p-2 ${scoreColor(day.score)}`}
