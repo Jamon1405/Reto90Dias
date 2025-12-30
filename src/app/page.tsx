@@ -45,6 +45,7 @@ type DayLog = {
   supps: SupplementStack;
   fastHours: number;
   workout: string;
+  calOut: number;
   activity: ActivityLog;
   calIn: number;
   macros: Macros;
