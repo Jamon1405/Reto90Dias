@@ -273,7 +273,7 @@ export default function Page() {
     return () => clearTimeout(timeout);
   }, [data, activeDate, todayStr, bioState, fuelState, gymState.activityJson, gymState.workout]);
 
-  async function parseResponse(response: Response) {
+  async function parseResponse(response: Response): Promise<any> {
     const text = await response.text();
     if (!text) return { success: false, error: 'Respuesta vacía del servidor.' };
     try {
@@ -287,13 +287,14 @@ export default function Page() {
     try {
       setError(null);
       const response = await fetch(`/api/dashboard${date ? `?date=${date}` : ''}`);
-      const json: DashboardResponse = await parseResponse(response);
+      const json = await parseResponse(response);
       if (!response.ok) {
-        throw new Error(json.error ?? 'Error cargando dashboard');
+        throw new Error((json as { error?: string }).error ?? 'Error cargando dashboard');
       }
       if (!json.success) throw new Error('Respuesta inválida');
-      setData(json);
-      setActiveDate(json.meta.targetDate);
+      const dashboard = json as DashboardResponse;
+      setData(dashboard);
+      setActiveDate(dashboard.meta.targetDate);
       setToast(null);
       lastSnapshots.current = { bio: '', gym: '', fuel: '' };
     } catch (err: any) {
