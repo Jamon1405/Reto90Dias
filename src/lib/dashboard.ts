@@ -29,9 +29,9 @@ function createEmptyDay(date: string) {
     fastHours: 0,
     steps: 0,
     notes: '',
-    activityJson: {},
+    activityJson: { entries: [] },
     titanScore: 0,
-    flagsJson: {},
+    flagsJson: { list: [], bmr: 0, net: 0 },
   };
 }
 
