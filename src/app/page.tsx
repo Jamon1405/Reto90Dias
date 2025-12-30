@@ -359,7 +359,12 @@ export default function Page() {
     try {
       await fetchJsonWithDiag('/api/ping');
     } catch (err: any) {
-      const diag = {
+      const diag: {
+        url: string;
+        status: 'timeout' | 'network';
+        body: string;
+        timestamp: string;
+      } = {
         url: '/api/ping',
         status: err?.name === 'TimeoutError' ? 'timeout' : 'network',
         body: String(err?.message ?? 'Ping error'),
