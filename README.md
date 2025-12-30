@@ -4,7 +4,7 @@ TITAN OMEGA es un sistema ejecutivo de control diario P&L (Calorías IN vs OUT),
 
 ## Requisitos
 - Node.js 18+
-- Navegador moderno con IndexedDB (fallback a localStorage)
+- Navegador moderno con IndexedDB (Dexie)
 
 ## Setup
 1. Instala dependencias:
@@ -18,7 +18,7 @@ TITAN OMEGA es un sistema ejecutivo de control diario P&L (Calorías IN vs OUT),
 
 ## Persistencia local
 - IndexedDB con Dexie (tabla `days` y `state`).
-- Fallback automático a localStorage si IndexedDB falla (badge `STORAGE: FALLBACK`).
+- Export/Import JSON desde la pestaña DATA para respaldo.
 
 ## Notas de gobernanza
 - Zona horaria fija: `America/Mexico_City`.

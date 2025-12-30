@@ -1,47 +1,64 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
 import type { ChangeEvent } from 'react';
 import {
   exportAllData,
-  fastAction,
+  fastingOp,
   getDashboardData,
-  getStorageMode,
   importAllData,
+  ping,
   saveModule,
-} from '@/lib/localStore';
-import { getTodayStr } from '@/lib/date';
+} from '@/lib/storage';
+import { addDays, getMsUntilEndOfDay, nowIsoInTZ, todayISOInTZ } from '@/lib/date';
+import {
+  computeBmi,
+  computeBmr,
+  computeCaloriesIn,
+  computeCaloriesOut,
+  computeExtraBurn,
+  computeNet,
+} from '@/lib/analytics';
+import Badge from '@/app/components/Badge';
+import SectionCard from '@/app/components/SectionCard';
+import TabButton from '@/app/components/TabButton';
+import type {
+  ActivityLog,
+  ActivityManualEntry,
+  ActivityTreadmillEntry,
+  Macros,
+  SupplementStack,
+} from '@/lib/types';
 
 const TAB_OPTIONS = ['Dash', 'Bio', 'Gym', 'Fuel', 'Data', 'Protocol'] as const;
 
 type TabOption = (typeof TAB_OPTIONS)[number];
 
-type Flags = { list: { code: string; msg: string }[]; bmr: number; net: number };
-
 type DayLog = {
   date: string;
   weight: number;
+  waist: number;
   steps: number;
   water: number;
-  suppsJson: Record<string, boolean>;
+  supps: SupplementStack;
   fastHours: number;
   workout: string;
   calOut: number;
-  activityJson: { entries?: ActivityEntry[] };
+  activity: ActivityLog;
   calIn: number;
-  macrosJson: Record<string, number>;
+  macros: Macros;
   notes: string;
   titanScore: number;
   bmr?: number;
+  bmi?: number;
   net?: number;
   titanScoreComputed?: number;
-  flagsComputed?: Flags;
+  flagsComputed?: { list: { code: string; msg: string }[]; bmr: number; net: number };
 };
-
-type ActivityEntry = { label: string; minutes: number; calories: number };
 
 type DashboardResponse = {
   success: boolean;
+  ver: string;
   meta: {
     targetDate: string;
     todayStr: string;
@@ -53,13 +70,20 @@ type DashboardResponse = {
   user: {
     age: number;
     lastWeight: number;
+    heightCm: number;
   };
   dayLog: DayLog | null;
   calendar: { date: string; score: number }[];
-  history: Array<DayLog & { net: number; score: number }>;
+  history: Array<DayLog & { net: number; score: number } & { fastHours: number }>;
 };
 
-const SUPPS = ['Creatina', 'Sodio', 'Magnesio', 'Omega'];
+const SUPPS: Array<{ label: string; key: keyof SupplementStack }> = [
+  { label: 'Creatina', key: 'creat' },
+  { label: 'Sodio', key: 'sod' },
+  { label: 'Magnesio', key: 'mag' },
+  { label: 'Omega', key: 'omega' },
+];
+
 const TACTICAL_AGENDA = [
   '05:00 - WAKE / HYDRATE',
   '06:00 - MOVEMENT / REVIEW',
@@ -78,24 +102,17 @@ const ROUTINE_BY_DAY: Record<number, string> = {
   6: 'PIERNA/HOMBRO',
 };
 
-const ACTIVITY_PRESETS = [
-  { label: 'Pádel', factor: 6 },
-  { label: 'Fútbol', factor: 8 },
-  { label: 'Pesas', factor: 5 },
-];
+const MANUAL_PRESETS = [
+  { label: 'PÁDEL', key: 'padel', met: 8 },
+  { label: 'FÚTBOL', key: 'futbol', met: 10 },
+  { label: 'PESAS', key: 'pesas', met: 6 },
+] as const;
+
+type ManualKey = (typeof MANUAL_PRESETS)[number]['key'];
 
 function formatDateDisplay(dateStr: string) {
   const [year, month, day] = dateStr.split('-');
   return `${day}/${month}/${year}`;
-}
-
-function addDays(dateStr: string, days: number) {
-  const [year, month, day] = dateStr.split('-').map(Number);
-  const utc = Date.UTC(year, month - 1, day + days);
-  const date = new Date(utc);
-  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(
-    date.getUTCDate(),
-  ).padStart(2, '0')}`;
 }
 
 function getWeekday(dateStr: string) {
@@ -110,135 +127,222 @@ function scoreColor(score: number) {
   return 'bg-danger/60 border-danger';
 }
 
-export default function Page() {
-  const [activeTab, setActiveTab] = useState<TabOption>('Dash');
-  const [data, setData] = useState<DashboardResponse | null>(null);
-  const [activeDate, setActiveDate] = useState<string>('');
-  const [toast, setToast] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [fastElapsed, setFastElapsed] = useState<number>(0);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [storageMode, setStorageMode] = useState<'indexeddb' | 'localstorage'>('indexeddb');
-  const meta = data?.meta;
-  const seasonLabel = meta?.season ?? '--';
-  const daysLeftLabel = meta ? String(meta.daysLeft) : '--';
-  const fastStartMs = meta?.fastStartMs ?? null;
-  const lastWeight = data?.user?.lastWeight ?? 0;
-  const historyRows = data?.history ?? [];
-  const calendarDays = data?.calendar ?? [];
-  const storageBadge = storageMode === 'localstorage';
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
 
-  const [bioState, setBioState] = useState({
+function calcTreadmillKcal(weightKg: number, speed: number, incline: number, minutes: number) {
+  const baseMet = 3.0 + Math.max(0, speed - 4) * 0.8;
+  const inclineBonus = incline * 0.15;
+  const met = clamp(baseMet + inclineBonus, 2.0, 18.0);
+  return Math.round((met * 3.5 * weightKg * minutes) / 200);
+}
+
+function calcManualKcal(weightKg: number, met: number, minutes: number) {
+  return Math.round((met * 3.5 * weightKg * minutes) / 200);
+}
+
+type AppState = {
+  loading: boolean;
+  error: string | null;
+  toast: string | null;
+  activeTab: TabOption;
+  activeDate: string;
+  dashboard: DashboardResponse | null;
+  bio: { weight: number; waist: number; steps: number; water: number; supps: SupplementStack };
+  gym: {
+    workout: string;
+    activity: ActivityLog;
+    treadmill: { speed: number; incline: number; minutes: number };
+    manualMinutes: Record<ManualKey, number>;
+  };
+  fuel: { macros: Macros; notes: string };
+  fastElapsed: number;
+  clock: string;
+};
+
+type Action =
+  | { type: 'SET_LOADING'; payload: boolean }
+  | { type: 'SET_ERROR'; payload: string | null }
+  | { type: 'SET_TOAST'; payload: string | null }
+  | { type: 'SET_ACTIVE_TAB'; payload: TabOption }
+  | { type: 'SET_ACTIVE_DATE'; payload: string }
+  | { type: 'SET_DASHBOARD'; payload: DashboardResponse | null }
+  | { type: 'SET_BIO'; payload: Partial<AppState['bio']> }
+  | { type: 'SET_GYM'; payload: Partial<AppState['gym']> }
+  | { type: 'SET_FUEL'; payload: Partial<AppState['fuel']> }
+  | { type: 'SET_FAST_ELAPSED'; payload: number }
+  | { type: 'SET_CLOCK'; payload: string };
+
+const initialState: AppState = {
+  loading: true,
+  error: null,
+  toast: null,
+  activeTab: 'Dash',
+  activeDate: '',
+  dashboard: null,
+  bio: {
     weight: 0,
+    waist: 0,
     steps: 0,
     water: 0,
-    suppsJson: {} as Record<string, boolean>,
-  });
-
-  const [gymState, setGymState] = useState<{
-    workout: string;
-    activityJson: { entries: ActivityEntry[] };
-    treadmill: { speed: number; incline: number; minutes: number };
-    quickMinutes: number;
-  }>({
+    supps: { creat: false, sod: false, mag: false, omega: false },
+  },
+  gym: {
     workout: '',
-    activityJson: { entries: [] },
+    activity: { treadmill: [], manual: [] },
     treadmill: { speed: 0, incline: 0, minutes: 0 },
-    quickMinutes: 0,
-  });
-
-  const [fuelState, setFuelState] = useState<{
-    macrosJson: { meatGrams: number; eggs: number; butterGrams: number };
-    notes: string;
-  }>({
-    macrosJson: { meatGrams: 0, eggs: 0, butterGrams: 0 },
+    manualMinutes: { padel: 0, futbol: 0, pesas: 0 },
+  },
+  fuel: {
+    macros: { m: 0, e: 0, b: 0 },
     notes: '',
-  });
+  },
+  fastElapsed: 0,
+  clock: nowIsoInTZ(),
+};
 
+function reducer(state: AppState, action: Action): AppState {
+  switch (action.type) {
+    case 'SET_LOADING':
+      return { ...state, loading: action.payload };
+    case 'SET_ERROR':
+      return { ...state, error: action.payload };
+    case 'SET_TOAST':
+      return { ...state, toast: action.payload };
+    case 'SET_ACTIVE_TAB':
+      return { ...state, activeTab: action.payload };
+    case 'SET_ACTIVE_DATE':
+      return { ...state, activeDate: action.payload };
+    case 'SET_DASHBOARD':
+      return { ...state, dashboard: action.payload };
+    case 'SET_BIO':
+      return { ...state, bio: { ...state.bio, ...action.payload } };
+    case 'SET_GYM':
+      return { ...state, gym: { ...state.gym, ...action.payload } };
+    case 'SET_FUEL':
+      return { ...state, fuel: { ...state.fuel, ...action.payload } };
+    case 'SET_FAST_ELAPSED':
+      return { ...state, fastElapsed: action.payload };
+    case 'SET_CLOCK':
+      return { ...state, clock: action.payload };
+    default:
+      return state;
+  }
+}
+
+export default function Page() {
+  const [state, dispatch] = useReducer(reducer, initialState);
   const lastSnapshots = useRef({ bio: '', gym: '', fuel: '' });
   const savingRef = useRef(false);
 
-  const resolvedDayLog = useMemo<DayLog | null>(() => {
-    if (!data) return null;
-    if (data.dayLog) return data.dayLog;
+  const dayLog = useMemo<DayLog | null>(() => {
+    if (!state.dashboard) return null;
+    if (state.dashboard.dayLog) return state.dashboard.dayLog;
     return {
-      date: data.meta.targetDate,
+      date: state.dashboard.meta.targetDate,
       weight: 0,
+      waist: 0,
       steps: 0,
       water: 0,
-      suppsJson: {},
+      supps: { creat: false, sod: false, mag: false, omega: false },
       fastHours: 0,
       workout: '',
       calOut: 0,
-      activityJson: { entries: [] },
+      activity: { treadmill: [], manual: [] },
       calIn: 0,
-      macrosJson: { meatGrams: 0, eggs: 0, butterGrams: 0 },
+      macros: { m: 0, e: 0, b: 0 },
       notes: '',
       titanScore: 0,
       bmr: 0,
+      bmi: 0,
       net: 0,
       titanScoreComputed: 0,
       flagsComputed: { list: [], bmr: 0, net: 0 },
     };
-  }, [data]);
-  const dayLog = resolvedDayLog;
-  const todayStr = data?.meta.todayStr ?? '';
+  }, [state.dashboard]);
+
+  const todayStr = state.dashboard?.meta.todayStr ?? '';
+  const meta = state.dashboard?.meta;
+  const seasonLabel = meta?.season ?? '--';
+  const daysLeftLabel = meta ? String(meta.daysLeft) : '--';
+  const fastStartMs = meta?.fastStartMs ?? null;
+  const historyRows = state.dashboard?.history ?? [];
+  const calendarDays = state.dashboard?.calendar ?? [];
 
   const weightForCalc = useMemo(() => {
-    if (dayLog?.weight && dayLog.weight > 0) return dayLog.weight;
-    return data?.user.lastWeight ?? 0;
-  }, [dayLog?.weight, data?.user.lastWeight]);
+    if (state.bio.weight > 0) return state.bio.weight;
+    return state.dashboard?.user.lastWeight ?? 97;
+  }, [state.bio.weight, state.dashboard?.user.lastWeight]);
+
+  const bmrLive = useMemo(() => computeBmr(weightForCalc), [weightForCalc]);
+  const bmiLive = useMemo(() => computeBmi(weightForCalc), [weightForCalc]);
+  const calInLive = useMemo(() => computeCaloriesIn(state.fuel.macros), [state.fuel.macros]);
+  const extraBurn = useMemo(() => computeExtraBurn(state.gym.activity), [state.gym.activity]);
+  const calOutLive = useMemo(
+    () => computeCaloriesOut({ weight: weightForCalc, activity: state.gym.activity }),
+    [state.gym.activity, weightForCalc],
+  );
+  const netLive = useMemo(() => computeNet(calInLive, calOutLive), [calInLive, calOutLive]);
 
   const routineLabel = useMemo(() => {
-    if (!activeDate) return '';
-    return ROUTINE_BY_DAY[getWeekday(activeDate)] ?? '';
-  }, [activeDate]);
-
-  const extraBurn = useMemo(() => {
-    return gymState.activityJson.entries?.reduce((sum, entry) => sum + entry.calories, 0) ?? 0;
-  }, [gymState.activityJson.entries]);
+    if (!state.activeDate) return '';
+    return ROUTINE_BY_DAY[getWeekday(state.activeDate)] ?? '';
+  }, [state.activeDate]);
 
   const hydrateDay = useCallback(
     (log: DayLog | undefined) => {
       if (!log) return;
-      const nextBio = {
-        weight: log.weight ?? 0,
-        steps: log.steps ?? 0,
-        water: log.water ?? 0,
-        suppsJson: log.suppsJson ?? {},
-      };
-      const nextGym = {
-        workout: log.workout ?? '',
-        activityJson: { entries: log.activityJson?.entries ?? [] },
-      };
-      const nextFuel = {
-        macrosJson: {
-          meatGrams: Number(log.macrosJson?.meatGrams ?? 0),
-          eggs: Number(log.macrosJson?.eggs ?? 0),
-          butterGrams: Number(log.macrosJson?.butterGrams ?? 0),
+      dispatch({
+        type: 'SET_BIO',
+        payload: {
+          weight: log.weight ?? 0,
+          waist: log.waist ?? 0,
+          steps: log.steps ?? 0,
+          water: log.water ?? 0,
+          supps: log.supps ?? { creat: false, sod: false, mag: false, omega: false },
         },
-        notes: log.notes ?? '',
-      };
-      setBioState(nextBio);
-      setGymState((prev) => ({
-        ...prev,
-        ...nextGym,
-      }));
-      setFuelState(nextFuel);
+      });
+      dispatch({
+        type: 'SET_GYM',
+        payload: {
+          workout: log.workout ?? '',
+          activity: log.activity ?? { treadmill: [], manual: [] },
+        },
+      });
+      dispatch({
+        type: 'SET_FUEL',
+        payload: {
+          macros: log.macros ?? { m: 0, e: 0, b: 0 },
+          notes: log.notes ?? '',
+        },
+      });
       lastSnapshots.current = {
-        bio: JSON.stringify(nextBio),
-        gym: JSON.stringify({ workout: nextGym.workout, activityJson: nextGym.activityJson }),
-        fuel: JSON.stringify(nextFuel),
+        bio: JSON.stringify({
+          weight: log.weight ?? 0,
+          waist: log.waist ?? 0,
+          steps: log.steps ?? 0,
+          water: log.water ?? 0,
+          supps: log.supps ?? { creat: false, sod: false, mag: false, omega: false },
+        }),
+        gym: JSON.stringify({
+          workout: log.workout ?? '',
+          activity: log.activity ?? { treadmill: [], manual: [] },
+        }),
+        fuel: JSON.stringify({
+          macros: log.macros ?? { m: 0, e: 0, b: 0 },
+          notes: log.notes ?? '',
+        }),
       };
     },
-    [setBioState, setFuelState, setGymState],
+    [dispatch],
   );
 
   const loadDashboard = useCallback(async (date?: string) => {
     const dashboard = await getDashboardData(date);
-    setData(dashboard);
-    setActiveDate(dashboard.meta.targetDate);
-    setToast(null);
+    dispatch({ type: 'SET_DASHBOARD', payload: dashboard });
+    dispatch({ type: 'SET_ACTIVE_DATE', payload: dashboard.meta.targetDate });
+    dispatch({ type: 'SET_TOAST', payload: null });
     lastSnapshots.current = { bio: '', gym: '', fuel: '' };
   }, []);
 
@@ -246,54 +350,53 @@ export default function Page() {
     async (type: 'BIO' | 'GYM' | 'FUEL', payload: any, options?: { silent?: boolean }) => {
       try {
         if (!options?.silent) {
-          setToast('GUARDANDO...');
+          dispatch({ type: 'SET_TOAST', payload: 'GUARDANDO...' });
         }
         savingRef.current = true;
-        const response = await saveModule(type, { ...payload, targetDate: activeDate });
-        setData(response);
-        setActiveDate(response.meta.targetDate);
+        const response = await saveModule(type, { ...payload, targetDate: state.activeDate });
+        dispatch({ type: 'SET_DASHBOARD', payload: response });
+        dispatch({ type: 'SET_ACTIVE_DATE', payload: response.meta.targetDate });
         lastSnapshots.current = {
-          bio: JSON.stringify(bioState),
-          gym: JSON.stringify({ workout: gymState.workout, activityJson: gymState.activityJson }),
-          fuel: JSON.stringify(fuelState),
+          bio: JSON.stringify(state.bio),
+          gym: JSON.stringify({ workout: state.gym.workout, activity: state.gym.activity }),
+          fuel: JSON.stringify(state.fuel),
         };
         if (!options?.silent) {
-          setToast('LISTO');
-          setTimeout(() => setToast(null), 2000);
+          dispatch({ type: 'SET_TOAST', payload: 'LISTO' });
+          setTimeout(() => dispatch({ type: 'SET_TOAST', payload: null }), 2000);
         }
       } catch (err: any) {
-        setError(err.message ?? 'Error guardando');
+        dispatch({ type: 'SET_ERROR', payload: err.message ?? 'Error guardando' });
       } finally {
         savingRef.current = false;
       }
     },
-    [activeDate, bioState, fuelState, gymState.activityJson, gymState.workout],
+    [state.activeDate, state.bio, state.fuel, state.gym.activity, state.gym.workout],
   );
 
   const handleFast = useCallback(async (action: 'START' | 'STOP' | 'RESET') => {
     try {
-      setToast('GUARDANDO...');
-      const response = await fastAction(action);
-      setData(response);
-      setActiveDate(response.meta.targetDate);
-      setToast('LISTO');
-      setTimeout(() => setToast(null), 2000);
+      dispatch({ type: 'SET_TOAST', payload: 'GUARDANDO...' });
+      const response = await fastingOp(action);
+      dispatch({ type: 'SET_DASHBOARD', payload: response });
+      dispatch({ type: 'SET_ACTIVE_DATE', payload: response.meta.targetDate });
+      dispatch({ type: 'SET_TOAST', payload: 'LISTO' });
+      setTimeout(() => dispatch({ type: 'SET_TOAST', payload: null }), 2000);
     } catch (err: any) {
-      setError(err.message ?? 'Error ayuno');
+      dispatch({ type: 'SET_ERROR', payload: err.message ?? 'Error ayuno' });
     }
   }, []);
 
   const bootstrap = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+    dispatch({ type: 'SET_LOADING', payload: true });
+    dispatch({ type: 'SET_ERROR', payload: null });
     try {
-      const mode = await getStorageMode();
-      setStorageMode(mode);
+      await ping();
       await loadDashboard();
     } catch (err: any) {
-      setError(err?.message ?? 'Error al cargar');
+      dispatch({ type: 'SET_ERROR', payload: err?.message ?? 'Error al cargar' });
     } finally {
-      setLoading(false);
+      dispatch({ type: 'SET_LOADING', payload: false });
     }
   }, [loadDashboard]);
 
@@ -306,159 +409,152 @@ export default function Page() {
   }, [dayLog, hydrateDay]);
 
   useEffect(() => {
+    const interval = setInterval(() => {
+      dispatch({ type: 'SET_CLOCK', payload: nowIsoInTZ() });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
     if (!fastStartMs) {
-      setFastElapsed(0);
+      dispatch({ type: 'SET_FAST_ELAPSED', payload: 0 });
       return;
     }
     const interval = setInterval(() => {
-      setFastElapsed((Date.now() - fastStartMs) / 3600000);
+      dispatch({ type: 'SET_FAST_ELAPSED', payload: (Date.now() - fastStartMs) / 3600000 });
     }, 1000);
     return () => clearInterval(interval);
   }, [fastStartMs]);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (!data || activeDate !== todayStr || savingRef.current) return;
-      const bioSnapshot = JSON.stringify(bioState);
-      const gymSnapshot = JSON.stringify({ workout: gymState.workout, activityJson: gymState.activityJson });
-      const fuelSnapshot = JSON.stringify(fuelState);
+      if (!state.dashboard || state.activeDate !== todayStr || savingRef.current) return;
+      const bioSnapshot = JSON.stringify(state.bio);
+      const gymSnapshot = JSON.stringify({ workout: state.gym.workout, activity: state.gym.activity });
+      const fuelSnapshot = JSON.stringify(state.fuel);
 
       const saves: Array<Promise<void>> = [];
       if (bioSnapshot !== lastSnapshots.current.bio) {
-        saves.push(handleSave('BIO', bioState, { silent: true }));
+        saves.push(handleSave('BIO', state.bio, { silent: true }));
         lastSnapshots.current.bio = bioSnapshot;
       }
       if (gymSnapshot !== lastSnapshots.current.gym) {
         saves.push(
-          handleSave('GYM', { workout: gymState.workout, activityJson: gymState.activityJson }, { silent: true }),
+          handleSave(
+            'GYM',
+            { workout: state.gym.workout, activity: state.gym.activity },
+            { silent: true },
+          ),
         );
         lastSnapshots.current.gym = gymSnapshot;
       }
       if (fuelSnapshot !== lastSnapshots.current.fuel) {
-        saves.push(handleSave('FUEL', fuelState, { silent: true }));
+        saves.push(handleSave('FUEL', state.fuel, { silent: true }));
         lastSnapshots.current.fuel = fuelSnapshot;
       }
       if (saves.length > 0) {
         Promise.all(saves).catch(() => undefined);
       }
     }, 60000);
-
     return () => clearInterval(interval);
-  }, [bioState, fuelState, gymState.activityJson, gymState.workout, activeDate, todayStr, data, handleSave]);
+  }, [handleSave, state.activeDate, state.bio, state.dashboard, state.fuel, state.gym.activity, state.gym.workout, todayStr]);
 
   useEffect(() => {
-    if (!data || activeDate !== todayStr) return;
-    const now = new Date();
-    const formatter = new Intl.DateTimeFormat('en-CA', {
-      timeZone: 'America/Mexico_City',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false,
-    });
-    const parts = formatter.formatToParts(now);
-    const lookup = Object.fromEntries(parts.map((part) => [part.type, part.value]));
-    const endUtc = Date.UTC(
-      Number(lookup.year),
-      Number(lookup.month) - 1,
-      Number(lookup.day),
-      23,
-      59,
-      59,
-    );
-    const nowUtc = Date.UTC(
-      Number(lookup.year),
-      Number(lookup.month) - 1,
-      Number(lookup.day),
-      Number(lookup.hour),
-      Number(lookup.minute),
-      Number(lookup.second),
-    );
-    const diff = Math.max(0, endUtc - nowUtc);
+    const diff = getMsUntilEndOfDay();
     const timeout = setTimeout(() => {
-      if (activeDate === todayStr) {
-        handleSave('BIO', bioState, { silent: true });
-        handleSave('GYM', { workout: gymState.workout, activityJson: gymState.activityJson }, { silent: true });
-        handleSave('FUEL', fuelState, { silent: true });
+      if (state.activeDate === todayStr) {
+        handleSave('BIO', state.bio, { silent: true });
+        handleSave('GYM', { workout: state.gym.workout, activity: state.gym.activity }, { silent: true });
+        handleSave('FUEL', state.fuel, { silent: true });
       }
     }, diff);
     return () => clearTimeout(timeout);
-  }, [data, activeDate, todayStr, bioState, fuelState, gymState.activityJson, gymState.workout, handleSave]);
+  }, [state.activeDate, state.bio, state.fuel, state.gym.activity, state.gym.workout, handleSave, todayStr]);
 
   const handleDateMove = (direction: number) => {
-    if (!activeDate || !data) return;
-    const next = addDays(activeDate, direction);
+    if (!state.activeDate || !state.dashboard) return;
+    const next = addDays(state.activeDate, direction);
     if (direction > 0 && next > todayStr) return;
-    loadDashboard(next).catch((err) => setError(err.message ?? 'Error al cargar'));
+    loadDashboard(next).catch((err) => dispatch({ type: 'SET_ERROR', payload: err.message ?? 'Error al cargar' }));
   };
 
-  const handleSuppToggle = (supp: string) => {
-    setBioState((prev) => ({
-      ...prev,
-      suppsJson: { ...prev.suppsJson, [supp]: !prev.suppsJson[supp] },
-    }));
+  const handleSuppToggle = (key: keyof SupplementStack) => {
+    dispatch({
+      type: 'SET_BIO',
+      payload: { supps: { ...state.bio.supps, [key]: !state.bio.supps[key] } },
+    });
   };
 
   const handleWaterSet = (count: number) => {
-    setBioState((prev) => ({ ...prev, water: count }));
+    dispatch({ type: 'SET_BIO', payload: { water: count } });
   };
-
-  const treadmillCalories = useMemo(() => {
-    const { speed, incline, minutes } = gymState.treadmill;
-    if (!speed || !minutes) return 0;
-    const met = Math.max(1, speed * 0.9 + incline * 0.3);
-    return Math.round(met * (weightForCalc || 0) * (minutes / 60));
-  }, [gymState.treadmill, weightForCalc]);
 
   const handleAddTreadmill = () => {
-    if (!treadmillCalories) return;
-    const entry: ActivityEntry = {
-      label: `TREADMILL ${gymState.treadmill.speed}km/h ${gymState.treadmill.incline}%`,
-      minutes: gymState.treadmill.minutes,
-      calories: treadmillCalories,
+    const { speed, incline, minutes } = state.gym.treadmill;
+    if (!speed || !minutes) return;
+    const kcal = calcTreadmillKcal(weightForCalc, speed, incline, minutes);
+    const entry: ActivityTreadmillEntry = {
+      speed,
+      incline,
+      minutes,
+      kcal,
+      ts: nowIsoInTZ(),
     };
-    setGymState((prev) => ({
-      ...prev,
-      activityJson: { entries: [...(prev.activityJson.entries ?? []), entry] },
-    }));
-  };
-
-  const handleAddPreset = (label: string, factor: number) => {
-    if (!gymState.quickMinutes) return;
-    const calories = Math.round(factor * (weightForCalc || 0) * (gymState.quickMinutes / 60));
-    const entry: ActivityEntry = { label, minutes: gymState.quickMinutes, calories };
-    setGymState((prev) => ({
-      ...prev,
-      activityJson: { entries: [...(prev.activityJson.entries ?? []), entry] },
-    }));
-  };
-
-  const handleRemoveEntry = (index: number) => {
-    setGymState((prev) => ({
-      ...prev,
-      activityJson: {
-        entries: (prev.activityJson.entries ?? []).filter((_, i) => i !== index),
+    dispatch({
+      type: 'SET_GYM',
+      payload: {
+        activity: {
+          ...state.gym.activity,
+          treadmill: [...state.gym.activity.treadmill, entry],
+        },
+        treadmill: { speed: 0, incline: 0, minutes: 0 },
       },
-    }));
+    });
+  };
+
+  const handleAddManual = (preset: (typeof MANUAL_PRESETS)[number]) => {
+    const minutes = state.gym.manualMinutes[preset.key] ?? 0;
+    if (!minutes) return;
+    const kcal = calcManualKcal(weightForCalc, preset.met, minutes);
+    const entry: ActivityManualEntry = {
+      label: preset.label,
+      minutes,
+      kcal,
+      met: preset.met,
+      ts: nowIsoInTZ(),
+    };
+    dispatch({
+      type: 'SET_GYM',
+      payload: {
+        activity: {
+          ...state.gym.activity,
+          manual: [...state.gym.activity.manual, entry],
+        },
+        manualMinutes: { ...state.gym.manualMinutes, [preset.key]: 0 },
+      },
+    });
   };
 
   const handleTrash = (module: 'BIO' | 'GYM' | 'FUEL') => {
     if (module === 'BIO') {
-      const payload = { weight: 0, steps: 0, water: 0, suppsJson: {} };
-      setBioState(payload);
+      const payload = {
+        weight: 0,
+        waist: 0,
+        steps: 0,
+        water: 0,
+        supps: { creat: false, sod: false, mag: false, omega: false },
+      };
+      dispatch({ type: 'SET_BIO', payload });
       handleSave('BIO', payload);
     }
     if (module === 'GYM') {
-      const payload = { workout: '', activityJson: { entries: [] } };
-      setGymState((prev) => ({ ...prev, workout: '', activityJson: { entries: [] } }));
+      const payload = { workout: '', activity: { treadmill: [], manual: [] } };
+      dispatch({ type: 'SET_GYM', payload });
       handleSave('GYM', payload);
     }
     if (module === 'FUEL') {
-      const payload = { macrosJson: {}, notes: '' };
-      setFuelState({ macrosJson: { meatGrams: 0, eggs: 0, butterGrams: 0 }, notes: '' });
+      const payload = { macros: { m: 0, e: 0, b: 0 }, notes: '' };
+      dispatch({ type: 'SET_FUEL', payload });
       handleSave('FUEL', payload);
     }
   };
@@ -469,7 +565,7 @@ export default function Page() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `titan-omega-backup-${getTodayStr()}.json`;
+    link.download = `titan-omega-backup-${todayISOInTZ()}.json`;
     link.click();
     URL.revokeObjectURL(url);
   }, []);
@@ -484,20 +580,20 @@ export default function Page() {
         const text = await file.text();
         payload = JSON.parse(text) as { days?: unknown; state?: unknown };
       } catch {
-        setError('Archivo JSON inválido');
+        dispatch({ type: 'SET_ERROR', payload: 'Archivo JSON inválido' });
         return;
       }
       const confirmed = window.confirm('Esto reemplazará/merge datos locales. ¿Continuar?');
       if (!confirmed) return;
       await importAllData(payload as any);
-      await loadDashboard(activeDate || undefined);
-      setToast('IMPORTADO');
-      setTimeout(() => setToast(null), 2000);
+      await loadDashboard(state.activeDate || undefined);
+      dispatch({ type: 'SET_TOAST', payload: 'IMPORTADO' });
+      setTimeout(() => dispatch({ type: 'SET_TOAST', payload: null }), 2000);
     },
-    [activeDate, loadDashboard],
+    [loadDashboard, state.activeDate],
   );
 
-  if (!data && loading) {
+  if (!state.dashboard && state.loading) {
     return (
       <main className="min-h-screen flex items-center justify-center text-sm text-slate-300">
         CARGANDO TITAN OMEGA...
@@ -505,12 +601,12 @@ export default function Page() {
     );
   }
 
-  if (!data && !loading) {
+  if (!state.dashboard && !state.loading) {
     return (
       <main className="min-h-screen flex items-center justify-center text-sm text-slate-300 px-6">
         <div className="max-w-xl w-full border border-slateborder bg-slatepanel/80 rounded-xl p-6">
           <h2 className="text-xs tracking-[0.3em] text-danger">SIN DATOS</h2>
-          <p className="mt-3 text-sm">{error ?? 'No se pudo inicializar el tablero.'}</p>
+          <p className="mt-3 text-sm">{state.error ?? 'No se pudo inicializar el tablero.'}</p>
           <button
             onClick={bootstrap}
             className="mt-5 w-full rounded-lg border border-accent bg-accent/20 py-2 text-xs tracking-[0.3em] text-accent"
@@ -524,7 +620,7 @@ export default function Page() {
 
   return (
     <main className="min-h-screen px-4 py-6 lg:px-10 text-sm relative">
-      {loading && (
+      {state.loading && (
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-slatebase/90 text-xs uppercase tracking-[0.3em] text-accent">
           CARGANDO TITAN OMEGA...
         </div>
@@ -536,15 +632,9 @@ export default function Page() {
             <p className="text-xs text-slate-400">ERP Biométrico · CDMX LOCK</p>
           </div>
           <div className="flex items-center gap-3 text-xs">
-            {storageBadge && (
-              <span className="px-3 py-1 rounded-full border border-warning/60 text-warning">
-                STORAGE: FALLBACK
-              </span>
-            )}
-            <span className="px-3 py-1 rounded-full border border-slateborder bg-slatebase">
-              {seasonLabel}
-            </span>
+            <Badge>{seasonLabel}</Badge>
             <span className="text-slate-300">HYROX - {daysLeftLabel} días</span>
+            <span className="text-xs text-slate-400">{state.clock.split('T')[1]}</span>
           </div>
         </div>
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -555,87 +645,81 @@ export default function Page() {
             >
               ◀
             </button>
-            <div className="text-sm font-mono tracking-widest">{formatDateDisplay(activeDate)}</div>
+            <div className="text-sm font-mono tracking-widest">{formatDateDisplay(state.activeDate)}</div>
             <button
               onClick={() => handleDateMove(1)}
               className="px-3 py-2 border border-slateborder rounded-lg hover:border-accent disabled:opacity-40"
-              disabled={activeDate >= todayStr}
+              disabled={state.activeDate >= todayStr}
             >
               ▶
             </button>
           </div>
           <div className="flex gap-2">
             {TAB_OPTIONS.map((tab) => (
-              <button
+              <TabButton
                 key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-3 py-2 rounded-lg text-xs uppercase tracking-[0.2em] border ${
-                  activeTab === tab
-                    ? 'bg-accent/20 border-accent text-accent'
-                    : 'border-slateborder text-slate-400 hover:text-accent'
-                }`}
+                active={state.activeTab === tab}
+                onClick={() => dispatch({ type: 'SET_ACTIVE_TAB', payload: tab })}
               >
                 {tab}
-              </button>
+              </TabButton>
             ))}
           </div>
         </div>
       </header>
 
-      {toast && (
-        <div className="mt-4 text-xs uppercase tracking-[0.3em] text-accent">{toast}</div>
-      )}
-      {error && <div className="mt-4 text-xs text-danger">{error}</div>}
+      {state.toast && <div className="mt-4 text-xs uppercase tracking-[0.3em] text-accent">{state.toast}</div>}
+      {state.error && <div className="mt-4 text-xs text-danger">{state.error}</div>}
 
-      {activeTab === 'Dash' && dayLog && (
+      {state.activeTab === 'Dash' && dayLog && (
         <section className="mt-6 grid gap-4 lg:grid-cols-[1.5fr_1fr]">
           <div className="grid gap-4">
-            <div className="border border-slateborder bg-slatepanel/80 rounded-xl p-4">
+            <SectionCard>
               <h2 className="text-xs tracking-[0.3em] text-slate-400">P&L</h2>
               <div className="mt-3 grid grid-cols-3 gap-3">
                 <div>
                   <p className="text-xs text-slate-400">IN</p>
-                  <p className="text-lg font-semibold">{dayLog.calIn}</p>
+                  <p className="text-lg font-semibold">{calInLive}</p>
                 </div>
                 <div>
                   <p className="text-xs text-slate-400">OUT</p>
-                  <p className="text-lg font-semibold">{dayLog.calOut}</p>
+                  <p className="text-lg font-semibold">{calOutLive}</p>
                 </div>
                 <div>
                   <p className="text-xs text-slate-400">NET</p>
-                  <p
-                    className={`text-lg font-semibold ${
-                      (dayLog.net ?? 0) <= 0 ? 'text-success' : 'text-danger'
-                    }`}
-                  >
-                    {dayLog.net}
+                  <p className={`text-lg font-semibold ${netLive <= 0 ? 'text-success' : 'text-danger'}`}>
+                    {netLive}
                   </p>
                 </div>
               </div>
-              <div className="mt-3 text-xs text-slate-400">
-                BMR: {dayLog.bmr} · Titan Score: {dayLog.titanScoreComputed}
-              </div>
+            </SectionCard>
+
+            <div className="grid gap-4 lg:grid-cols-2">
+              <SectionCard>
+                <h2 className="text-xs tracking-[0.3em] text-slate-400">BMI</h2>
+                <div className="mt-3 text-lg font-semibold">{bmiLive}</div>
+                <div className="mt-2 text-xs text-slate-400">BMR {bmrLive} kcal</div>
+              </SectionCard>
+              <SectionCard>
+                <h2 className="text-xs tracking-[0.3em] text-slate-400">FLAGS</h2>
+                <div className="mt-3 flex flex-col gap-2">
+                  {dayLog.flagsComputed?.list?.length ? (
+                    dayLog.flagsComputed.list.map((flag) => (
+                      <div
+                        key={flag.code}
+                        className="border border-danger/60 bg-danger/10 px-3 py-2 rounded-lg text-xs"
+                      >
+                        {flag.code} · {flag.msg}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-xs text-slate-400">SIN ALERTAS</div>
+                  )}
+                </div>
+              </SectionCard>
             </div>
 
-            <div className="border border-slateborder bg-slatepanel/80 rounded-xl p-4">
-              <h2 className="text-xs tracking-[0.3em] text-slate-400">RISK FLAGS</h2>
-              <div className="mt-3 space-y-2">
-                {dayLog.flagsComputed?.list?.length ? (
-                  dayLog.flagsComputed.list.map((flag) => (
-                    <div
-                      key={flag.code}
-                      className="border border-danger/60 bg-danger/10 px-3 py-2 rounded-lg text-xs"
-                    >
-                      {flag.code} · {flag.msg}
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-xs text-slate-400">SIN ALERTAS</div>
-                )}
-              </div>
-            </div>
-
-            <div className="border border-slateborder bg-slatepanel/80 rounded-xl p-4">
+            <SectionCard>
               <h2 className="text-xs tracking-[0.3em] text-slate-400">TACTICAL AGENDA</h2>
               <ul className="mt-3 space-y-1 text-xs text-slate-300">
                 {TACTICAL_AGENDA.map((item) => (
@@ -645,14 +729,14 @@ export default function Page() {
                   </li>
                 ))}
               </ul>
-            </div>
+            </SectionCard>
           </div>
 
           <div className="grid gap-4">
-            <div className="border border-slateborder bg-slatepanel/80 rounded-xl p-4">
+            <SectionCard>
               <h2 className="text-xs tracking-[0.3em] text-slate-400">FASTING</h2>
               <div className="mt-3 text-lg font-semibold">
-                {fastStartMs ? `${fastElapsed.toFixed(2)} h` : `${dayLog.fastHours} h`}
+                {fastStartMs ? `${state.fastElapsed.toFixed(2)} h` : `${dayLog.fastHours} h`}
               </div>
               <div className="mt-3 flex gap-2">
                 <button
@@ -674,42 +758,44 @@ export default function Page() {
                   RESET
                 </button>
               </div>
-            </div>
+            </SectionCard>
 
-            <div className="border border-slateborder bg-slatepanel/80 rounded-xl p-4">
+            <SectionCard>
               <h2 className="text-xs tracking-[0.3em] text-slate-400">METRICS</h2>
               <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
                 <div>
                   <p className="text-slate-400">Weight</p>
-                  <p className="text-base">{dayLog.weight || lastWeight} kg</p>
+                  <p className="text-base">{weightForCalc} kg</p>
                 </div>
                 <div>
                   <p className="text-slate-400">Steps</p>
-                  <p className="text-base">{dayLog.steps}</p>
+                  <p className="text-base">{state.bio.steps}</p>
                 </div>
                 <div>
                   <p className="text-slate-400">Water</p>
-                  <p className="text-base">{dayLog.water}/10</p>
+                  <p className="text-base">{state.bio.water}/10</p>
                 </div>
                 <div>
                   <p className="text-slate-400">Routine</p>
                   <p className="text-base">{routineLabel}</p>
                 </div>
               </div>
-            </div>
+            </SectionCard>
 
-            <div className="border border-slateborder bg-slatepanel/80 rounded-xl p-4">
+            <SectionCard>
               <h2 className="text-xs tracking-[0.3em] text-slate-400">DB STATUS</h2>
               <p className="mt-2 text-xs text-slate-400">Último guardado: {dayLog.date}</p>
-              <p className="text-xs text-slate-500">IN {dayLog.calIn} · OUT {dayLog.calOut}</p>
-            </div>
+              <p className="text-xs text-slate-500">
+                IN {calInLive} · OUT {calOutLive}
+              </p>
+            </SectionCard>
           </div>
         </section>
       )}
 
-      {activeTab === 'Bio' && dayLog && (
+      {state.activeTab === 'Bio' && dayLog && (
         <section className="mt-6 grid gap-4 lg:grid-cols-[2fr_1fr]">
-          <div className="border border-slateborder bg-slatepanel/80 rounded-xl p-4 space-y-4">
+          <SectionCard className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-xs tracking-[0.3em] text-slate-400">BIO MODULE</h2>
               <button onClick={() => handleTrash('BIO')} className="text-xs text-danger">
@@ -721,78 +807,99 @@ export default function Page() {
                 Weight (kg)
                 <input
                   type="number"
-                  value={bioState.weight}
-                  onChange={(e) => setBioState((prev) => ({ ...prev, weight: Number(e.target.value) }))}
-                  className="mt-1 w-full rounded-lg border border-slateborder bg-slatebase px-3 py-2 text-sm"
+                  value={state.bio.weight}
+                  onChange={(event) => dispatch({ type: 'SET_BIO', payload: { weight: Number(event.target.value) } })}
+                  className="mt-1 w-full rounded-lg border border-slateborder bg-slatebase px-3 py-2 text-slate-200"
                 />
               </label>
+              <label className="text-xs text-slate-400">
+                Waist
+                <input
+                  type="number"
+                  value={state.bio.waist}
+                  onChange={(event) => dispatch({ type: 'SET_BIO', payload: { waist: Number(event.target.value) } })}
+                  className="mt-1 w-full rounded-lg border border-slateborder bg-slatebase px-3 py-2 text-slate-200"
+                />
+              </label>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
               <label className="text-xs text-slate-400">
                 Steps
                 <input
                   type="number"
-                  value={bioState.steps}
-                  onChange={(e) => setBioState((prev) => ({ ...prev, steps: Number(e.target.value) }))}
-                  className="mt-1 w-full rounded-lg border border-slateborder bg-slatebase px-3 py-2 text-sm"
+                  value={state.bio.steps}
+                  onChange={(event) => dispatch({ type: 'SET_BIO', payload: { steps: Number(event.target.value) } })}
+                  className="mt-1 w-full rounded-lg border border-slateborder bg-slatebase px-3 py-2 text-slate-200"
                 />
               </label>
-            </div>
-            <div>
-              <p className="text-xs text-slate-400">Water Blocks</p>
-              <div className="mt-2 grid grid-cols-10 gap-2">
-                {Array.from({ length: 10 }).map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => handleWaterSet(idx + 1)}
-                    className={`h-8 rounded-lg border ${
-                      bioState.water >= idx + 1
-                        ? 'bg-accent/30 border-accent'
-                        : 'border-slateborder bg-slatebase'
-                    }`}
-                  />
-                ))}
+              <div>
+                <p className="text-xs text-slate-400">Water</p>
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {Array.from({ length: 10 }).map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => handleWaterSet(idx + 1)}
+                      className={`h-6 w-6 rounded border text-[10px] ${
+                        state.bio.water >= idx + 1
+                          ? 'border-accent bg-accent/30 text-accent'
+                          : 'border-slateborder text-slate-500'
+                      }`}
+                    >
+                      {idx + 1}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
             <div>
               <p className="text-xs text-slate-400">Supps Stack</p>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 {SUPPS.map((supp) => (
-                  <label key={supp} className="flex items-center gap-2 text-xs text-slate-300">
+                  <label key={supp.key} className="flex items-center gap-2 text-xs text-slate-300">
                     <input
                       type="checkbox"
-                      checked={Boolean(bioState.suppsJson[supp])}
-                      onChange={() => handleSuppToggle(supp)}
+                      checked={Boolean(state.bio.supps[supp.key])}
+                      onChange={() => handleSuppToggle(supp.key)}
                     />
-                    {supp}
+                    {supp.label}
                   </label>
                 ))}
               </div>
             </div>
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div>
+                <p className="text-slate-400">BMI</p>
+                <p className="text-base">{bmiLive}</p>
+              </div>
+              <div>
+                <p className="text-slate-400">BMR</p>
+                <p className="text-base">{bmrLive}</p>
+              </div>
+            </div>
             <button
-              onClick={() => handleSave('BIO', bioState)}
+              onClick={() => handleSave('BIO', state.bio)}
               className="w-full rounded-lg border border-accent bg-accent/20 py-2 text-xs tracking-[0.3em] text-accent"
             >
               GUARDAR BIO
             </button>
             <p className="text-xs text-slate-500">
-              STORAGE: weight {dayLog.weight} · steps {dayLog.steps} · water {dayLog.water}
+              STORAGE: weight {state.bio.weight} · steps {state.bio.steps} · water {state.bio.water}
             </p>
-          </div>
+          </SectionCard>
 
-          <div className="border border-slateborder bg-slatepanel/80 rounded-xl p-4">
+          <SectionCard>
             <h2 className="text-xs tracking-[0.3em] text-slate-400">FASTING TIMER</h2>
             <div className="mt-3 text-lg font-semibold">
-              {fastStartMs ? `${fastElapsed.toFixed(2)} h` : `${dayLog.fastHours} h`}
+              {fastStartMs ? `${state.fastElapsed.toFixed(2)} h` : `${dayLog.fastHours} h`}
             </div>
-            <div className="mt-3 text-xs text-slate-400">
-              Timer persistente en local.
-            </div>
-          </div>
+            <div className="mt-3 text-xs text-slate-400">Timer persistente en local.</div>
+          </SectionCard>
         </section>
       )}
 
-      {activeTab === 'Gym' && dayLog && (
+      {state.activeTab === 'Gym' && dayLog && (
         <section className="mt-6 grid gap-4 lg:grid-cols-[2fr_1fr]">
-          <div className="border border-slateborder bg-slatepanel/80 rounded-xl p-4 space-y-4">
+          <SectionCard className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-xs tracking-[0.3em] text-slate-400">GYM MODULE</h2>
               <button onClick={() => handleTrash('GYM')} className="text-xs text-danger">
@@ -803,127 +910,137 @@ export default function Page() {
               Workout Label
               <input
                 type="text"
-                value={gymState.workout}
-                onChange={(e) => setGymState((prev) => ({ ...prev, workout: e.target.value }))}
-                className="mt-1 w-full rounded-lg border border-slateborder bg-slatebase px-3 py-2 text-sm"
+                value={state.gym.workout}
+                onChange={(event) => dispatch({ type: 'SET_GYM', payload: { workout: event.target.value } })}
+                className="mt-1 w-full rounded-lg border border-slateborder bg-slatebase px-3 py-2 text-slate-200"
               />
             </label>
             <div className="grid grid-cols-3 gap-3">
               <label className="text-xs text-slate-400">
-                Speed km/h
+                Speed (km/h)
                 <input
                   type="number"
-                  value={gymState.treadmill.speed}
-                  onChange={(e) =>
-                    setGymState((prev) => ({
-                      ...prev,
-                      treadmill: { ...prev.treadmill, speed: Number(e.target.value) },
-                    }))
+                  value={state.gym.treadmill.speed}
+                  onChange={(event) =>
+                    dispatch({
+                      type: 'SET_GYM',
+                      payload: { treadmill: { ...state.gym.treadmill, speed: Number(event.target.value) } },
+                    })
                   }
-                  className="mt-1 w-full rounded-lg border border-slateborder bg-slatebase px-3 py-2 text-sm"
+                  className="mt-1 w-full rounded-lg border border-slateborder bg-slatebase px-3 py-2 text-slate-200"
                 />
               </label>
               <label className="text-xs text-slate-400">
-                Incline %
+                Incline (%)
                 <input
                   type="number"
-                  value={gymState.treadmill.incline}
-                  onChange={(e) =>
-                    setGymState((prev) => ({
-                      ...prev,
-                      treadmill: { ...prev.treadmill, incline: Number(e.target.value) },
-                    }))
+                  value={state.gym.treadmill.incline}
+                  onChange={(event) =>
+                    dispatch({
+                      type: 'SET_GYM',
+                      payload: { treadmill: { ...state.gym.treadmill, incline: Number(event.target.value) } },
+                    })
                   }
-                  className="mt-1 w-full rounded-lg border border-slateborder bg-slatebase px-3 py-2 text-sm"
+                  className="mt-1 w-full rounded-lg border border-slateborder bg-slatebase px-3 py-2 text-slate-200"
                 />
               </label>
               <label className="text-xs text-slate-400">
                 Minutes
                 <input
                   type="number"
-                  value={gymState.treadmill.minutes}
-                  onChange={(e) =>
-                    setGymState((prev) => ({
-                      ...prev,
-                      treadmill: { ...prev.treadmill, minutes: Number(e.target.value) },
-                    }))
+                  value={state.gym.treadmill.minutes}
+                  onChange={(event) =>
+                    dispatch({
+                      type: 'SET_GYM',
+                      payload: { treadmill: { ...state.gym.treadmill, minutes: Number(event.target.value) } },
+                    })
                   }
-                  className="mt-1 w-full rounded-lg border border-slateborder bg-slatebase px-3 py-2 text-sm"
+                  className="mt-1 w-full rounded-lg border border-slateborder bg-slatebase px-3 py-2 text-slate-200"
                 />
               </label>
             </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-400">Estimado: {treadmillCalories} kcal</span>
-              <button
-                onClick={handleAddTreadmill}
-                className="px-3 py-2 border border-accent rounded-lg text-accent"
-              >
-                + SUMAR
-              </button>
+            <button
+              onClick={handleAddTreadmill}
+              className="w-full rounded-lg border border-accent bg-accent/20 py-2 text-xs tracking-[0.3em] text-accent"
+            >
+              + SUMAR TREADMILL
+            </button>
+            <div className="grid gap-2 text-xs">
+              {state.gym.activity.treadmill.map((entry) => (
+                <div key={entry.ts} className="flex justify-between text-slate-400">
+                  <span>
+                    {entry.speed}km/h · {entry.incline}% · {entry.minutes}m
+                  </span>
+                  <span>{entry.kcal} kcal</span>
+                </div>
+              ))}
             </div>
+
             <div>
-              <p className="text-xs text-slate-400">Quick Add</p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                <input
-                  type="number"
-                  value={gymState.quickMinutes}
-                  onChange={(e) => setGymState((prev) => ({ ...prev, quickMinutes: Number(e.target.value) }))}
-                  placeholder="Min"
-                  className="w-24 rounded-lg border border-slateborder bg-slatebase px-3 py-2 text-sm"
-                />
-                {ACTIVITY_PRESETS.map((preset) => (
-                  <button
-                    key={preset.label}
-                    onClick={() => handleAddPreset(preset.label, preset.factor)}
-                    className="px-3 py-2 border border-slateborder rounded-lg text-xs hover:border-accent"
-                  >
-                    {preset.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <p className="text-xs text-slate-400">Activity Log</p>
-              <div className="mt-2 space-y-2">
-                {(gymState.activityJson.entries ?? []).map((entry, index) => (
-                  <div
-                    key={`${entry.label}-${index}`}
-                    className="flex items-center justify-between border border-slateborder rounded-lg px-3 py-2 text-xs"
-                  >
-                    <span>
-                      {entry.label} · {entry.minutes}m · {entry.calories} kcal
-                    </span>
-                    <button onClick={() => handleRemoveEntry(index)} className="text-danger">
-                      remove
+              <p className="text-xs text-slate-400">Manual Activity</p>
+              <div className="mt-2 grid gap-2">
+                {MANUAL_PRESETS.map((preset) => (
+                  <div key={preset.key} className="flex items-center gap-2">
+                    <span className="text-xs text-slate-300 w-16">{preset.label}</span>
+                    <input
+                      type="number"
+                      placeholder="min"
+                      value={state.gym.manualMinutes[preset.key]}
+                      onChange={(event) =>
+                        dispatch({
+                          type: 'SET_GYM',
+                          payload: {
+                            manualMinutes: {
+                              ...state.gym.manualMinutes,
+                              [preset.key]: Number(event.target.value),
+                            },
+                          },
+                        })
+                      }
+                      className="flex-1 rounded-lg border border-slateborder bg-slatebase px-2 py-1 text-xs text-slate-200"
+                    />
+                    <button
+                      onClick={() => handleAddManual(preset)}
+                      className="px-3 py-2 border border-slateborder rounded-lg text-xs hover:border-accent"
+                    >
+                      ADD
                     </button>
                   </div>
                 ))}
-                {gymState.activityJson.entries?.length === 0 && (
-                  <div className="text-xs text-slate-500">Sin actividades.</div>
-                )}
+              </div>
+              <div className="mt-3 grid gap-2 text-xs">
+                {state.gym.activity.manual.map((entry) => (
+                  <div key={entry.ts} className="flex justify-between text-slate-400">
+                    <span>
+                      {entry.label} · {entry.minutes}m
+                    </span>
+                    <span>{entry.kcal} kcal</span>
+                  </div>
+                ))}
               </div>
             </div>
+
             <button
-              onClick={() => handleSave('GYM', { workout: gymState.workout, activityJson: gymState.activityJson })}
+              onClick={() => handleSave('GYM', { workout: state.gym.workout, activity: state.gym.activity })}
               className="w-full rounded-lg border border-accent bg-accent/20 py-2 text-xs tracking-[0.3em] text-accent"
             >
               GUARDAR GYM
             </button>
-            <p className="text-xs text-slate-500">STORAGE: OUT {dayLog.calOut} · extra {extraBurn} kcal</p>
-          </div>
+            <p className="text-xs text-slate-500">STORAGE: OUT {calOutLive} · extra {extraBurn} kcal</p>
+          </SectionCard>
 
-          <div className="border border-slateborder bg-slatepanel/80 rounded-xl p-4 space-y-3">
-            <h2 className="text-xs tracking-[0.3em] text-slate-400">BMR & ROUTINE</h2>
-            <div className="text-xs text-slate-400">BMR {dayLog.bmr} kcal</div>
-            <div className="text-xs text-slate-400">Routine {routineLabel}</div>
-            <div className="text-xs text-slate-400">Cal OUT {dayLog.calOut}</div>
-          </div>
+          <SectionCard className="space-y-3">
+            <h2 className="text-xs tracking-[0.3em] text-slate-400">OUT TOTAL</h2>
+            <div className="text-lg font-semibold">{calOutLive}</div>
+            <div className="text-xs text-slate-400">BMR {bmrLive} · Extra {extraBurn}</div>
+            <div className="text-xs text-slate-400">Routine: {routineLabel}</div>
+          </SectionCard>
         </section>
       )}
 
-      {activeTab === 'Fuel' && dayLog && (
+      {state.activeTab === 'Fuel' && dayLog && (
         <section className="mt-6 grid gap-4 lg:grid-cols-[2fr_1fr]">
-          <div className="border border-slateborder bg-slatepanel/80 rounded-xl p-4 space-y-4">
+          <SectionCard className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-xs tracking-[0.3em] text-slate-400">FUEL MODULE</h2>
               <button onClick={() => handleTrash('FUEL')} className="text-xs text-danger">
@@ -935,78 +1052,68 @@ export default function Page() {
                 Meat (g)
                 <input
                   type="number"
-                  value={fuelState.macrosJson.meatGrams}
-                  onChange={(e) =>
-                    setFuelState((prev) => ({
-                      ...prev,
-                      macrosJson: { ...prev.macrosJson, meatGrams: Number(e.target.value) },
-                    }))
+                  value={state.fuel.macros.m}
+                  onChange={(event) =>
+                    dispatch({ type: 'SET_FUEL', payload: { macros: { ...state.fuel.macros, m: Number(event.target.value) } } })
                   }
-                  className="mt-1 w-full rounded-lg border border-slateborder bg-slatebase px-3 py-2 text-sm"
+                  className="mt-1 w-full rounded-lg border border-slateborder bg-slatebase px-3 py-2 text-slate-200"
                 />
               </label>
               <label className="text-xs text-slate-400">
-                Eggs
+                Eggs (pcs)
                 <input
                   type="number"
-                  value={fuelState.macrosJson.eggs}
-                  onChange={(e) =>
-                    setFuelState((prev) => ({
-                      ...prev,
-                      macrosJson: { ...prev.macrosJson, eggs: Number(e.target.value) },
-                    }))
+                  value={state.fuel.macros.e}
+                  onChange={(event) =>
+                    dispatch({ type: 'SET_FUEL', payload: { macros: { ...state.fuel.macros, e: Number(event.target.value) } } })
                   }
-                  className="mt-1 w-full rounded-lg border border-slateborder bg-slatebase px-3 py-2 text-sm"
+                  className="mt-1 w-full rounded-lg border border-slateborder bg-slatebase px-3 py-2 text-slate-200"
                 />
               </label>
               <label className="text-xs text-slate-400">
                 Butter (g)
                 <input
                   type="number"
-                  value={fuelState.macrosJson.butterGrams}
-                  onChange={(e) =>
-                    setFuelState((prev) => ({
-                      ...prev,
-                      macrosJson: { ...prev.macrosJson, butterGrams: Number(e.target.value) },
-                    }))
+                  value={state.fuel.macros.b}
+                  onChange={(event) =>
+                    dispatch({ type: 'SET_FUEL', payload: { macros: { ...state.fuel.macros, b: Number(event.target.value) } } })
                   }
-                  className="mt-1 w-full rounded-lg border border-slateborder bg-slatebase px-3 py-2 text-sm"
+                  className="mt-1 w-full rounded-lg border border-slateborder bg-slatebase px-3 py-2 text-slate-200"
                 />
               </label>
             </div>
             <label className="text-xs text-slate-400">
               Notes
               <textarea
-                value={fuelState.notes}
-                onChange={(e) => setFuelState((prev) => ({ ...prev, notes: e.target.value }))}
-                className="mt-1 w-full rounded-lg border border-slateborder bg-slatebase px-3 py-2 text-sm"
-                rows={4}
+                value={state.fuel.notes}
+                onChange={(event) => dispatch({ type: 'SET_FUEL', payload: { notes: event.target.value } })}
+                className="mt-1 w-full rounded-lg border border-slateborder bg-slatebase px-3 py-2 text-slate-200"
               />
             </label>
             <button
-              onClick={() => handleSave('FUEL', fuelState)}
+              onClick={() => handleSave('FUEL', state.fuel)}
               className="w-full rounded-lg border border-accent bg-accent/20 py-2 text-xs tracking-[0.3em] text-accent"
             >
               GUARDAR FUEL
             </button>
-            <p className="text-xs text-slate-500">STORAGE: IN {dayLog.calIn}</p>
-          </div>
+            <p className="text-xs text-slate-500">STORAGE: IN {calInLive}</p>
+          </SectionCard>
 
-          <div className="border border-slateborder bg-slatepanel/80 rounded-xl p-4">
+          <SectionCard>
             <h2 className="text-xs tracking-[0.3em] text-slate-400">CONVERSION</h2>
             <ul className="mt-3 space-y-2 text-xs text-slate-300">
               <li>Meat g × 2.5</li>
               <li>Eggs × 75</li>
               <li>Butter g × 7.2</li>
             </ul>
-            <div className="mt-3 text-xs text-slate-400">Total IN (STORAGE): {dayLog.calIn}</div>
-          </div>
+            <div className="mt-3 text-xs text-slate-400">Total IN (STORAGE): {calInLive}</div>
+          </SectionCard>
         </section>
       )}
 
-      {activeTab === 'Data' && (
+      {state.activeTab === 'Data' && (
         <section className="mt-6 grid gap-4 lg:grid-cols-[1.3fr_1fr]">
-          <div className="border border-slateborder bg-slatepanel/80 rounded-xl p-4">
+          <SectionCard>
             <h2 className="text-xs tracking-[0.3em] text-slate-400">DATA LEDGER (30)</h2>
             <div className="mt-3 overflow-auto">
               <table className="w-full text-xs text-slate-300">
@@ -1016,8 +1123,10 @@ export default function Page() {
                     <th className="text-left">WT</th>
                     <th className="text-left">IN</th>
                     <th className="text-left">OUT</th>
+                    <th className="text-left">NET</th>
                     <th className="text-left">WTR</th>
                     <th className="text-left">STP</th>
+                    <th className="text-left">FAST</th>
                     <th className="text-left">SCORE</th>
                   </tr>
                 </thead>
@@ -1028,31 +1137,30 @@ export default function Page() {
                       <td>{row.weight}</td>
                       <td>{row.calIn}</td>
                       <td>{row.calOut}</td>
+                      <td>{row.net}</td>
                       <td>{row.water}</td>
                       <td>{row.steps}</td>
+                      <td>{row.fastHours}</td>
                       <td>{row.score}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-          </div>
+          </SectionCard>
           <div className="grid gap-4">
-            <div className="border border-slateborder bg-slatepanel/80 rounded-xl p-4">
+            <SectionCard>
               <h2 className="text-xs tracking-[0.3em] text-slate-400">MONTH CALENDAR</h2>
               <div className="mt-3 grid grid-cols-7 gap-2 text-[10px]">
                 {calendarDays.map((day) => (
-                  <div
-                    key={day.date}
-                    className={`h-16 rounded-lg border p-2 ${scoreColor(day.score)}`}
-                  >
+                  <div key={day.date} className={`h-16 rounded-lg border p-2 ${scoreColor(day.score)}`}>
                     <div className="font-mono">{day.date.split('-')[2]}</div>
                     <div className="mt-2">{day.score}</div>
                   </div>
                 ))}
               </div>
-            </div>
-            <div className="border border-slateborder bg-slatepanel/80 rounded-xl p-4">
+            </SectionCard>
+            <SectionCard>
               <h2 className="text-xs tracking-[0.3em] text-slate-400">BACKUP</h2>
               <p className="mt-3 text-xs text-slate-400">Exporta o importa la base local completa.</p>
               <div className="mt-4 flex flex-wrap gap-2">
@@ -1072,18 +1180,18 @@ export default function Page() {
                   />
                 </label>
               </div>
-            </div>
+            </SectionCard>
           </div>
         </section>
       )}
 
-      {activeTab === 'Protocol' && (
+      {state.activeTab === 'Protocol' && (
         <section className="mt-6 border border-slateborder bg-slatepanel/80 rounded-xl p-6">
           <h2 className="text-xs tracking-[0.3em] text-slate-400">PROTOCOL</h2>
           <div className="mt-4 text-xs text-slate-300 space-y-2">
-            <p>1. Fecha es llave primaria. Nunca editar con DateTime.</p>
-            <p>2. Guardado modular. Cada módulo solo guarda sus campos.</p>
-            <p>3. Ayuno con timer persistente en local (IndexedDB).</p>
+            <p>1. Carnívoro estricto, sin procesados.</p>
+            <p>2. 2MAD: dos comidas al día, sin snacks.</p>
+            <p>3. Ayuno con timer persistente en local.</p>
             <p>4. Score diario basado en déficit, agua, pasos y gasto.</p>
             <p>5. Ledger es auditoría, no reporte.</p>
           </div>

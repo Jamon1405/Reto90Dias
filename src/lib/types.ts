@@ -1,3 +1,43 @@
+export type SupplementStack = {
+  creat: boolean;
+  sod: boolean;
+  mag: boolean;
+  omega: boolean;
+};
+
+export type Macros = {
+  m: number;
+  e: number;
+  b: number;
+};
+
+export type ActivityTreadmillEntry = {
+  speed: number;
+  incline: number;
+  minutes: number;
+  kcal: number;
+  ts: string;
+};
+
+export type ActivityManualEntry = {
+  label: string;
+  minutes: number;
+  kcal: number;
+  met: number;
+  ts: string;
+};
+
+export type ActivityLog = {
+  treadmill: ActivityTreadmillEntry[];
+  manual: ActivityManualEntry[];
+};
+
+export type TitanFlags = {
+  list: { code: string; msg: string }[];
+  bmr: number;
+  net: number;
+};
+
 export type TitanDay = {
   date: string;
   tsUpdated: string | null;
@@ -7,18 +47,17 @@ export type TitanDay = {
   calIn: number;
   calOut: number;
   water: number;
-  suppsJson: Record<string, boolean>;
-  macrosJson: Record<string, number>;
+  supps: SupplementStack;
+  macros: Macros;
   fastHours: number;
   steps: number;
   notes: string;
-  activityJson: { entries?: ActivityEntry[] };
+  activity: ActivityLog;
   titanScore: number;
-  flagsJson: { list: { code: string; msg: string }[]; bmr: number; net: number } | null;
+  flags: TitanFlags;
 };
 
-export type ActivityEntry = {
-  label: string;
-  minutes: number;
-  calories: number;
+export type TitanState = {
+  key: string;
+  value: string | null;
 };

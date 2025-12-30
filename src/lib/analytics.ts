@@ -1,13 +1,19 @@
-import { addDays, getAgeFromDob, getTodayStr, getZonedParts } from './date';
-import type { TitanDay } from './types';
+import { addDays, getAgeFromDob, getZonedParts, todayISOInTZ } from './date';
+import type { ActivityLog, TitanDay } from './types';
 
 const HEIGHT_CM = 173;
 const DOB = '1997-05-14';
 
 export function computeBmr(weight: number, referenceDate?: Date) {
-  if (weight <= 0) return 0;
+  const targetWeight = weight > 0 ? weight : 97;
   const age = getAgeFromDob(DOB, referenceDate);
-  return Math.round(10 * weight + 6.25 * HEIGHT_CM - 5 * age + 5);
+  return Math.round(10 * targetWeight + 6.25 * HEIGHT_CM - 5 * age + 5);
+}
+
+export function computeBmi(weight: number) {
+  const targetWeight = weight > 0 ? weight : 97;
+  const heightM = 1.73;
+  return Number((targetWeight / (heightM * heightM)).toFixed(1));
 }
 
 export function computeNet(calIn: number, calOut: number) {
@@ -21,6 +27,33 @@ export function computeTitanScore({ calIn, calOut, water, steps }: TitanDay) {
   const stepScore = Math.min(20, Math.round((steps / 8000) * 20));
   const burnScore = calOut > 0 ? 20 : 0;
   return Math.min(100, base + waterScore + stepScore + burnScore);
+}
+
+export function computeCaloriesIn(macros: TitanDay['macros']) {
+  const meat = Number(macros.m ?? 0);
+  const eggs = Number(macros.e ?? 0);
+  const butter = Number(macros.b ?? 0);
+  return Math.round(meat * 2.5 + eggs * 75 + butter * 7.2);
+}
+
+export function computeExtraBurn(activity: ActivityLog) {
+  const treadmill = activity.treadmill?.reduce((sum, entry) => sum + entry.kcal, 0) ?? 0;
+  const manual = activity.manual?.reduce((sum, entry) => sum + entry.kcal, 0) ?? 0;
+  return Math.round(treadmill + manual);
+}
+
+export function computeCaloriesOut({
+  weight,
+  activity,
+  referenceDate,
+}: {
+  weight: number;
+  activity: ActivityLog;
+  referenceDate?: Date;
+}) {
+  const bmr = computeBmr(weight, referenceDate);
+  const extra = computeExtraBurn(activity);
+  return Math.round(bmr * 1.2 + extra);
 }
 
 export function computeFlags({
@@ -59,7 +92,7 @@ export function computeFlags({
     });
   }
 
-  const nowIsToday = day.date === getTodayStr();
+  const nowIsToday = day.date === todayISOInTZ();
   const { hour } = getZonedParts();
   if (nowIsToday && hour >= 18 && day.water < 6) {
     list.push({

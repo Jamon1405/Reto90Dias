@@ -23,13 +23,19 @@ export function getZonedParts(date: Date = new Date()) {
   };
 }
 
-export function getTodayStr(date: Date = new Date()) {
+export function todayISOInTZ(date: Date = new Date()) {
   const parts = getZonedParts(date);
   return `${parts.year}-${String(parts.month).padStart(2, '0')}-${String(parts.day).padStart(2, '0')}`;
 }
 
-export function getNowIso() {
-  return new Date().toISOString();
+export function nowIsoInTZ(date: Date = new Date()) {
+  const parts = getZonedParts(date);
+  return `${parts.year}-${String(parts.month).padStart(2, '0')}-${String(parts.day).padStart(
+    2,
+    '0',
+  )}T${String(parts.hour).padStart(2, '0')}:${String(parts.minute).padStart(2, '0')}:${String(
+    parts.second,
+  ).padStart(2, '0')}`;
 }
 
 export function addDays(dateStr: string, days: number) {
@@ -42,13 +48,21 @@ export function addDays(dateStr: string, days: number) {
   return `${resultYear}-${resultMonth}-${resultDay}`;
 }
 
-export function getMonthRange(dateStr: string) {
+export function monthDays(dateStr: string) {
   const [year, month] = dateStr.split('-').map(Number);
   const start = `${year}-${String(month).padStart(2, '0')}-01`;
   const nextMonth = month === 12 ? { year: year + 1, month: 1 } : { year, month: month + 1 };
   const endDate = new Date(Date.UTC(nextMonth.year, nextMonth.month - 1, 0));
-  const end = `${endDate.getUTCFullYear()}-${String(endDate.getUTCMonth() + 1).padStart(2, '0')}-${String(endDate.getUTCDate()).padStart(2, '0')}`;
-  return { start, end };
+  const end = `${endDate.getUTCFullYear()}-${String(endDate.getUTCMonth() + 1).padStart(2, '0')}-${String(
+    endDate.getUTCDate(),
+  ).padStart(2, '0')}`;
+  const days: string[] = [];
+  let cursor = start;
+  while (cursor <= end) {
+    days.push(cursor);
+    cursor = addDays(cursor, 1);
+  }
+  return days;
 }
 
 export function getAgeFromDob(dob: string, date: Date = new Date()) {
@@ -59,11 +73,6 @@ export function getAgeFromDob(dob: string, date: Date = new Date()) {
     age -= 1;
   }
   return age;
-}
-
-export function getZonedTimestamp() {
-  const parts = getZonedParts();
-  return Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second);
 }
 
 export function getMsUntilEndOfDay() {
