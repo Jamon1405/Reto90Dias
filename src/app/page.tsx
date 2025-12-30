@@ -283,6 +283,7 @@ export default function Page() {
       fastHours: 0,
       workout: '',
       activity: { treadmill: [], manual: [] },
+      calOut: 0,
       calIn: 0,
       macros: { m: 0, e: 0, b: 0 },
       notes: '',
