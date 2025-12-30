@@ -3,9 +3,11 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
 import type { ChangeEvent } from 'react';
 import {
+  deleteDay,
   exportAllData,
   fastingOp,
   getDashboardData,
+  getMonthCalendar,
   importAllData,
   ping,
   saveModule,
@@ -29,6 +31,7 @@ import type {
   Macros,
   SupplementStack,
 } from '@/lib/types';
+import CalendarMonth from '@/app/components/CalendarMonth';
 
 const TAB_OPTIONS = ['Dash', 'Bio', 'Gym', 'Fuel', 'Data', 'Protocol'] as const;
 
@@ -66,6 +69,7 @@ type DashboardResponse = {
     season: string;
     fastStartMs: number | null;
     nowIso: string;
+    routineLabel: string;
   };
   user: {
     age: number;
@@ -73,7 +77,7 @@ type DashboardResponse = {
     heightCm: number;
   };
   dayLog: DayLog | null;
-  calendar: { date: string; score: number }[];
+  calendar: { date: string; score: number; phase: 'PRE-SEASON' | 'SEASON' | 'POST-SEASON' }[];
   history: Array<DayLog & { net: number; score: number } & { fastHours: number }>;
 };
 
@@ -92,20 +96,10 @@ const TACTICAL_AGENDA = [
   '22:30 - WIND DOWN',
 ];
 
-const ROUTINE_BY_DAY: Record<number, string> = {
-  0: 'DESCANSO',
-  1: 'PECHO/BICEPS',
-  2: 'ESPALDA/TRICEPS',
-  3: 'PIERNA/HOMBRO',
-  4: 'PECHO/BICEPS',
-  5: 'ESPALDA/TRICEPS',
-  6: 'PIERNA/HOMBRO',
-};
-
 const MANUAL_PRESETS = [
-  { label: 'PÁDEL', key: 'padel', met: 8 },
-  { label: 'FÚTBOL', key: 'futbol', met: 10 },
-  { label: 'PESAS', key: 'pesas', met: 6 },
+  { label: 'PÁDEL', key: 'padel', met: 8, kind: 'PADEL' },
+  { label: 'FÚTBOL', key: 'futbol', met: 10, kind: 'FUTBOL' },
+  { label: 'PESAS', key: 'pesas', met: 6, kind: 'PESAS' },
 ] as const;
 
 type ManualKey = (typeof MANUAL_PRESETS)[number]['key'];
@@ -113,18 +107,6 @@ type ManualKey = (typeof MANUAL_PRESETS)[number]['key'];
 function formatDateDisplay(dateStr: string) {
   const [year, month, day] = dateStr.split('-');
   return `${day}/${month}/${year}`;
-}
-
-function getWeekday(dateStr: string) {
-  const [year, month, day] = dateStr.split('-').map(Number);
-  const date = new Date(Date.UTC(year, month - 1, day));
-  return date.getUTCDay();
-}
-
-function scoreColor(score: number) {
-  if (score >= 80) return 'bg-success/60 border-success';
-  if (score >= 60) return 'bg-warning/60 border-warning';
-  return 'bg-danger/60 border-danger';
 }
 
 function clamp(value: number, min: number, max: number) {
@@ -140,6 +122,17 @@ function calcTreadmillKcal(weightKg: number, speed: number, incline: number, min
 
 function calcManualKcal(weightKg: number, met: number, minutes: number) {
   return Math.round((met * 3.5 * weightKg * minutes) / 200);
+}
+
+function shiftMonth(monthKey: string, delta: number) {
+  const [year, month] = monthKey.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1 + delta, 1));
+  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`;
+}
+
+function monthKeyFromDate(dateStr: string) {
+  const [year, month] = dateStr.split('-');
+  return `${year}-${month}`;
 }
 
 type AppState = {
@@ -159,6 +152,9 @@ type AppState = {
   fuel: { macros: Macros; notes: string };
   fastElapsed: number;
   clock: string;
+  calendarMonth: string;
+  calendarDays: { date: string; score: number; phase: 'PRE-SEASON' | 'SEASON' | 'POST-SEASON' }[];
+  jumpDate: string;
 };
 
 type Action =
@@ -172,7 +168,13 @@ type Action =
   | { type: 'SET_GYM'; payload: Partial<AppState['gym']> }
   | { type: 'SET_FUEL'; payload: Partial<AppState['fuel']> }
   | { type: 'SET_FAST_ELAPSED'; payload: number }
-  | { type: 'SET_CLOCK'; payload: string };
+  | { type: 'SET_CLOCK'; payload: string }
+  | { type: 'SET_CALENDAR_MONTH'; payload: string }
+  | {
+      type: 'SET_CALENDAR_DAYS';
+      payload: { date: string; score: number; phase: 'PRE-SEASON' | 'SEASON' | 'POST-SEASON' }[];
+    }
+  | { type: 'SET_JUMP_DATE'; payload: string };
 
 const initialState: AppState = {
   loading: true,
@@ -200,6 +202,9 @@ const initialState: AppState = {
   },
   fastElapsed: 0,
   clock: nowIsoInTZ(),
+  calendarMonth: '2025-12',
+  calendarDays: [],
+  jumpDate: '',
 };
 
 function reducer(state: AppState, action: Action): AppState {
@@ -226,6 +231,12 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, fastElapsed: action.payload };
     case 'SET_CLOCK':
       return { ...state, clock: action.payload };
+    case 'SET_CALENDAR_MONTH':
+      return { ...state, calendarMonth: action.payload };
+    case 'SET_CALENDAR_DAYS':
+      return { ...state, calendarDays: action.payload };
+    case 'SET_JUMP_DATE':
+      return { ...state, jumpDate: action.payload };
     default:
       return state;
   }
@@ -268,7 +279,7 @@ export default function Page() {
   const daysLeftLabel = meta ? String(meta.daysLeft) : '--';
   const fastStartMs = meta?.fastStartMs ?? null;
   const historyRows = state.dashboard?.history ?? [];
-  const calendarDays = state.dashboard?.calendar ?? [];
+  const calendarDays = state.calendarDays;
 
   const weightForCalc = useMemo(() => {
     if (state.bio.weight > 0) return state.bio.weight;
@@ -285,10 +296,7 @@ export default function Page() {
   );
   const netLive = useMemo(() => computeNet(calInLive, calOutLive), [calInLive, calOutLive]);
 
-  const routineLabel = useMemo(() => {
-    if (!state.activeDate) return '';
-    return ROUTINE_BY_DAY[getWeekday(state.activeDate)] ?? '';
-  }, [state.activeDate]);
+  const routineLabel = meta?.routineLabel ?? '';
 
   const hydrateDay = useCallback(
     (log: DayLog | undefined) => {
@@ -346,6 +354,11 @@ export default function Page() {
     lastSnapshots.current = { bio: '', gym: '', fuel: '' };
   }, []);
 
+  const loadCalendarMonth = useCallback(async (monthKey: string) => {
+    const days = await getMonthCalendar(monthKey);
+    dispatch({ type: 'SET_CALENDAR_DAYS', payload: days });
+  }, []);
+
   const handleSave = useCallback(
     async (type: 'BIO' | 'GYM' | 'FUEL', payload: any, options?: { silent?: boolean }) => {
       try {
@@ -361,6 +374,9 @@ export default function Page() {
           gym: JSON.stringify({ workout: state.gym.workout, activity: state.gym.activity }),
           fuel: JSON.stringify(state.fuel),
         };
+        if (monthKeyFromDate(state.activeDate) === state.calendarMonth) {
+          await loadCalendarMonth(state.calendarMonth);
+        }
         if (!options?.silent) {
           dispatch({ type: 'SET_TOAST', payload: 'LISTO' });
           setTimeout(() => dispatch({ type: 'SET_TOAST', payload: null }), 2000);
@@ -371,7 +387,7 @@ export default function Page() {
         savingRef.current = false;
       }
     },
-    [state.activeDate, state.bio, state.fuel, state.gym.activity, state.gym.workout],
+    [loadCalendarMonth, state.activeDate, state.bio, state.calendarMonth, state.fuel, state.gym.activity, state.gym.workout],
   );
 
   const handleFast = useCallback(async (action: 'START' | 'STOP' | 'RESET') => {
@@ -403,6 +419,10 @@ export default function Page() {
   useEffect(() => {
     bootstrap();
   }, [bootstrap]);
+
+  useEffect(() => {
+    loadCalendarMonth(state.calendarMonth).catch(() => undefined);
+  }, [loadCalendarMonth, state.calendarMonth]);
 
   useEffect(() => {
     hydrateDay(dayLog ?? undefined);
@@ -478,6 +498,24 @@ export default function Page() {
     loadDashboard(next).catch((err) => dispatch({ type: 'SET_ERROR', payload: err.message ?? 'Error al cargar' }));
   };
 
+  const handleJumpToDate = () => {
+    if (!state.jumpDate) return;
+    loadDashboard(state.jumpDate)
+      .then(() => dispatch({ type: 'SET_JUMP_DATE', payload: '' }))
+      .catch((err) => dispatch({ type: 'SET_ERROR', payload: err.message ?? 'Error al cargar' }));
+  };
+
+  const handleDeleteDay = (date: string) => {
+    const confirmed = window.confirm(`Eliminar día ${date}?`);
+    if (!confirmed) return;
+    deleteDay(date)
+      .then(async () => {
+        await loadDashboard(state.activeDate || todayISOInTZ());
+        await loadCalendarMonth(state.calendarMonth);
+      })
+      .catch((err) => dispatch({ type: 'SET_ERROR', payload: err.message ?? 'Error al borrar' }));
+  };
+
   const handleSuppToggle = (key: keyof SupplementStack) => {
     dispatch({
       type: 'SET_BIO',
@@ -494,6 +532,7 @@ export default function Page() {
     if (!speed || !minutes) return;
     const kcal = calcTreadmillKcal(weightForCalc, speed, incline, minutes);
     const entry: ActivityTreadmillEntry = {
+      id: `tm-${Date.now()}-${Math.random().toString(16).slice(2)}`,
       speed,
       incline,
       minutes,
@@ -517,6 +556,8 @@ export default function Page() {
     if (!minutes) return;
     const kcal = calcManualKcal(weightForCalc, preset.met, minutes);
     const entry: ActivityManualEntry = {
+      id: `mn-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      kind: preset.kind,
       label: preset.label,
       minutes,
       kcal,
@@ -531,6 +572,30 @@ export default function Page() {
           manual: [...state.gym.activity.manual, entry],
         },
         manualMinutes: { ...state.gym.manualMinutes, [preset.key]: 0 },
+      },
+    });
+  };
+
+  const handleDeleteActivity = (type: 'treadmill' | 'manual', id: string) => {
+    if (type === 'treadmill') {
+      dispatch({
+        type: 'SET_GYM',
+        payload: {
+          activity: {
+            ...state.gym.activity,
+            treadmill: state.gym.activity.treadmill.filter((entry) => entry.id !== id),
+          },
+        },
+      });
+      return;
+    }
+    dispatch({
+      type: 'SET_GYM',
+      payload: {
+        activity: {
+          ...state.gym.activity,
+          manual: state.gym.activity.manual.filter((entry) => entry.id !== id),
+        },
       },
     });
   };
@@ -587,6 +652,7 @@ export default function Page() {
       if (!confirmed) return;
       await importAllData(payload as any);
       await loadDashboard(state.activeDate || undefined);
+      await loadCalendarMonth(state.calendarMonth);
       dispatch({ type: 'SET_TOAST', payload: 'IMPORTADO' });
       setTimeout(() => dispatch({ type: 'SET_TOAST', payload: null }), 2000);
     },
@@ -967,11 +1033,19 @@ export default function Page() {
             </button>
             <div className="grid gap-2 text-xs">
               {state.gym.activity.treadmill.map((entry) => (
-                <div key={entry.ts} className="flex justify-between text-slate-400">
+                <div key={entry.id} className="flex items-center justify-between text-slate-400">
                   <span>
                     {entry.speed}km/h · {entry.incline}% · {entry.minutes}m
                   </span>
-                  <span>{entry.kcal} kcal</span>
+                  <div className="flex items-center gap-2">
+                    <span>{entry.kcal} kcal</span>
+                    <button
+                      onClick={() => handleDeleteActivity('treadmill', entry.id)}
+                      className="text-xs text-danger"
+                    >
+                      DEL
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -1010,11 +1084,19 @@ export default function Page() {
               </div>
               <div className="mt-3 grid gap-2 text-xs">
                 {state.gym.activity.manual.map((entry) => (
-                  <div key={entry.ts} className="flex justify-between text-slate-400">
+                  <div key={entry.id} className="flex items-center justify-between text-slate-400">
                     <span>
                       {entry.label} · {entry.minutes}m
                     </span>
-                    <span>{entry.kcal} kcal</span>
+                    <div className="flex items-center gap-2">
+                      <span>{entry.kcal} kcal</span>
+                      <button
+                        onClick={() => handleDeleteActivity('manual', entry.id)}
+                        className="text-xs text-danger"
+                      >
+                        DEL
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1032,7 +1114,7 @@ export default function Page() {
           <SectionCard className="space-y-3">
             <h2 className="text-xs tracking-[0.3em] text-slate-400">OUT TOTAL</h2>
             <div className="text-lg font-semibold">{calOutLive}</div>
-            <div className="text-xs text-slate-400">BMR {bmrLive} · Extra {extraBurn}</div>
+            <div className="text-xs text-slate-400">BMR {bmrLive} · Exercise {extraBurn}</div>
             <div className="text-xs text-slate-400">Routine: {routineLabel}</div>
           </SectionCard>
         </section>
@@ -1115,6 +1197,20 @@ export default function Page() {
         <section className="mt-6 grid gap-4 lg:grid-cols-[1.3fr_1fr]">
           <SectionCard>
             <h2 className="text-xs tracking-[0.3em] text-slate-400">DATA LEDGER (30)</h2>
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+              <input
+                type="date"
+                value={state.jumpDate}
+                onChange={(event) => dispatch({ type: 'SET_JUMP_DATE', payload: event.target.value })}
+                className="rounded-lg border border-slateborder bg-slatebase px-3 py-2 text-slate-200"
+              />
+              <button
+                onClick={handleJumpToDate}
+                className="px-3 py-2 border border-slateborder rounded-lg hover:border-accent"
+              >
+                IR A FECHA
+              </button>
+            </div>
             <div className="mt-3 overflow-auto">
               <table className="w-full text-xs text-slate-300">
                 <thead>
@@ -1128,6 +1224,7 @@ export default function Page() {
                     <th className="text-left">STP</th>
                     <th className="text-left">FAST</th>
                     <th className="text-left">SCORE</th>
+                    <th className="text-left">ACTIONS</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1142,6 +1239,11 @@ export default function Page() {
                       <td>{row.steps}</td>
                       <td>{row.fastHours}</td>
                       <td>{row.score}</td>
+                      <td>
+                        <button onClick={() => handleDeleteDay(row.date)} className="text-xs text-danger">
+                          DELETE
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -1150,15 +1252,13 @@ export default function Page() {
           </SectionCard>
           <div className="grid gap-4">
             <SectionCard>
-              <h2 className="text-xs tracking-[0.3em] text-slate-400">MONTH CALENDAR</h2>
-              <div className="mt-3 grid grid-cols-7 gap-2 text-[10px]">
-                {calendarDays.map((day) => (
-                  <div key={day.date} className={`h-16 rounded-lg border p-2 ${scoreColor(day.score)}`}>
-                    <div className="font-mono">{day.date.split('-')[2]}</div>
-                    <div className="mt-2">{day.score}</div>
-                  </div>
-                ))}
-              </div>
+              <CalendarMonth
+                monthLabel={state.calendarMonth}
+                days={calendarDays}
+                onPrev={() => dispatch({ type: 'SET_CALENDAR_MONTH', payload: shiftMonth(state.calendarMonth, -1) })}
+                onNext={() => dispatch({ type: 'SET_CALENDAR_MONTH', payload: shiftMonth(state.calendarMonth, 1) })}
+                footer="PRE-SEASON / SEASON / POST-SEASON."
+              />
             </SectionCard>
             <SectionCard>
               <h2 className="text-xs tracking-[0.3em] text-slate-400">BACKUP</h2>

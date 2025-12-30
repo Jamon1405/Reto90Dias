@@ -12,6 +12,7 @@ export type Macros = {
 };
 
 export type ActivityTreadmillEntry = {
+  id: string;
   speed: number;
   incline: number;
   minutes: number;
@@ -20,6 +21,8 @@ export type ActivityTreadmillEntry = {
 };
 
 export type ActivityManualEntry = {
+  id: string;
+  kind: 'PADEL' | 'FUTBOL' | 'PESAS';
   label: string;
   minutes: number;
   kcal: number;

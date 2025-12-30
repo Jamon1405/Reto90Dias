@@ -6,10 +6,11 @@ import {
   computeCaloriesOut,
   computeFlags,
   computeNet,
+  computeRoutineLabel,
   computeTitanScore,
 } from './analytics';
 import { addDays, getAgeFromDob, monthDays, nowIsoInTZ, todayISOInTZ } from './date';
-import type { ActivityLog, TitanDay, TitanFlags } from './types';
+import type { ActivityLog, ActivityManualEntry, ActivityTreadmillEntry, TitanDay, TitanFlags } from './types';
 
 const TARGET_DATE = '2026-03-15';
 const SEASON_START = '2026-01-05';
@@ -26,6 +27,40 @@ function diffDays(from: string, to: string) {
 
 function emptyActivity(): ActivityLog {
   return { treadmill: [], manual: [] };
+}
+
+function createId() {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    return crypto.randomUUID();
+  }
+  return `id-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function normalizeTreadmill(entries: ActivityTreadmillEntry[] | undefined) {
+  return (entries ?? []).map((entry) => ({
+    ...entry,
+    id: entry.id ?? createId(),
+  }));
+}
+
+function normalizeManual(entries: ActivityManualEntry[] | undefined) {
+  return (entries ?? []).map((entry) => ({
+    ...entry,
+    id: entry.id ?? createId(),
+    kind:
+      entry.kind ??
+      (entry.label?.toUpperCase().includes('FÚTBOL') || entry.label?.toUpperCase().includes('FUTBOL')
+        ? 'FUTBOL'
+        : entry.label?.toUpperCase().includes('PÁDEL') || entry.label?.toUpperCase().includes('PADEL')
+          ? 'PADEL'
+          : 'PESAS'),
+  }));
+}
+
+function getPhase(date: string) {
+  if (date < SEASON_START) return 'PRE-SEASON';
+  if (date <= TARGET_DATE) return 'SEASON';
+  return 'POST-SEASON';
 }
 
 export function createEmptyDay(date: string): TitanDay {
@@ -56,8 +91,8 @@ function normalizeDay(day: TitanDay): TitanDay {
     supps: day.supps ?? { creat: false, sod: false, mag: false, omega: false },
     macros: day.macros ?? { m: 0, e: 0, b: 0 },
     activity: {
-      treadmill: day.activity?.treadmill ?? [],
-      manual: day.activity?.manual ?? [],
+      treadmill: normalizeTreadmill(day.activity?.treadmill),
+      manual: normalizeManual(day.activity?.manual),
     },
     flags: day.flags ?? { list: [], bmr: 0, net: 0 },
   };
@@ -127,6 +162,16 @@ function mapHistory(days: TitanDay[]) {
     }));
 }
 
+export async function getMonthCalendar(monthKey: string) {
+  const days = await readDays();
+  const monthDate = `${monthKey}-01`;
+  return monthDays(monthDate).map((iso) => ({
+    date: iso,
+    score: days.find((day) => day.date === iso)?.titanScore ?? 0,
+    phase: getPhase(iso),
+  }));
+}
+
 export async function ping() {
   return {
     success: true,
@@ -147,6 +192,7 @@ export async function getDashboardData(date?: string) {
   const calendar = monthDays(targetDate).map((iso) => ({
     date: iso,
     score: days.find((day) => day.date === iso)?.titanScore ?? 0,
+    phase: getPhase(iso),
   }));
 
   const fastState = await db.state.get('fast_start_ms');
@@ -162,6 +208,7 @@ export async function getDashboardData(date?: string) {
       season: todayStr < SEASON_START ? 'PRE-SEASON' : 'SEASON',
       fastStartMs: fastState?.value ? Number(fastState.value) : null,
       nowIso: nowIsoInTZ(),
+      routineLabel: computeRoutineLabel(days, targetDate),
     },
     user: {
       age: getAgeFromDob(DOB),
@@ -285,4 +332,8 @@ export async function importAllData(payload: { days?: TitanDay[]; state?: { key:
   if (state.length > 0) {
     await db.state.bulkPut(state);
   }
+}
+
+export async function deleteDay(date: string) {
+  await db.days.delete(date);
 }
