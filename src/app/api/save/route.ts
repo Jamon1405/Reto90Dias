@@ -18,9 +18,13 @@ function normalizeMacros(input: any) {
 
 function normalizeActivity(input: any) {
   if (!input || typeof input !== 'object') return {};
-  const entries = Array.isArray(input.entries) ? input.entries : [];
+  const entries: Array<{ label?: unknown; minutes?: unknown; calories?: unknown }> = Array.isArray(
+    input.entries,
+  )
+    ? input.entries
+    : [];
   return {
-    entries: entries.map((entry) => ({
+    entries: entries.map((entry: { label?: unknown; minutes?: unknown; calories?: unknown }) => ({
       label: String(entry.label ?? ''),
       minutes: Number(entry.minutes ?? 0),
       calories: Number(entry.calories ?? 0),
