@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { fetchWithRetry, fetchWithTimeout } from '@/lib/fetcher';
 
 const TAB_OPTIONS = ['Dash', 'Bio', 'Gym', 'Fuel', 'Data', 'Protocol'] as const;
 
@@ -39,12 +40,14 @@ type DashboardResponse = {
     season: string;
     fastStartMs: number | null;
     nowIso: string;
+    dbStatus?: 'UP' | 'DOWN';
+    dbError?: string;
   };
   user: {
     age: number;
     lastWeight: number;
   };
-  dayLog: DayLog;
+  dayLog: DayLog | null;
   calendar: { date: string; score: number }[];
   history: Array<DayLog & { net: number; score: number }>;
 };
@@ -107,6 +110,18 @@ export default function Page() {
   const [toast, setToast] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fastElapsed, setFastElapsed] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [bootError, setBootError] = useState<{
+    type: 'PING' | 'DASHBOARD';
+    message: string;
+    diag?: {
+      url: string;
+      status: number | 'timeout' | 'network';
+      body: string;
+      timestamp: string;
+    };
+  } | null>(null);
+  const [showDiag, setShowDiag] = useState(false);
 
   const [bioState, setBioState] = useState({
     weight: 0,
@@ -138,7 +153,30 @@ export default function Page() {
   const lastSnapshots = useRef({ bio: '', gym: '', fuel: '' });
   const savingRef = useRef(false);
 
-  const dayLog = data?.dayLog;
+  const resolvedDayLog = useMemo<DayLog | null>(() => {
+    if (!data) return null;
+    if (data.dayLog) return data.dayLog;
+    return {
+      date: data.meta.targetDate,
+      weight: 0,
+      steps: 0,
+      water: 0,
+      suppsJson: {},
+      fastHours: 0,
+      workout: '',
+      calOut: 0,
+      activityJson: { entries: [] },
+      calIn: 0,
+      macrosJson: { meatGrams: 0, eggs: 0, butterGrams: 0 },
+      notes: '',
+      titanScore: 0,
+      bmr: 0,
+      net: 0,
+      titanScoreComputed: 0,
+      flagsComputed: { list: [], bmr: 0, net: 0 },
+    };
+  }, [data]);
+  const dayLog = resolvedDayLog;
   const todayStr = data?.meta.todayStr ?? '';
 
   const weightForCalc = useMemo(() => {
@@ -163,6 +201,36 @@ export default function Page() {
     } catch {
       return { success: false, error: text };
     }
+  }, []);
+
+  const fetchJsonWithDiag = useCallback(async (url: string, options?: RequestInit) => {
+    const response = await fetchWithTimeout(url, { ...options, timeoutMs: 8000 });
+    const text = await response.text();
+    let json: any = null;
+    try {
+      json = text ? JSON.parse(text) : null;
+    } catch {
+      json = null;
+    }
+    const diag = {
+      url,
+      status: response.status,
+      body: text.slice(0, 500),
+      timestamp: new Date().toISOString(),
+    };
+    if (!response.ok) {
+      const message = json?.error ?? 'Error de respuesta';
+      const error = new Error(message);
+      (error as { diag?: typeof diag }).diag = diag;
+      throw error;
+    }
+    if (!json || !json.success) {
+      const message = json?.error ?? 'Respuesta inválida';
+      const error = new Error(message);
+      (error as { diag?: typeof diag }).diag = diag;
+      throw error;
+    }
+    return { json, diag };
   }, []);
 
   const hydrateDay = useCallback(
@@ -203,24 +271,15 @@ export default function Page() {
 
   const fetchDashboard = useCallback(
     async (date?: string) => {
-      try {
-        setError(null);
-        const response = await fetch(`/api/dashboard${date ? `?date=${date}` : ''}`);
-        const json = await parseResponse(response);
-        if (!response.ok) {
-          throw new Error((json as { error?: string }).error ?? 'Error cargando dashboard');
-        }
-        if (!json.success) throw new Error('Respuesta inválida');
-        const dashboard = json as DashboardResponse;
-        setData(dashboard);
-        setActiveDate(dashboard.meta.targetDate);
-        setToast(null);
-        lastSnapshots.current = { bio: '', gym: '', fuel: '' };
-      } catch (err: any) {
-        setError(err.message ?? 'Error al cargar');
-      }
+      const url = `/api/dashboard${date ? `?date=${date}` : ''}`;
+      const { json } = await fetchWithRetry(() => fetchJsonWithDiag(url), [500, 1200]);
+      const dashboard = json as DashboardResponse;
+      setData(dashboard);
+      setActiveDate(dashboard.meta.targetDate);
+      setToast(null);
+      lastSnapshots.current = { bio: '', gym: '', fuel: '' };
     },
-    [parseResponse],
+    [fetchJsonWithDiag],
   );
 
   const handleSave = useCallback(
@@ -293,12 +352,45 @@ export default function Page() {
     [parseResponse],
   );
 
-  useEffect(() => {
-    fetchDashboard();
-  }, [fetchDashboard]);
+  const bootstrap = useCallback(async () => {
+    setLoading(true);
+    setBootError(null);
+    setShowDiag(false);
+    try {
+      await fetchJsonWithDiag('/api/ping');
+    } catch (err: any) {
+      const diag = {
+        url: '/api/ping',
+        status: err?.name === 'TimeoutError' ? 'timeout' : 'network',
+        body: err?.message ?? 'Ping error',
+        timestamp: new Date().toISOString(),
+      };
+      setBootError({ type: 'PING', message: 'Backend no responde', diag });
+      return;
+    }
+    try {
+      await fetchDashboard();
+    } catch (err: any) {
+      const diag =
+        (err as { diag?: { url: string; status: number; body: string; timestamp: string } }).diag ??
+        {
+          url: '/api/dashboard',
+          status: err?.name === 'TimeoutError' ? 'timeout' : 'network',
+          body: err?.message ?? 'Dashboard error',
+          timestamp: new Date().toISOString(),
+        };
+      setBootError({ type: 'DASHBOARD', message: err?.message ?? 'Error cargando dashboard', diag });
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchDashboard, fetchJsonWithDiag]);
 
   useEffect(() => {
-    hydrateDay(dayLog);
+    bootstrap();
+  }, [bootstrap]);
+
+  useEffect(() => {
+    hydrateDay(dayLog ?? undefined);
   }, [dayLog, hydrateDay]);
 
   useEffect(() => {
@@ -386,7 +478,7 @@ export default function Page() {
     if (!activeDate || !data) return;
     const next = addDays(activeDate, direction);
     if (direction > 0 && next > todayStr) return;
-    fetchDashboard(next);
+    fetchDashboard(next).catch((err) => setError(err.message ?? 'Error al cargar'));
   };
 
   const handleSuppToggle = (supp: string) => {
@@ -457,16 +549,76 @@ export default function Page() {
     }
   };
 
-  if (!data) {
+  if (!data && loading) {
     return (
       <main className="min-h-screen flex items-center justify-center text-sm text-slate-300">
-        Cargando TITAN OMEGA...
+        CARGANDO TITAN OMEGA...
+      </main>
+    );
+  }
+
+  if (!data && bootError) {
+    return (
+      <main className="min-h-screen flex items-center justify-center text-sm text-slate-300 px-6">
+        <div className="max-w-xl w-full border border-slateborder bg-slatepanel/80 rounded-xl p-6">
+          <h2 className="text-xs tracking-[0.3em] text-danger">ERROR DE ARRANQUE</h2>
+          <p className="mt-3 text-sm">{bootError.message}</p>
+          {bootError.type === 'DASHBOARD' && bootError.diag && (
+            <div className="mt-4">
+              <button
+                className="text-xs uppercase tracking-[0.3em] text-accent"
+                onClick={() => setShowDiag((prev) => !prev)}
+              >
+                {showDiag ? 'Ocultar diagnóstico' : 'Ver diagnóstico'}
+              </button>
+              {showDiag && (
+                <div className="mt-3 text-xs text-slate-400 space-y-1">
+                  <div>URL: {bootError.diag.url}</div>
+                  <div>Status: {bootError.diag.status}</div>
+                  <div>Timestamp: {bootError.diag.timestamp}</div>
+                  <div className="break-words">Respuesta: {bootError.diag.body}</div>
+                </div>
+              )}
+            </div>
+          )}
+          {bootError.type === 'PING' && (
+            <p className="mt-3 text-xs text-slate-400">Backend no responde. Verifica conexión o API.</p>
+          )}
+          <button
+            onClick={bootstrap}
+            className="mt-5 w-full rounded-lg border border-accent bg-accent/20 py-2 text-xs tracking-[0.3em] text-accent"
+          >
+            REINTENTAR
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  if (!data && !loading) {
+    return (
+      <main className="min-h-screen flex items-center justify-center text-sm text-slate-300 px-6">
+        <div className="max-w-xl w-full border border-slateborder bg-slatepanel/80 rounded-xl p-6">
+          <h2 className="text-xs tracking-[0.3em] text-danger">SIN DATOS</h2>
+          <p className="mt-3 text-sm">No se pudo inicializar el tablero.</p>
+          <button
+            onClick={bootstrap}
+            className="mt-5 w-full rounded-lg border border-accent bg-accent/20 py-2 text-xs tracking-[0.3em] text-accent"
+          >
+            REINTENTAR
+          </button>
+        </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen px-4 py-6 lg:px-10 text-sm">
+    <main className="min-h-screen px-4 py-6 lg:px-10 text-sm relative">
+      {loading && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-slatebase/90 text-xs uppercase tracking-[0.3em] text-accent">
+          CARGANDO TITAN OMEGA...
+        </div>
+      )}
       <header className="flex flex-col gap-4 border border-slateborder bg-slatepanel/80 p-4 rounded-xl shadow-glow">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -474,6 +626,17 @@ export default function Page() {
             <p className="text-xs text-slate-400">ERP Biométrico · CDMX LOCK</p>
           </div>
           <div className="flex items-center gap-3 text-xs">
+            {data?.meta.dbStatus && (
+              <span
+                className={`px-3 py-1 rounded-full border ${
+                  data.meta.dbStatus === 'UP'
+                    ? 'border-success/60 text-success'
+                    : 'border-danger/60 text-danger'
+                }`}
+              >
+                DB: {data.meta.dbStatus}
+              </span>
+            )}
             <span className="px-3 py-1 rounded-full border border-slateborder bg-slatebase">
               {data.meta.season}
             </span>

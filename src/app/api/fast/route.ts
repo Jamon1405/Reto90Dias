@@ -91,7 +91,13 @@ export async function POST(request: Request) {
     });
 
     const response = await buildDashboardResponse(targetDate);
-    return NextResponse.json(response);
+    return NextResponse.json({
+      ...response,
+      meta: {
+        ...response.meta,
+        dbStatus: 'UP',
+      },
+    });
   } catch (error) {
     return NextResponse.json({ success: false, error: 'No se pudo actualizar ayuno.' }, { status: 500 });
   }
