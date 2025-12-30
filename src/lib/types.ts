@@ -1,6 +1,6 @@
 export type TitanDay = {
   date: string;
-  tsUpdated: Date | null;
+  tsUpdated: string | null;
   weight: number;
   waist: number;
   workout: string;

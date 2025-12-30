@@ -1,7 +1,16 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { fetchWithRetry, fetchWithTimeout } from '@/lib/fetcher';
+import type { ChangeEvent } from 'react';
+import {
+  exportAllData,
+  fastAction,
+  getDashboardData,
+  getStorageMode,
+  importAllData,
+  saveModule,
+} from '@/lib/localStore';
+import { getTodayStr } from '@/lib/date';
 
 const TAB_OPTIONS = ['Dash', 'Bio', 'Gym', 'Fuel', 'Data', 'Protocol'] as const;
 
@@ -40,8 +49,6 @@ type DashboardResponse = {
     season: string;
     fastStartMs: number | null;
     nowIso: string;
-    dbStatus?: 'UP' | 'DOWN';
-    dbError?: string;
   };
   user: {
     age: number;
@@ -111,17 +118,7 @@ export default function Page() {
   const [error, setError] = useState<string | null>(null);
   const [fastElapsed, setFastElapsed] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
-  const [bootError, setBootError] = useState<{
-    type: 'PING' | 'DASHBOARD';
-    message: string;
-    diag?: {
-      url: string;
-      status: number | 'timeout' | 'network';
-      body: string;
-      timestamp: string;
-    };
-  } | null>(null);
-  const [showDiag, setShowDiag] = useState(false);
+  const [storageMode, setStorageMode] = useState<'indexeddb' | 'localstorage'>('indexeddb');
   const meta = data?.meta;
   const seasonLabel = meta?.season ?? '--';
   const daysLeftLabel = meta ? String(meta.daysLeft) : '--';
@@ -129,6 +126,7 @@ export default function Page() {
   const lastWeight = data?.user?.lastWeight ?? 0;
   const historyRows = data?.history ?? [];
   const calendarDays = data?.calendar ?? [];
+  const storageBadge = storageMode === 'localstorage';
 
   const [bioState, setBioState] = useState({
     weight: 0,
@@ -200,46 +198,6 @@ export default function Page() {
     return gymState.activityJson.entries?.reduce((sum, entry) => sum + entry.calories, 0) ?? 0;
   }, [gymState.activityJson.entries]);
 
-  const parseResponse = useCallback(async (response: Response): Promise<any> => {
-    const text = await response.text();
-    if (!text) return { success: false, error: 'Respuesta vacía del servidor.' };
-    try {
-      return JSON.parse(text);
-    } catch {
-      return { success: false, error: text };
-    }
-  }, []);
-
-  const fetchJsonWithDiag = useCallback(async (url: string, options?: RequestInit) => {
-    const response = await fetchWithTimeout(url, { ...options, timeoutMs: 8000 });
-    const text = await response.text();
-    let json: any = null;
-    try {
-      json = text ? JSON.parse(text) : null;
-    } catch {
-      json = null;
-    }
-    const diag = {
-      url,
-      status: response.status,
-      body: text.slice(0, 500),
-      timestamp: new Date().toISOString(),
-    };
-    if (!response.ok) {
-      const message = json?.error ?? 'Error de respuesta';
-      const error = new Error(message);
-      (error as { diag?: typeof diag }).diag = diag;
-      throw error;
-    }
-    if (!json || !json.success) {
-      const message = json?.error ?? 'Respuesta inválida';
-      const error = new Error(message);
-      (error as { diag?: typeof diag }).diag = diag;
-      throw error;
-    }
-    return { json, diag };
-  }, []);
-
   const hydrateDay = useCallback(
     (log: DayLog | undefined) => {
       if (!log) return;
@@ -276,127 +234,68 @@ export default function Page() {
     [setBioState, setFuelState, setGymState],
   );
 
-  const fetchDashboard = useCallback(
-    async (date?: string) => {
-      const url = `/api/dashboard${date ? `?date=${date}` : ''}`;
-      const { json } = await fetchWithRetry(() => fetchJsonWithDiag(url), [500, 1200]);
-      const dashboard = json as DashboardResponse;
-      setData(dashboard);
-      setActiveDate(dashboard.meta.targetDate);
-      setToast(null);
-      lastSnapshots.current = { bio: '', gym: '', fuel: '' };
-    },
-    [fetchJsonWithDiag],
-  );
+  const loadDashboard = useCallback(async (date?: string) => {
+    const dashboard = await getDashboardData(date);
+    setData(dashboard);
+    setActiveDate(dashboard.meta.targetDate);
+    setToast(null);
+    lastSnapshots.current = { bio: '', gym: '', fuel: '' };
+  }, []);
 
   const handleSave = useCallback(
-    async (type: 'BIO' | 'GYM' | 'FUEL', payload: any) => {
+    async (type: 'BIO' | 'GYM' | 'FUEL', payload: any, options?: { silent?: boolean }) => {
       try {
-        setToast('GUARDANDO...');
-        savingRef.current = true;
-        const response = await fetch('/api/save', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type, targetDate: activeDate, payload }),
-        });
-        const json = await parseResponse(response);
-        if (!response.ok || !json.success) {
-          throw new Error(json.error ?? 'Error de guardado');
+        if (!options?.silent) {
+          setToast('GUARDANDO...');
         }
-        setData(json);
-        setActiveDate(json.meta.targetDate);
+        savingRef.current = true;
+        const response = await saveModule(type, { ...payload, targetDate: activeDate });
+        setData(response);
+        setActiveDate(response.meta.targetDate);
         lastSnapshots.current = {
           bio: JSON.stringify(bioState),
           gym: JSON.stringify({ workout: gymState.workout, activityJson: gymState.activityJson }),
           fuel: JSON.stringify(fuelState),
         };
-        setToast('LISTO');
-        setTimeout(() => setToast(null), 2000);
+        if (!options?.silent) {
+          setToast('LISTO');
+          setTimeout(() => setToast(null), 2000);
+        }
       } catch (err: any) {
         setError(err.message ?? 'Error guardando');
       } finally {
         savingRef.current = false;
       }
     },
-    [activeDate, bioState, fuelState, gymState.activityJson, gymState.workout, parseResponse],
+    [activeDate, bioState, fuelState, gymState.activityJson, gymState.workout],
   );
 
-  const handleFast = useCallback(
-    async (action: 'START' | 'STOP' | 'RESET') => {
-      try {
-        setToast('GUARDANDO...');
-        const response = await fetch('/api/fast', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action }),
-        });
-        const json = await parseResponse(response);
-        if (!response.ok || !json.success) {
-          throw new Error(json.error ?? 'Error ayuno');
-        }
-        if (json.dayLog && json.meta) {
-          setData(json);
-          setActiveDate(json.meta.targetDate);
-        } else {
-          setData((prev) =>
-            prev
-              ? {
-                  ...prev,
-                  meta: {
-                    ...prev.meta,
-                    fastStartMs: json.meta.fastStartMs ?? null,
-                  },
-                }
-              : prev,
-          );
-        }
-        setToast('LISTO');
-        setTimeout(() => setToast(null), 2000);
-      } catch (err: any) {
-        setError(err.message ?? 'Error ayuno');
-      }
-    },
-    [parseResponse],
-  );
+  const handleFast = useCallback(async (action: 'START' | 'STOP' | 'RESET') => {
+    try {
+      setToast('GUARDANDO...');
+      const response = await fastAction(action);
+      setData(response);
+      setActiveDate(response.meta.targetDate);
+      setToast('LISTO');
+      setTimeout(() => setToast(null), 2000);
+    } catch (err: any) {
+      setError(err.message ?? 'Error ayuno');
+    }
+  }, []);
 
   const bootstrap = useCallback(async () => {
     setLoading(true);
-    setBootError(null);
-    setShowDiag(false);
+    setError(null);
     try {
-      await fetchJsonWithDiag('/api/ping');
+      const mode = await getStorageMode();
+      setStorageMode(mode);
+      await loadDashboard();
     } catch (err: any) {
-      const diag: {
-        url: string;
-        status: 'timeout' | 'network';
-        body: string;
-        timestamp: string;
-      } = {
-        url: '/api/ping',
-        status: err?.name === 'TimeoutError' ? 'timeout' : 'network',
-        body: String(err?.message ?? 'Ping error'),
-        timestamp: new Date().toISOString(),
-      };
-      setBootError({ type: 'PING', message: 'Backend no responde', diag });
-      return;
-    }
-    try {
-      await fetchDashboard();
-    } catch (err: any) {
-      const diag =
-        (err as { diag?: { url: string; status: number | 'timeout' | 'network'; body: string; timestamp: string } })
-          .diag ??
-        {
-          url: '/api/dashboard',
-          status: err?.name === 'TimeoutError' ? 'timeout' : 'network',
-          body: String(err?.message ?? 'Dashboard error'),
-          timestamp: new Date().toISOString(),
-        };
-      setBootError({ type: 'DASHBOARD', message: err?.message ?? 'Error cargando dashboard', diag });
+      setError(err?.message ?? 'Error al cargar');
     } finally {
       setLoading(false);
     }
-  }, [fetchDashboard, fetchJsonWithDiag]);
+  }, [loadDashboard]);
 
   useEffect(() => {
     bootstrap();
@@ -407,15 +306,15 @@ export default function Page() {
   }, [dayLog, hydrateDay]);
 
   useEffect(() => {
-    if (!data?.meta.fastStartMs) {
+    if (!fastStartMs) {
       setFastElapsed(0);
       return;
     }
     const interval = setInterval(() => {
-      setFastElapsed((Date.now() - data.meta.fastStartMs!) / 3600000);
+      setFastElapsed((Date.now() - fastStartMs) / 3600000);
     }, 1000);
     return () => clearInterval(interval);
-  }, [data?.meta.fastStartMs]);
+  }, [fastStartMs]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -426,15 +325,17 @@ export default function Page() {
 
       const saves: Array<Promise<void>> = [];
       if (bioSnapshot !== lastSnapshots.current.bio) {
-        saves.push(handleSave('BIO', bioState));
+        saves.push(handleSave('BIO', bioState, { silent: true }));
         lastSnapshots.current.bio = bioSnapshot;
       }
       if (gymSnapshot !== lastSnapshots.current.gym) {
-        saves.push(handleSave('GYM', { workout: gymState.workout, activityJson: gymState.activityJson }));
+        saves.push(
+          handleSave('GYM', { workout: gymState.workout, activityJson: gymState.activityJson }, { silent: true }),
+        );
         lastSnapshots.current.gym = gymSnapshot;
       }
       if (fuelSnapshot !== lastSnapshots.current.fuel) {
-        saves.push(handleSave('FUEL', fuelState));
+        saves.push(handleSave('FUEL', fuelState, { silent: true }));
         lastSnapshots.current.fuel = fuelSnapshot;
       }
       if (saves.length > 0) {
@@ -479,9 +380,9 @@ export default function Page() {
     const diff = Math.max(0, endUtc - nowUtc);
     const timeout = setTimeout(() => {
       if (activeDate === todayStr) {
-        handleSave('BIO', bioState);
-        handleSave('GYM', { workout: gymState.workout, activityJson: gymState.activityJson });
-        handleSave('FUEL', fuelState);
+        handleSave('BIO', bioState, { silent: true });
+        handleSave('GYM', { workout: gymState.workout, activityJson: gymState.activityJson }, { silent: true });
+        handleSave('FUEL', fuelState, { silent: true });
       }
     }, diff);
     return () => clearTimeout(timeout);
@@ -491,7 +392,7 @@ export default function Page() {
     if (!activeDate || !data) return;
     const next = addDays(activeDate, direction);
     if (direction > 0 && next > todayStr) return;
-    fetchDashboard(next).catch((err) => setError(err.message ?? 'Error al cargar'));
+    loadDashboard(next).catch((err) => setError(err.message ?? 'Error al cargar'));
   };
 
   const handleSuppToggle = (supp: string) => {
@@ -562,48 +463,44 @@ export default function Page() {
     }
   };
 
+  const handleExport = useCallback(async () => {
+    const payload = await exportAllData();
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `titan-omega-backup-${getTodayStr()}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }, []);
+
+  const handleImport = useCallback(
+    async (event: ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      event.target.value = '';
+      let payload: { days?: unknown; state?: unknown };
+      try {
+        const text = await file.text();
+        payload = JSON.parse(text) as { days?: unknown; state?: unknown };
+      } catch {
+        setError('Archivo JSON inválido');
+        return;
+      }
+      const confirmed = window.confirm('Esto reemplazará/merge datos locales. ¿Continuar?');
+      if (!confirmed) return;
+      await importAllData(payload as any);
+      await loadDashboard(activeDate || undefined);
+      setToast('IMPORTADO');
+      setTimeout(() => setToast(null), 2000);
+    },
+    [activeDate, loadDashboard],
+  );
+
   if (!data && loading) {
     return (
       <main className="min-h-screen flex items-center justify-center text-sm text-slate-300">
         CARGANDO TITAN OMEGA...
-      </main>
-    );
-  }
-
-  if (!data && bootError) {
-    return (
-      <main className="min-h-screen flex items-center justify-center text-sm text-slate-300 px-6">
-        <div className="max-w-xl w-full border border-slateborder bg-slatepanel/80 rounded-xl p-6">
-          <h2 className="text-xs tracking-[0.3em] text-danger">ERROR DE ARRANQUE</h2>
-          <p className="mt-3 text-sm">{bootError.message}</p>
-          {bootError.type === 'DASHBOARD' && bootError.diag && (
-            <div className="mt-4">
-              <button
-                className="text-xs uppercase tracking-[0.3em] text-accent"
-                onClick={() => setShowDiag((prev) => !prev)}
-              >
-                {showDiag ? 'Ocultar diagnóstico' : 'Ver diagnóstico'}
-              </button>
-              {showDiag && (
-                <div className="mt-3 text-xs text-slate-400 space-y-1">
-                  <div>URL: {bootError.diag.url}</div>
-                  <div>Status: {bootError.diag.status}</div>
-                  <div>Timestamp: {bootError.diag.timestamp}</div>
-                  <div className="break-words">Respuesta: {bootError.diag.body}</div>
-                </div>
-              )}
-            </div>
-          )}
-          {bootError.type === 'PING' && (
-            <p className="mt-3 text-xs text-slate-400">Backend no responde. Verifica conexión o API.</p>
-          )}
-          <button
-            onClick={bootstrap}
-            className="mt-5 w-full rounded-lg border border-accent bg-accent/20 py-2 text-xs tracking-[0.3em] text-accent"
-          >
-            REINTENTAR
-          </button>
-        </div>
       </main>
     );
   }
@@ -613,7 +510,7 @@ export default function Page() {
       <main className="min-h-screen flex items-center justify-center text-sm text-slate-300 px-6">
         <div className="max-w-xl w-full border border-slateborder bg-slatepanel/80 rounded-xl p-6">
           <h2 className="text-xs tracking-[0.3em] text-danger">SIN DATOS</h2>
-          <p className="mt-3 text-sm">No se pudo inicializar el tablero.</p>
+          <p className="mt-3 text-sm">{error ?? 'No se pudo inicializar el tablero.'}</p>
           <button
             onClick={bootstrap}
             className="mt-5 w-full rounded-lg border border-accent bg-accent/20 py-2 text-xs tracking-[0.3em] text-accent"
@@ -639,15 +536,9 @@ export default function Page() {
             <p className="text-xs text-slate-400">ERP Biométrico · CDMX LOCK</p>
           </div>
           <div className="flex items-center gap-3 text-xs">
-            {meta?.dbStatus && (
-              <span
-                className={`px-3 py-1 rounded-full border ${
-                  meta.dbStatus === 'UP'
-                    ? 'border-success/60 text-success'
-                    : 'border-danger/60 text-danger'
-                }`}
-              >
-                DB: {meta.dbStatus}
+            {storageBadge && (
+              <span className="px-3 py-1 rounded-full border border-warning/60 text-warning">
+                STORAGE: FALLBACK
               </span>
             )}
             <span className="px-3 py-1 rounded-full border border-slateborder bg-slatebase">
@@ -882,7 +773,9 @@ export default function Page() {
             >
               GUARDAR BIO
             </button>
-            <p className="text-xs text-slate-500">DB: weight {dayLog.weight} · steps {dayLog.steps} · water {dayLog.water}</p>
+            <p className="text-xs text-slate-500">
+              STORAGE: weight {dayLog.weight} · steps {dayLog.steps} · water {dayLog.water}
+            </p>
           </div>
 
           <div className="border border-slateborder bg-slatepanel/80 rounded-xl p-4">
@@ -891,7 +784,7 @@ export default function Page() {
               {fastStartMs ? `${fastElapsed.toFixed(2)} h` : `${dayLog.fastHours} h`}
             </div>
             <div className="mt-3 text-xs text-slate-400">
-              Timer persistente en servidor.
+              Timer persistente en local.
             </div>
           </div>
         </section>
@@ -1016,7 +909,7 @@ export default function Page() {
             >
               GUARDAR GYM
             </button>
-            <p className="text-xs text-slate-500">DB: OUT {dayLog.calOut} · extra {extraBurn} kcal</p>
+            <p className="text-xs text-slate-500">STORAGE: OUT {dayLog.calOut} · extra {extraBurn} kcal</p>
           </div>
 
           <div className="border border-slateborder bg-slatepanel/80 rounded-xl p-4 space-y-3">
@@ -1096,7 +989,7 @@ export default function Page() {
             >
               GUARDAR FUEL
             </button>
-            <p className="text-xs text-slate-500">DB: IN {dayLog.calIn}</p>
+            <p className="text-xs text-slate-500">STORAGE: IN {dayLog.calIn}</p>
           </div>
 
           <div className="border border-slateborder bg-slatepanel/80 rounded-xl p-4">
@@ -1106,7 +999,7 @@ export default function Page() {
               <li>Eggs × 75</li>
               <li>Butter g × 7.2</li>
             </ul>
-            <div className="mt-3 text-xs text-slate-400">Total IN (DB): {dayLog.calIn}</div>
+            <div className="mt-3 text-xs text-slate-400">Total IN (STORAGE): {dayLog.calIn}</div>
           </div>
         </section>
       )}
@@ -1144,18 +1037,41 @@ export default function Page() {
               </table>
             </div>
           </div>
-          <div className="border border-slateborder bg-slatepanel/80 rounded-xl p-4">
-            <h2 className="text-xs tracking-[0.3em] text-slate-400">MONTH CALENDAR</h2>
-            <div className="mt-3 grid grid-cols-7 gap-2 text-[10px]">
-              {calendarDays.map((day) => (
-                <div
-                  key={day.date}
-                  className={`h-16 rounded-lg border p-2 ${scoreColor(day.score)}`}
+          <div className="grid gap-4">
+            <div className="border border-slateborder bg-slatepanel/80 rounded-xl p-4">
+              <h2 className="text-xs tracking-[0.3em] text-slate-400">MONTH CALENDAR</h2>
+              <div className="mt-3 grid grid-cols-7 gap-2 text-[10px]">
+                {calendarDays.map((day) => (
+                  <div
+                    key={day.date}
+                    className={`h-16 rounded-lg border p-2 ${scoreColor(day.score)}`}
+                  >
+                    <div className="font-mono">{day.date.split('-')[2]}</div>
+                    <div className="mt-2">{day.score}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="border border-slateborder bg-slatepanel/80 rounded-xl p-4">
+              <h2 className="text-xs tracking-[0.3em] text-slate-400">BACKUP</h2>
+              <p className="mt-3 text-xs text-slate-400">Exporta o importa la base local completa.</p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button
+                  onClick={() => handleExport()}
+                  className="px-3 py-2 border border-slateborder rounded-lg text-xs hover:border-accent"
                 >
-                  <div className="font-mono">{day.date.split('-')[2]}</div>
-                  <div className="mt-2">{day.score}</div>
-                </div>
-              ))}
+                  EXPORT JSON
+                </button>
+                <label className="px-3 py-2 border border-slateborder rounded-lg text-xs hover:border-accent cursor-pointer">
+                  IMPORT JSON
+                  <input
+                    type="file"
+                    accept="application/json"
+                    className="hidden"
+                    onChange={(event) => handleImport(event)}
+                  />
+                </label>
+              </div>
             </div>
           </div>
         </section>
@@ -1167,7 +1083,7 @@ export default function Page() {
           <div className="mt-4 text-xs text-slate-300 space-y-2">
             <p>1. Fecha es llave primaria. Nunca editar con DateTime.</p>
             <p>2. Guardado modular. Cada módulo solo guarda sus campos.</p>
-            <p>3. Ayuno con timer persistente en servidor.</p>
+            <p>3. Ayuno con timer persistente en local (IndexedDB).</p>
             <p>4. Score diario basado en déficit, agua, pasos y gasto.</p>
             <p>5. Ledger es auditoría, no reporte.</p>
           </div>

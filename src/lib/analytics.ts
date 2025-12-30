@@ -1,4 +1,4 @@
-import { addDays, getAgeFromDob, getTodayStr } from './date';
+import { addDays, getAgeFromDob, getTodayStr, getZonedParts } from './date';
 import type { TitanDay } from './types';
 
 const HEIGHT_CM = 173;
@@ -60,7 +60,8 @@ export function computeFlags({
   }
 
   const nowIsToday = day.date === getTodayStr();
-  if (nowIsToday && day.water < 6) {
+  const { hour } = getZonedParts();
+  if (nowIsToday && hour >= 18 && day.water < 6) {
     list.push({
       code: 'LOW_WATER_18H',
       msg: 'Agua baja después de las 18:00.',
