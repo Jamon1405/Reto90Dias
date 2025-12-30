@@ -886,7 +886,7 @@ export default function Page() {
           <div className="border border-slateborder bg-slatepanel/80 rounded-xl p-4">
             <h2 className="text-xs tracking-[0.3em] text-slate-400">FASTING TIMER</h2>
             <div className="mt-3 text-lg font-semibold">
-              {data.meta.fastStartMs ? `${fastElapsed.toFixed(2)} h` : `${dayLog.fastHours} h`}
+              {fastStartMs ? `${fastElapsed.toFixed(2)} h` : `${dayLog.fastHours} h`}
             </div>
             <div className="mt-3 text-xs text-slate-400">
               Timer persistente en servidor.
