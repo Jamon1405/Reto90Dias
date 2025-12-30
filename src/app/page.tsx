@@ -127,6 +127,7 @@ export default function Page() {
   const daysLeftLabel = meta ? String(meta.daysLeft) : '--';
   const fastStartMs = meta?.fastStartMs ?? null;
   const lastWeight = data?.user?.lastWeight ?? 0;
+  const historyRows = data?.history ?? [];
 
   const [bioState, setBioState] = useState({
     weight: 0,
@@ -1127,7 +1128,7 @@ export default function Page() {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.history.map((row) => (
+                  {historyRows.map((row) => (
                     <tr key={row.date} className="border-t border-slateborder">
                       <td className="py-2 font-mono">{row.date}</td>
                       <td>{row.weight}</td>
