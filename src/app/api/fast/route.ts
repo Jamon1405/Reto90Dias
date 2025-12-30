@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { getPrisma } from '@/lib/db';
 import { fastSchema } from '@/lib/validation';
 import { getNowIso, getTodayStr } from '@/lib/date';
 import { computeTitanScore } from '@/lib/analytics';
@@ -12,6 +12,10 @@ export const runtime = 'nodejs';
 
 export async function POST(request: Request) {
   try {
+    if (!process.env.DATABASE_URL) {
+      return NextResponse.json({ success: false, error: 'DATABASE_URL not set.' }, { status: 500 });
+    }
+    const prisma = getPrisma();
     const body = await request.json();
     const parsed = fastSchema.safeParse(body);
     if (!parsed.success) {

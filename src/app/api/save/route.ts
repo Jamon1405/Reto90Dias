@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { getPrisma } from '@/lib/db';
 import { saveSchema } from '@/lib/validation';
 import { computeTitanScore } from '@/lib/analytics';
 import { buildDashboardResponse } from '@/lib/dashboard';
@@ -37,6 +37,10 @@ function normalizeActivity(input: any) {
 
 export async function POST(request: Request) {
   try {
+    if (!process.env.DATABASE_URL) {
+      return NextResponse.json({ success: false, error: 'DATABASE_URL not set.' }, { status: 500 });
+    }
+    const prisma = getPrisma();
     const body = await request.json();
     const parsed = saveSchema.safeParse(body);
     if (!parsed.success) {

@@ -1,4 +1,4 @@
-import { prisma } from './db';
+import { getPrisma } from './db';
 import { addDays, getAgeFromDob, getMonthRange, getNowIso, getTodayStr } from './date';
 import { computeBmr, computeNet, computeTitanScore } from './analytics';
 import { buildFlags, mapRow } from './server';
@@ -36,6 +36,7 @@ function createEmptyDay(date: string) {
 }
 
 export async function buildDashboardResponse(date?: string) {
+  const prisma = getPrisma();
   const todayStr = getTodayStr();
   const targetDate = date ?? todayStr;
 
