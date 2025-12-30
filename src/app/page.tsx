@@ -127,7 +127,10 @@ export default function Page() {
     quickMinutes: 0,
   });
 
-  const [fuelState, setFuelState] = useState({
+  const [fuelState, setFuelState] = useState<{
+    macrosJson: { meatGrams: number; eggs: number; butterGrams: number };
+    notes: string;
+  }>({
     macrosJson: { meatGrams: 0, eggs: 0, butterGrams: 0 },
     notes: '',
   });
@@ -169,7 +172,11 @@ export default function Page() {
       activityJson: { entries: dayLog.activityJson?.entries ?? [] },
     };
     const nextFuel = {
-      macrosJson: dayLog.macrosJson ?? { meatGrams: 0, eggs: 0, butterGrams: 0 },
+      macrosJson: {
+        meatGrams: Number(dayLog.macrosJson?.meatGrams ?? 0),
+        eggs: Number(dayLog.macrosJson?.eggs ?? 0),
+        butterGrams: Number(dayLog.macrosJson?.butterGrams ?? 0),
+      },
       notes: dayLog.notes ?? '',
     };
     setBioState(nextBio);
