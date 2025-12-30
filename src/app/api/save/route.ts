@@ -6,6 +6,9 @@ import { buildDashboardResponse } from '@/lib/dashboard';
 import { buildFlags, computeFuelCalories, computeGymCalOut, mapRow } from '@/lib/server';
 import { addDays } from '@/lib/date';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 function normalizeSupps(input: any) {
   if (!input || typeof input !== 'object') return {};
   return Object.fromEntries(Object.entries(input).map(([key, value]) => [key, Boolean(value)]));
