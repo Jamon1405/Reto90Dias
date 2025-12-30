@@ -15,31 +15,35 @@ function daysInMonth(monthKey: string) {
 }
 
 type DaySummary = Pick<TitanDay, 'date' | 'calIn' | 'calOut' | 'water' | 'fastHours' | 'weight' | 'flags'>;
+type DaySummaryLoose = Partial<DaySummary> & { date: string };
 
-export function computeMonthlyPnL(days: DaySummary[], monthKey: string) {
+export function computeMonthlyPnL(days: DaySummaryLoose[], monthKey: string) {
   const { start, end } = daysInMonth(monthKey);
   const monthDays = days.filter((day) => day.date >= start && day.date <= end);
-  const totalIn = monthDays.reduce((sum, day) => sum + day.calIn, 0);
-  const totalOut = monthDays.reduce((sum, day) => sum + day.calOut, 0);
+  const totalIn = monthDays.reduce((sum, day) => sum + (day.calIn ?? 0), 0);
+  const totalOut = monthDays.reduce((sum, day) => sum + (day.calOut ?? 0), 0);
   const totalNet = totalIn - totalOut;
   const daysLogged = monthDays.length;
-  const deficitDays = monthDays.filter((day) => computeNet(day.calIn, day.calOut) <= 0).length;
+  const deficitDays = monthDays.filter((day) => computeNet(day.calIn ?? 0, day.calOut ?? 0) <= 0).length;
   const avgNet = daysLogged > 0 ? Math.round(totalNet / daysLogged) : 0;
   return { totalIn, totalOut, totalNet, daysLogged, deficitDays, avgNet };
 }
 
-export function computeDeficitBank(days: DaySummary[]) {
-  const deficitAccumulated = days.reduce((sum, day) => sum + Math.max(0, -computeNet(day.calIn, day.calOut)), 0);
+export function computeDeficitBank(days: DaySummaryLoose[]) {
+  const deficitAccumulated = days.reduce(
+    (sum, day) => sum + Math.max(0, -computeNet(day.calIn ?? 0, day.calOut ?? 0)),
+    0,
+  );
   const estimatedKgLostIfMaintained = deficitAccumulated / 7700;
   const last7 = [...days]
     .sort((a, b) => (a.date < b.date ? 1 : -1))
     .slice(0, 7);
-  const dailyDeficits = last7.map((day) => Math.max(0, -computeNet(day.calIn, day.calOut)));
+  const dailyDeficits = last7.map((day) => Math.max(0, -computeNet(day.calIn ?? 0, day.calOut ?? 0)));
   const dailyDeficitAvg7 = average(dailyDeficits);
   return { deficitAccumulated, estimatedKgLostIfMaintained, dailyDeficitAvg7 };
 }
 
-export function computeProjection(days: DaySummary[], currentWeight: number) {
+export function computeProjection(days: DaySummaryLoose[], currentWeight: number) {
   const { dailyDeficitAvg7 } = computeDeficitBank(days);
   if (dailyDeficitAvg7 <= 0) {
     return { dailyDeficitAvg7, projections: null as null | Record<string, number> };
@@ -53,7 +57,7 @@ export function computeProjection(days: DaySummary[], currentWeight: number) {
   return { dailyDeficitAvg7, projections };
 }
 
-export function computeRiskSummary(days: DaySummary[]) {
+export function computeRiskSummary(days: DaySummaryLoose[]) {
   const last14 = [...days].sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, 14);
   const counts = {
     WEIGHT_UP_ON_DEFICIT: 0,
@@ -61,7 +65,8 @@ export function computeRiskSummary(days: DaySummary[]) {
     LOW_WATER_18H: 0,
   };
   for (const day of last14) {
-    for (const flag of day.flags.list) {
+    const list = day.flags?.list ?? [];
+    for (const flag of list) {
       if (flag.code in counts) {
         counts[flag.code as keyof typeof counts] += 1;
       }
@@ -70,7 +75,7 @@ export function computeRiskSummary(days: DaySummary[]) {
   return counts;
 }
 
-export function computeMissingDays(days: DaySummary[]) {
+export function computeMissingDays(days: DaySummaryLoose[]) {
   const start = '2025-12-30';
   const today = todayISOInTZ();
   const set = new Set(days.map((day) => day.date));
@@ -83,16 +88,16 @@ export function computeMissingDays(days: DaySummary[]) {
   return missing;
 }
 
-export function computeWaterCompliance(days: DaySummary[]) {
+export function computeWaterCompliance(days: DaySummaryLoose[]) {
   const last7 = [...days].sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, 7);
   if (last7.length === 0) return 0;
-  const compliant = last7.filter((day) => day.water >= 8).length;
+  const compliant = last7.filter((day) => (day.water ?? 0) >= 8).length;
   return Math.round((compliant / last7.length) * 100);
 }
 
-export function computeWeightTrend(days: DaySummary[]) {
-  const sorted = [...days].filter((day) => day.weight > 0).sort((a, b) => (a.date < b.date ? -1 : 1));
-  return sorted.map((day) => day.weight);
+export function computeWeightTrend(days: DaySummaryLoose[]) {
+  const sorted = [...days].filter((day) => (day.weight ?? 0) > 0).sort((a, b) => (a.date < b.date ? -1 : 1));
+  return sorted.map((day) => day.weight ?? 0);
 }
 
 export function runwayData(todayStr: string) {
