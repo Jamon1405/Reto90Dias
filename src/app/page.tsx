@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 const TAB_OPTIONS = ['Dash', 'Bio', 'Gym', 'Fuel', 'Data', 'Protocol'] as const;
 
@@ -155,42 +155,151 @@ export default function Page() {
     return gymState.activityJson.entries?.reduce((sum, entry) => sum + entry.calories, 0) ?? 0;
   }, [gymState.activityJson.entries]);
 
-  useEffect(() => {
-    fetchDashboard();
+  const parseResponse = useCallback(async (response: Response): Promise<any> => {
+    const text = await response.text();
+    if (!text) return { success: false, error: 'Respuesta vacía del servidor.' };
+    try {
+      return JSON.parse(text);
+    } catch {
+      return { success: false, error: text };
+    }
   }, []);
 
+  const hydrateDay = useCallback(
+    (log: DayLog | undefined) => {
+      if (!log) return;
+      const nextBio = {
+        weight: log.weight ?? 0,
+        steps: log.steps ?? 0,
+        water: log.water ?? 0,
+        suppsJson: log.suppsJson ?? {},
+      };
+      const nextGym = {
+        workout: log.workout ?? '',
+        activityJson: { entries: log.activityJson?.entries ?? [] },
+      };
+      const nextFuel = {
+        macrosJson: {
+          meatGrams: Number(log.macrosJson?.meatGrams ?? 0),
+          eggs: Number(log.macrosJson?.eggs ?? 0),
+          butterGrams: Number(log.macrosJson?.butterGrams ?? 0),
+        },
+        notes: log.notes ?? '',
+      };
+      setBioState(nextBio);
+      setGymState((prev) => ({
+        ...prev,
+        ...nextGym,
+      }));
+      setFuelState(nextFuel);
+      lastSnapshots.current = {
+        bio: JSON.stringify(nextBio),
+        gym: JSON.stringify({ workout: nextGym.workout, activityJson: nextGym.activityJson }),
+        fuel: JSON.stringify(nextFuel),
+      };
+    },
+    [setBioState, setFuelState, setGymState],
+  );
+
+  const fetchDashboard = useCallback(
+    async (date?: string) => {
+      try {
+        setError(null);
+        const response = await fetch(`/api/dashboard${date ? `?date=${date}` : ''}`);
+        const json = await parseResponse(response);
+        if (!response.ok) {
+          throw new Error((json as { error?: string }).error ?? 'Error cargando dashboard');
+        }
+        if (!json.success) throw new Error('Respuesta inválida');
+        const dashboard = json as DashboardResponse;
+        setData(dashboard);
+        setActiveDate(dashboard.meta.targetDate);
+        setToast(null);
+        lastSnapshots.current = { bio: '', gym: '', fuel: '' };
+      } catch (err: any) {
+        setError(err.message ?? 'Error al cargar');
+      }
+    },
+    [parseResponse],
+  );
+
+  const handleSave = useCallback(
+    async (type: 'BIO' | 'GYM' | 'FUEL', payload: any) => {
+      try {
+        setToast('GUARDANDO...');
+        savingRef.current = true;
+        const response = await fetch('/api/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type, targetDate: activeDate, payload }),
+        });
+        const json = await parseResponse(response);
+        if (!response.ok || !json.success) {
+          throw new Error(json.error ?? 'Error de guardado');
+        }
+        setData(json);
+        setActiveDate(json.meta.targetDate);
+        lastSnapshots.current = {
+          bio: JSON.stringify(bioState),
+          gym: JSON.stringify({ workout: gymState.workout, activityJson: gymState.activityJson }),
+          fuel: JSON.stringify(fuelState),
+        };
+        setToast('LISTO');
+        setTimeout(() => setToast(null), 2000);
+      } catch (err: any) {
+        setError(err.message ?? 'Error guardando');
+      } finally {
+        savingRef.current = false;
+      }
+    },
+    [activeDate, bioState, fuelState, gymState.activityJson, gymState.workout, parseResponse],
+  );
+
+  const handleFast = useCallback(
+    async (action: 'START' | 'STOP' | 'RESET') => {
+      try {
+        setToast('GUARDANDO...');
+        const response = await fetch('/api/fast', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action }),
+        });
+        const json = await parseResponse(response);
+        if (!response.ok || !json.success) {
+          throw new Error(json.error ?? 'Error ayuno');
+        }
+        if (json.dayLog && json.meta) {
+          setData(json);
+          setActiveDate(json.meta.targetDate);
+        } else {
+          setData((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  meta: {
+                    ...prev.meta,
+                    fastStartMs: json.meta.fastStartMs ?? null,
+                  },
+                }
+              : prev,
+          );
+        }
+        setToast('LISTO');
+        setTimeout(() => setToast(null), 2000);
+      } catch (err: any) {
+        setError(err.message ?? 'Error ayuno');
+      }
+    },
+    [parseResponse],
+  );
+
   useEffect(() => {
-    if (!dayLog) return;
-    const nextBio = {
-      weight: dayLog.weight ?? 0,
-      steps: dayLog.steps ?? 0,
-      water: dayLog.water ?? 0,
-      suppsJson: dayLog.suppsJson ?? {},
-    };
-    const nextGym = {
-      workout: dayLog.workout ?? '',
-      activityJson: { entries: dayLog.activityJson?.entries ?? [] },
-    };
-    const nextFuel = {
-      macrosJson: {
-        meatGrams: Number(dayLog.macrosJson?.meatGrams ?? 0),
-        eggs: Number(dayLog.macrosJson?.eggs ?? 0),
-        butterGrams: Number(dayLog.macrosJson?.butterGrams ?? 0),
-      },
-      notes: dayLog.notes ?? '',
-    };
-    setBioState(nextBio);
-    setGymState((prev) => ({
-      ...prev,
-      ...nextGym,
-    }));
-    setFuelState(nextFuel);
-    lastSnapshots.current = {
-      bio: JSON.stringify(nextBio),
-      gym: JSON.stringify({ workout: nextGym.workout, activityJson: nextGym.activityJson }),
-      fuel: JSON.stringify(nextFuel),
-    };
-  }, [dayLog?.date]);
+    fetchDashboard();
+  }, [fetchDashboard]);
+
+  useEffect(() => {
+    hydrateDay(dayLog);
+  }, [dayLog, hydrateDay]);
 
   useEffect(() => {
     if (!data?.meta.fastStartMs) {
@@ -229,7 +338,7 @@ export default function Page() {
     }, 60000);
 
     return () => clearInterval(interval);
-  }, [bioState, fuelState, gymState.activityJson, gymState.workout, activeDate, todayStr, data]);
+  }, [bioState, fuelState, gymState.activityJson, gymState.workout, activeDate, todayStr, data, handleSave]);
 
   useEffect(() => {
     if (!data || activeDate !== todayStr) return;
@@ -271,100 +380,7 @@ export default function Page() {
       }
     }, diff);
     return () => clearTimeout(timeout);
-  }, [data, activeDate, todayStr, bioState, fuelState, gymState.activityJson, gymState.workout]);
-
-  async function parseResponse(response: Response): Promise<any> {
-    const text = await response.text();
-    if (!text) return { success: false, error: 'Respuesta vacía del servidor.' };
-    try {
-      return JSON.parse(text);
-    } catch {
-      return { success: false, error: text };
-    }
-  }
-
-  async function fetchDashboard(date?: string) {
-    try {
-      setError(null);
-      const response = await fetch(`/api/dashboard${date ? `?date=${date}` : ''}`);
-      const json = await parseResponse(response);
-      if (!response.ok) {
-        throw new Error((json as { error?: string }).error ?? 'Error cargando dashboard');
-      }
-      if (!json.success) throw new Error('Respuesta inválida');
-      const dashboard = json as DashboardResponse;
-      setData(dashboard);
-      setActiveDate(dashboard.meta.targetDate);
-      setToast(null);
-      lastSnapshots.current = { bio: '', gym: '', fuel: '' };
-    } catch (err: any) {
-      setError(err.message ?? 'Error al cargar');
-    }
-  }
-
-  async function handleSave(type: 'BIO' | 'GYM' | 'FUEL', payload: any) {
-    try {
-      setToast('GUARDANDO...');
-      savingRef.current = true;
-      const response = await fetch('/api/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type, targetDate: activeDate, payload }),
-      });
-      const json = await parseResponse(response);
-      if (!response.ok || !json.success) {
-        throw new Error(json.error ?? 'Error de guardado');
-      }
-      setData(json);
-      setActiveDate(json.meta.targetDate);
-      lastSnapshots.current = {
-        bio: JSON.stringify(bioState),
-        gym: JSON.stringify({ workout: gymState.workout, activityJson: gymState.activityJson }),
-        fuel: JSON.stringify(fuelState),
-      };
-      setToast('LISTO');
-      setTimeout(() => setToast(null), 2000);
-    } catch (err: any) {
-      setError(err.message ?? 'Error guardando');
-    } finally {
-      savingRef.current = false;
-    }
-  }
-
-  async function handleFast(action: 'START' | 'STOP' | 'RESET') {
-    try {
-      setToast('GUARDANDO...');
-      const response = await fetch('/api/fast', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action }),
-      });
-      const json = await parseResponse(response);
-      if (!response.ok || !json.success) {
-        throw new Error(json.error ?? 'Error ayuno');
-      }
-      if (json.dayLog && json.meta) {
-        setData(json);
-        setActiveDate(json.meta.targetDate);
-      } else {
-        setData((prev) =>
-          prev
-            ? {
-                ...prev,
-                meta: {
-                  ...prev.meta,
-                  fastStartMs: json.meta.fastStartMs ?? null,
-                },
-              }
-            : prev,
-        );
-      }
-      setToast('LISTO');
-      setTimeout(() => setToast(null), 2000);
-    } catch (err: any) {
-      setError(err.message ?? 'Error ayuno');
-    }
-  }
+  }, [data, activeDate, todayStr, bioState, fuelState, gymState.activityJson, gymState.workout, handleSave]);
 
   const handleDateMove = (direction: number) => {
     if (!activeDate || !data) return;
