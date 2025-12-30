@@ -126,6 +126,7 @@ export default function Page() {
   const seasonLabel = meta?.season ?? '--';
   const daysLeftLabel = meta ? String(meta.daysLeft) : '--';
   const fastStartMs = meta?.fastStartMs ?? null;
+  const lastWeight = data?.user?.lastWeight ?? 0;
 
   const [bioState, setBioState] = useState({
     weight: 0,
@@ -787,7 +788,7 @@ export default function Page() {
               <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
                 <div>
                   <p className="text-slate-400">Weight</p>
-                  <p className="text-base">{dayLog.weight || data.user.lastWeight} kg</p>
+                  <p className="text-base">{dayLog.weight || lastWeight} kg</p>
                 </div>
                 <div>
                   <p className="text-slate-400">Steps</p>
