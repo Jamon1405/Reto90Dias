@@ -7,12 +7,15 @@ import {
   exportAllData,
   fastingOp,
   getDashboardData,
-  getMonthCalendar,
+  getDaysForMonth,
+  getSelectedMonth,
+  hardReset,
   importAllData,
   ping,
   saveModule,
+  setSelectedMonth,
 } from '@/lib/storage';
-import { addDays, getMsUntilEndOfDay, nowIsoInTZ, todayISOInTZ } from '@/lib/date';
+import { addDays, getMsUntilEndOfDay, getZonedParts, nowIsoInTZ, todayISOInTZ } from '@/lib/date';
 import {
   computeBmi,
   computeBmr,
@@ -20,37 +23,35 @@ import {
   computeCaloriesOut,
   computeExtraBurn,
   computeNet,
+  movingAverage,
 } from '@/lib/analytics';
+import { computeDeficitBank, computeMonthlyPnL, computeProjection, computeRiskSummary, computeWaterCompliance, computeWeightTrend, runwayData } from '@/lib/intel';
+import type { ActivityLog, ActivityManualEntry, ActivityTreadmillEntry, Macros, OpsChecklist, SupplementStack } from '@/lib/types';
 import Badge from '@/app/components/Badge';
 import SectionCard from '@/app/components/SectionCard';
 import TabButton from '@/app/components/TabButton';
-import type {
-  ActivityLog,
-  ActivityManualEntry,
-  ActivityTreadmillEntry,
-  Macros,
-  SupplementStack,
-} from '@/lib/types';
 import CalendarMonth from '@/app/components/CalendarMonth';
+import IntelSlides from '@/app/components/IntelSlides';
 
-const TAB_OPTIONS = ['Dash', 'Bio', 'Gym', 'Fuel', 'Data', 'Protocol'] as const;
+const TAB_OPTIONS = ['Dash', 'Bio', 'Gym', 'Fuel', 'Sleep', 'Data', 'Intel', 'Protocol'] as const;
 
 type TabOption = (typeof TAB_OPTIONS)[number];
 
 type DayLog = {
   date: string;
+  tsUpdated?: string | null;
   weight: number;
-  waist: number;
-  steps: number;
   water: number;
   supps: SupplementStack;
   fastHours: number;
   workout: string;
-  calOut: number;
   activity: ActivityLog;
   calIn: number;
   macros: Macros;
   notes: string;
+  sleepHours: number;
+  sleepQuality: number;
+  ops: OpsChecklist;
   titanScore: number;
   bmr?: number;
   bmi?: number;
@@ -70,6 +71,8 @@ type DashboardResponse = {
     fastStartMs: number | null;
     nowIso: string;
     routineLabel: string;
+    lastModuleToday: string | null;
+    missingDays: number;
   };
   user: {
     age: number;
@@ -77,7 +80,12 @@ type DashboardResponse = {
     heightCm: number;
   };
   dayLog: DayLog | null;
-  calendar: { date: string; score: number; phase: 'PRE-SEASON' | 'SEASON' | 'POST-SEASON' }[];
+  calendar: {
+    date: string;
+    phase: 'PRE-SEASON' | 'SEASON' | 'POST-SEASON';
+    score: number;
+    dots: { bio: boolean; gym: boolean; fuel: boolean; sleep: boolean; ops: boolean };
+  }[];
   history: Array<DayLog & { net: number; score: number } & { fastHours: number }>;
 };
 
@@ -88,14 +96,6 @@ const SUPPS: Array<{ label: string; key: keyof SupplementStack }> = [
   { label: 'Omega', key: 'omega' },
 ];
 
-const TACTICAL_AGENDA = [
-  '05:00 - WAKE / HYDRATE',
-  '06:00 - MOVEMENT / REVIEW',
-  '12:00 - AUDIT CHECK',
-  '18:00 - WATER VERIFY',
-  '22:30 - WIND DOWN',
-];
-
 const MANUAL_PRESETS = [
   { label: 'PÁDEL', key: 'padel', met: 8, kind: 'PADEL' },
   { label: 'FÚTBOL', key: 'futbol', met: 10, kind: 'FUTBOL' },
@@ -103,6 +103,12 @@ const MANUAL_PRESETS = [
 ] as const;
 
 type ManualKey = (typeof MANUAL_PRESETS)[number]['key'];
+
+const OPS_KEYS: Array<{ key: keyof OpsChecklist; label: string }> = [
+  { key: 'walk10', label: 'Walk 10' },
+  { key: 'sunlight10', label: 'Sunlight 10' },
+  { key: 'stretch10', label: 'Stretch 10' },
+];
 
 function formatDateDisplay(dateStr: string) {
   const [year, month, day] = dateStr.split('-');
@@ -142,7 +148,7 @@ type AppState = {
   activeTab: TabOption;
   activeDate: string;
   dashboard: DashboardResponse | null;
-  bio: { weight: number; waist: number; steps: number; water: number; supps: SupplementStack };
+  bio: { weight: number; water: number; supps: SupplementStack };
   gym: {
     workout: string;
     activity: ActivityLog;
@@ -150,11 +156,15 @@ type AppState = {
     manualMinutes: Record<ManualKey, number>;
   };
   fuel: { macros: Macros; notes: string };
+  sleep: { sleepHours: number; sleepQuality: number };
+  ops: OpsChecklist;
   fastElapsed: number;
   clock: string;
   calendarMonth: string;
-  calendarDays: { date: string; score: number; phase: 'PRE-SEASON' | 'SEASON' | 'POST-SEASON' }[];
+  calendarDays: DashboardResponse['calendar'];
+  monthDays: DayLog[];
   jumpDate: string;
+  intelSlide: number;
 };
 
 type Action =
@@ -167,26 +177,25 @@ type Action =
   | { type: 'SET_BIO'; payload: Partial<AppState['bio']> }
   | { type: 'SET_GYM'; payload: Partial<AppState['gym']> }
   | { type: 'SET_FUEL'; payload: Partial<AppState['fuel']> }
+  | { type: 'SET_SLEEP'; payload: Partial<AppState['sleep']> }
+  | { type: 'SET_OPS'; payload: OpsChecklist }
   | { type: 'SET_FAST_ELAPSED'; payload: number }
   | { type: 'SET_CLOCK'; payload: string }
   | { type: 'SET_CALENDAR_MONTH'; payload: string }
-  | {
-      type: 'SET_CALENDAR_DAYS';
-      payload: { date: string; score: number; phase: 'PRE-SEASON' | 'SEASON' | 'POST-SEASON' }[];
-    }
-  | { type: 'SET_JUMP_DATE'; payload: string };
+  | { type: 'SET_CALENDAR_DAYS'; payload: DashboardResponse['calendar'] }
+  | { type: 'SET_MONTH_DAYS'; payload: DayLog[] }
+  | { type: 'SET_JUMP_DATE'; payload: string }
+  | { type: 'SET_INTEL_SLIDE'; payload: number };
 
 const initialState: AppState = {
   loading: true,
   error: null,
   toast: null,
   activeTab: 'Dash',
-  activeDate: '',
+  activeDate: '2025-12-30',
   dashboard: null,
   bio: {
     weight: 0,
-    waist: 0,
-    steps: 0,
     water: 0,
     supps: { creat: false, sod: false, mag: false, omega: false },
   },
@@ -200,11 +209,18 @@ const initialState: AppState = {
     macros: { m: 0, e: 0, b: 0 },
     notes: '',
   },
+  sleep: {
+    sleepHours: 0,
+    sleepQuality: 0,
+  },
+  ops: { walk10: false, sunlight10: false, stretch10: false },
   fastElapsed: 0,
   clock: nowIsoInTZ(),
   calendarMonth: '2025-12',
   calendarDays: [],
+  monthDays: [],
   jumpDate: '',
+  intelSlide: 0,
 };
 
 function reducer(state: AppState, action: Action): AppState {
@@ -227,6 +243,10 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, gym: { ...state.gym, ...action.payload } };
     case 'SET_FUEL':
       return { ...state, fuel: { ...state.fuel, ...action.payload } };
+    case 'SET_SLEEP':
+      return { ...state, sleep: { ...state.sleep, ...action.payload } };
+    case 'SET_OPS':
+      return { ...state, ops: action.payload };
     case 'SET_FAST_ELAPSED':
       return { ...state, fastElapsed: action.payload };
     case 'SET_CLOCK':
@@ -235,8 +255,12 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, calendarMonth: action.payload };
     case 'SET_CALENDAR_DAYS':
       return { ...state, calendarDays: action.payload };
+    case 'SET_MONTH_DAYS':
+      return { ...state, monthDays: action.payload };
     case 'SET_JUMP_DATE':
       return { ...state, jumpDate: action.payload };
+    case 'SET_INTEL_SLIDE':
+      return { ...state, intelSlide: action.payload };
     default:
       return state;
   }
@@ -244,7 +268,7 @@ function reducer(state: AppState, action: Action): AppState {
 
 export default function Page() {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const lastSnapshots = useRef({ bio: '', gym: '', fuel: '' });
+  const lastSnapshots = useRef({ bio: '', gym: '', fuel: '', sleep: '', ops: '' });
   const savingRef = useRef(false);
 
   const dayLog = useMemo<DayLog | null>(() => {
@@ -253,17 +277,17 @@ export default function Page() {
     return {
       date: state.dashboard.meta.targetDate,
       weight: 0,
-      waist: 0,
-      steps: 0,
       water: 0,
       supps: { creat: false, sod: false, mag: false, omega: false },
       fastHours: 0,
       workout: '',
-      calOut: 0,
       activity: { treadmill: [], manual: [] },
       calIn: 0,
       macros: { m: 0, e: 0, b: 0 },
       notes: '',
+      sleepHours: 0,
+      sleepQuality: 0,
+      ops: { walk10: false, sunlight10: false, stretch10: false },
       titanScore: 0,
       bmr: 0,
       bmi: 0,
@@ -273,7 +297,7 @@ export default function Page() {
     };
   }, [state.dashboard]);
 
-  const todayStr = state.dashboard?.meta.todayStr ?? '';
+  const todayStr = state.dashboard?.meta.todayStr ?? todayISOInTZ();
   const meta = state.dashboard?.meta;
   const seasonLabel = meta?.season ?? '--';
   const daysLeftLabel = meta ? String(meta.daysLeft) : '--';
@@ -296,7 +320,50 @@ export default function Page() {
   );
   const netLive = useMemo(() => computeNet(calInLive, calOutLive), [calInLive, calOutLive]);
 
+  const sleepAvg7 = useMemo(() => {
+    const values = historyRows.map((row) => row.sleepHours).filter((value) => value > 0).slice(0, 7);
+    return values.length ? Number((values.reduce((sum, v) => sum + v, 0) / values.length).toFixed(2)) : 0;
+  }, [historyRows]);
+
+  const sleepAvg30 = useMemo(() => {
+    const values = historyRows.map((row) => row.sleepHours).filter((value) => value > 0);
+    return values.length ? Number((values.reduce((sum, v) => sum + v, 0) / values.length).toFixed(2)) : 0;
+  }, [historyRows]);
+
+  const sleepDebt = useMemo(() => Math.max(0, (7.5 - sleepAvg7) * 7), [sleepAvg7]);
+
+  const weighInStreak = useMemo(() => {
+    const sorted = [...historyRows].sort((a, b) => (a.date < b.date ? 1 : -1));
+    let streak = 0;
+    for (const day of sorted) {
+      if (day.weight > 0) streak += 1;
+      else break;
+    }
+    return streak;
+  }, [historyRows]);
+
+  const fastingAvg7 = useMemo(() => {
+    const values = historyRows.map((row) => row.fastHours).filter((value) => value > 0).slice(0, 7);
+    return values.length ? Number((values.reduce((sum, v) => sum + v, 0) / values.length).toFixed(2)) : 0;
+  }, [historyRows]);
+
+  const fastingStreak = useMemo(() => {
+    const sorted = [...historyRows].sort((a, b) => (a.date < b.date ? 1 : -1));
+    let streak = 0;
+    for (const day of sorted) {
+      if (day.fastHours >= 12) streak += 1;
+      else break;
+    }
+    return streak;
+  }, [historyRows]);
+
   const routineLabel = meta?.routineLabel ?? '';
+
+  const hydrationReminder = useMemo(() => {
+    if (state.activeDate !== todayStr) return false;
+    const { hour } = getZonedParts();
+    return hour >= 18 && state.bio.water < 6;
+  }, [state.activeDate, state.bio.water, todayStr]);
 
   const hydrateDay = useCallback(
     (log: DayLog | undefined) => {
@@ -305,8 +372,6 @@ export default function Page() {
         type: 'SET_BIO',
         payload: {
           weight: log.weight ?? 0,
-          waist: log.waist ?? 0,
-          steps: log.steps ?? 0,
           water: log.water ?? 0,
           supps: log.supps ?? { creat: false, sod: false, mag: false, omega: false },
         },
@@ -325,22 +390,14 @@ export default function Page() {
           notes: log.notes ?? '',
         },
       });
+      dispatch({ type: 'SET_SLEEP', payload: { sleepHours: log.sleepHours ?? 0, sleepQuality: log.sleepQuality ?? 0 } });
+      dispatch({ type: 'SET_OPS', payload: log.ops ?? { walk10: false, sunlight10: false, stretch10: false } });
       lastSnapshots.current = {
-        bio: JSON.stringify({
-          weight: log.weight ?? 0,
-          waist: log.waist ?? 0,
-          steps: log.steps ?? 0,
-          water: log.water ?? 0,
-          supps: log.supps ?? { creat: false, sod: false, mag: false, omega: false },
-        }),
-        gym: JSON.stringify({
-          workout: log.workout ?? '',
-          activity: log.activity ?? { treadmill: [], manual: [] },
-        }),
-        fuel: JSON.stringify({
-          macros: log.macros ?? { m: 0, e: 0, b: 0 },
-          notes: log.notes ?? '',
-        }),
+        bio: JSON.stringify({ weight: log.weight ?? 0, water: log.water ?? 0, supps: log.supps ?? {} }),
+        gym: JSON.stringify({ workout: log.workout ?? '', activity: log.activity ?? { treadmill: [], manual: [] } }),
+        fuel: JSON.stringify({ macros: log.macros ?? { m: 0, e: 0, b: 0 }, notes: log.notes ?? '' }),
+        sleep: JSON.stringify({ sleepHours: log.sleepHours ?? 0, sleepQuality: log.sleepQuality ?? 0 }),
+        ops: JSON.stringify(log.ops ?? { walk10: false, sunlight10: false, stretch10: false }),
       };
     },
     [dispatch],
@@ -351,16 +408,18 @@ export default function Page() {
     dispatch({ type: 'SET_DASHBOARD', payload: dashboard });
     dispatch({ type: 'SET_ACTIVE_DATE', payload: dashboard.meta.targetDate });
     dispatch({ type: 'SET_TOAST', payload: null });
-    lastSnapshots.current = { bio: '', gym: '', fuel: '' };
+    lastSnapshots.current = { bio: '', gym: '', fuel: '', sleep: '', ops: '' };
   }, []);
 
   const loadCalendarMonth = useCallback(async (monthKey: string) => {
-    const days = await getMonthCalendar(monthKey);
-    dispatch({ type: 'SET_CALENDAR_DAYS', payload: days });
+    const dashboard = await getDashboardData(`${monthKey}-01`);
+    const monthDays = await getDaysForMonth(monthKey);
+    dispatch({ type: 'SET_CALENDAR_DAYS', payload: dashboard.calendar });
+    dispatch({ type: 'SET_MONTH_DAYS', payload: monthDays });
   }, []);
 
   const handleSave = useCallback(
-    async (type: 'BIO' | 'GYM' | 'FUEL', payload: any, options?: { silent?: boolean }) => {
+    async (type: 'BIO' | 'GYM' | 'FUEL' | 'SLEEP' | 'OPS', payload: any, options?: { silent?: boolean }) => {
       try {
         if (!options?.silent) {
           dispatch({ type: 'SET_TOAST', payload: 'GUARDANDO...' });
@@ -373,6 +432,8 @@ export default function Page() {
           bio: JSON.stringify(state.bio),
           gym: JSON.stringify({ workout: state.gym.workout, activity: state.gym.activity }),
           fuel: JSON.stringify(state.fuel),
+          sleep: JSON.stringify(state.sleep),
+          ops: JSON.stringify(state.ops),
         };
         if (monthKeyFromDate(state.activeDate) === state.calendarMonth) {
           await loadCalendarMonth(state.calendarMonth);
@@ -387,7 +448,7 @@ export default function Page() {
         savingRef.current = false;
       }
     },
-    [loadCalendarMonth, state.activeDate, state.bio, state.calendarMonth, state.fuel, state.gym.activity, state.gym.workout],
+    [loadCalendarMonth, state.activeDate, state.bio, state.calendarMonth, state.fuel, state.gym.activity, state.gym.workout, state.ops, state.sleep],
   );
 
   const handleFast = useCallback(async (action: 'START' | 'STOP' | 'RESET') => {
@@ -408,21 +469,20 @@ export default function Page() {
     dispatch({ type: 'SET_ERROR', payload: null });
     try {
       await ping();
-      await loadDashboard();
+      const selectedMonth = await getSelectedMonth();
+      dispatch({ type: 'SET_CALENDAR_MONTH', payload: selectedMonth });
+      await loadDashboard(state.activeDate);
+      await loadCalendarMonth(selectedMonth);
     } catch (err: any) {
       dispatch({ type: 'SET_ERROR', payload: err?.message ?? 'Error al cargar' });
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
-  }, [loadDashboard]);
+  }, [loadCalendarMonth, loadDashboard, state.activeDate]);
 
   useEffect(() => {
     bootstrap();
   }, [bootstrap]);
-
-  useEffect(() => {
-    loadCalendarMonth(state.calendarMonth).catch(() => undefined);
-  }, [loadCalendarMonth, state.calendarMonth]);
 
   useEffect(() => {
     hydrateDay(dayLog ?? undefined);
@@ -452,6 +512,8 @@ export default function Page() {
       const bioSnapshot = JSON.stringify(state.bio);
       const gymSnapshot = JSON.stringify({ workout: state.gym.workout, activity: state.gym.activity });
       const fuelSnapshot = JSON.stringify(state.fuel);
+      const sleepSnapshot = JSON.stringify(state.sleep);
+      const opsSnapshot = JSON.stringify(state.ops);
 
       const saves: Array<Promise<void>> = [];
       if (bioSnapshot !== lastSnapshots.current.bio) {
@@ -459,25 +521,27 @@ export default function Page() {
         lastSnapshots.current.bio = bioSnapshot;
       }
       if (gymSnapshot !== lastSnapshots.current.gym) {
-        saves.push(
-          handleSave(
-            'GYM',
-            { workout: state.gym.workout, activity: state.gym.activity },
-            { silent: true },
-          ),
-        );
+        saves.push(handleSave('GYM', { workout: state.gym.workout, activity: state.gym.activity }, { silent: true }));
         lastSnapshots.current.gym = gymSnapshot;
       }
       if (fuelSnapshot !== lastSnapshots.current.fuel) {
         saves.push(handleSave('FUEL', state.fuel, { silent: true }));
         lastSnapshots.current.fuel = fuelSnapshot;
       }
+      if (sleepSnapshot !== lastSnapshots.current.sleep) {
+        saves.push(handleSave('SLEEP', state.sleep, { silent: true }));
+        lastSnapshots.current.sleep = sleepSnapshot;
+      }
+      if (opsSnapshot !== lastSnapshots.current.ops) {
+        saves.push(handleSave('OPS', { ops: state.ops }, { silent: true }));
+        lastSnapshots.current.ops = opsSnapshot;
+      }
       if (saves.length > 0) {
         Promise.all(saves).catch(() => undefined);
       }
     }, 60000);
     return () => clearInterval(interval);
-  }, [handleSave, state.activeDate, state.bio, state.dashboard, state.fuel, state.gym.activity, state.gym.workout, todayStr]);
+  }, [handleSave, state.activeDate, state.bio, state.dashboard, state.fuel, state.gym.activity, state.gym.workout, state.ops, state.sleep, todayStr]);
 
   useEffect(() => {
     const diff = getMsUntilEndOfDay();
@@ -486,10 +550,12 @@ export default function Page() {
         handleSave('BIO', state.bio, { silent: true });
         handleSave('GYM', { workout: state.gym.workout, activity: state.gym.activity }, { silent: true });
         handleSave('FUEL', state.fuel, { silent: true });
+        handleSave('SLEEP', state.sleep, { silent: true });
+        handleSave('OPS', { ops: state.ops }, { silent: true });
       }
     }, diff);
     return () => clearTimeout(timeout);
-  }, [state.activeDate, state.bio, state.fuel, state.gym.activity, state.gym.workout, handleSave, todayStr]);
+  }, [state.activeDate, state.bio, state.fuel, state.gym.activity, state.gym.workout, state.ops, state.sleep, handleSave, todayStr]);
 
   const handleDateMove = (direction: number) => {
     if (!state.activeDate || !state.dashboard) return;
@@ -600,15 +666,9 @@ export default function Page() {
     });
   };
 
-  const handleTrash = (module: 'BIO' | 'GYM' | 'FUEL') => {
+  const handleTrash = (module: 'BIO' | 'GYM' | 'FUEL' | 'SLEEP' | 'OPS') => {
     if (module === 'BIO') {
-      const payload = {
-        weight: 0,
-        waist: 0,
-        steps: 0,
-        water: 0,
-        supps: { creat: false, sod: false, mag: false, omega: false },
-      };
+      const payload = { weight: 0, water: 0, supps: { creat: false, sod: false, mag: false, omega: false } };
       dispatch({ type: 'SET_BIO', payload });
       handleSave('BIO', payload);
     }
@@ -621,6 +681,16 @@ export default function Page() {
       const payload = { macros: { m: 0, e: 0, b: 0 }, notes: '' };
       dispatch({ type: 'SET_FUEL', payload });
       handleSave('FUEL', payload);
+    }
+    if (module === 'SLEEP') {
+      const payload = { sleepHours: 0, sleepQuality: 0 };
+      dispatch({ type: 'SET_SLEEP', payload });
+      handleSave('SLEEP', payload);
+    }
+    if (module === 'OPS') {
+      const payload = { walk10: false, sunlight10: false, stretch10: false };
+      dispatch({ type: 'SET_OPS', payload });
+      handleSave('OPS', { ops: payload });
     }
   };
 
@@ -656,8 +726,17 @@ export default function Page() {
       dispatch({ type: 'SET_TOAST', payload: 'IMPORTADO' });
       setTimeout(() => dispatch({ type: 'SET_TOAST', payload: null }), 2000);
     },
-    [loadDashboard, state.activeDate],
+    [loadCalendarMonth, loadDashboard, state.activeDate, state.calendarMonth],
   );
+
+  const handleHardReset = async () => {
+    const token = window.prompt('Escribe RESET para borrar la base local');
+    if (token !== 'RESET') return;
+    await hardReset();
+    dispatch({ type: 'SET_TOAST', payload: 'RESET OK' });
+    setTimeout(() => dispatch({ type: 'SET_TOAST', payload: null }), 2000);
+    window.location.reload();
+  };
 
   if (!state.dashboard && state.loading) {
     return (
@@ -683,6 +762,107 @@ export default function Page() {
       </main>
     );
   }
+
+  const runway = runwayData(todayStr);
+  const monthStats = computeMonthlyPnL(state.monthDays, state.calendarMonth);
+  const deficitBank = computeDeficitBank(historyRows);
+  const projection = computeProjection(historyRows, state.dashboard?.user.lastWeight ?? 97);
+  const riskSummary = computeRiskSummary(historyRows);
+  const waterCompliance = computeWaterCompliance(historyRows);
+  const weightTrend = computeWeightTrend(historyRows);
+  const weightMA = movingAverage(weightTrend, 7);
+
+  const intelSlides = [
+    {
+      id: 'monthly-pnl',
+      title: 'MONTHLY P&L',
+      content: (
+        <div className="space-y-2 text-xs text-slate-300">
+          <div>Total IN: {monthStats.totalIn}</div>
+          <div>Total OUT: {monthStats.totalOut}</div>
+          <div>Total NET: {monthStats.totalNet}</div>
+          <div>Days logged: {monthStats.daysLogged}</div>
+          <div>Deficit days: {monthStats.deficitDays}</div>
+          <div>Avg daily NET: {monthStats.avgNet}</div>
+        </div>
+      ),
+    },
+    {
+      id: 'deficit-bank',
+      title: 'DEFICIT BANK',
+      content: (
+        <div className="space-y-2 text-xs text-slate-300">
+          <div>Deficit accumulated: {Math.round(deficitBank.deficitAccumulated)} kcal</div>
+          <div>Estimated kg lost: {deficitBank.estimatedKgLostIfMaintained.toFixed(2)}</div>
+          {projection.projections ? (
+            <div className="mt-3 space-y-1">
+              <div>Avg deficit 7d: {projection.dailyDeficitAvg7.toFixed(1)} kcal</div>
+              <div>Days to -5kg: {projection.projections['5kg']}</div>
+              <div>Days to -10kg: {projection.projections['10kg']}</div>
+              <div>Days to 77kg: {projection.projections.toTarget}</div>
+            </div>
+          ) : (
+            <div>No projection available</div>
+          )}
+        </div>
+      ),
+    },
+    {
+      id: 'runway',
+      title: 'RUNWAY',
+      content: (
+        <div className="space-y-3 text-xs text-slate-300">
+          <div className="flex justify-between">
+            <span>PRE</span>
+            <span>{runway.preSeasonEnd}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>SEASON</span>
+            <span>{runway.seasonStart} → {runway.seasonEnd}</span>
+          </div>
+          <div>Today: {runway.todayStr}</div>
+          <div>HYROX days left: {daysLeftLabel}</div>
+        </div>
+      ),
+    },
+    {
+      id: 'risk-governance',
+      title: 'RISK & GOVERNANCE',
+      content: (
+        <div className="space-y-2 text-xs text-slate-300">
+          <div>WEIGHT_UP_ON_DEFICIT: {riskSummary.WEIGHT_UP_ON_DEFICIT}</div>
+          <div>NO_DEFICIT_3D: {riskSummary.NO_DEFICIT_3D}</div>
+          <div>LOW_WATER_18H: {riskSummary.LOW_WATER_18H}</div>
+          <div>Last updated: {dayLog?.tsUpdated ?? '--'}</div>
+          <div>Last module today: {meta?.lastModuleToday ?? '--'}</div>
+          <div>Data gaps: {meta?.missingDays ?? 0}</div>
+        </div>
+      ),
+    },
+    {
+      id: 'body-metrics',
+      title: 'BODY METRICS',
+      content: (
+        <div className="space-y-2 text-xs text-slate-300">
+          <div>Weight: {weightForCalc} kg</div>
+          <div>BMI: {bmiLive}</div>
+          <div>Water compliance 7d: {waterCompliance}%</div>
+          <div className="flex items-end gap-1 h-16">
+            {weightTrend.map((value, idx) => (
+              <div
+                key={`${value}-${idx}`}
+                style={{ height: `${Math.max(4, value)}px` }}
+                className={`w-2 ${idx === weightTrend.length - 1 ? 'bg-accent' : 'bg-slate-500'}`}
+              />
+            ))}
+            {weightMA.map((value, idx) => (
+              <div key={`ma-${idx}`} style={{ height: `${Math.max(4, value)}px` }} className="w-1 bg-warning" />
+            ))}
+          </div>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <main className="min-h-screen px-4 py-6 lg:px-10 text-sm relative">
@@ -720,7 +900,7 @@ export default function Page() {
               ▶
             </button>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {TAB_OPTIONS.map((tab) => (
               <TabButton
                 key={tab}
@@ -740,6 +920,11 @@ export default function Page() {
       {state.activeTab === 'Dash' && dayLog && (
         <section className="mt-6 grid gap-4 lg:grid-cols-[1.5fr_1fr]">
           <div className="grid gap-4">
+            {hydrationReminder && (
+              <SectionCard>
+                <div className="text-xs text-warning">WATER ALERT 18:00+ · WATER &lt; 6</div>
+              </SectionCard>
+            )}
             <SectionCard>
               <h2 className="text-xs tracking-[0.3em] text-slate-400">P&L</h2>
               <div className="mt-3 grid grid-cols-3 gap-3">
@@ -753,9 +938,7 @@ export default function Page() {
                 </div>
                 <div>
                   <p className="text-xs text-slate-400">NET</p>
-                  <p className={`text-lg font-semibold ${netLive <= 0 ? 'text-success' : 'text-danger'}`}>
-                    {netLive}
-                  </p>
+                  <p className={`text-lg font-semibold ${netLive <= 0 ? 'text-success' : 'text-danger'}`}>{netLive}</p>
                 </div>
               </div>
             </SectionCard>
@@ -767,34 +950,35 @@ export default function Page() {
                 <div className="mt-2 text-xs text-slate-400">BMR {bmrLive} kcal</div>
               </SectionCard>
               <SectionCard>
-                <h2 className="text-xs tracking-[0.3em] text-slate-400">FLAGS</h2>
-                <div className="mt-3 flex flex-col gap-2">
-                  {dayLog.flagsComputed?.list?.length ? (
-                    dayLog.flagsComputed.list.map((flag) => (
-                      <div
-                        key={flag.code}
-                        className="border border-danger/60 bg-danger/10 px-3 py-2 rounded-lg text-xs"
-                      >
-                        {flag.code} · {flag.msg}
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-xs text-slate-400">SIN ALERTAS</div>
-                  )}
-                </div>
+                <h2 className="text-xs tracking-[0.3em] text-slate-400">SLEEP</h2>
+                <div className="mt-3 text-lg font-semibold">{state.sleep.sleepHours} h</div>
+                <div className="mt-2 text-xs text-slate-400">Avg 7d {sleepAvg7} · Avg 30d {sleepAvg30}</div>
+                <div className="mt-1 text-xs text-slate-400">Debt {sleepDebt.toFixed(1)}h</div>
               </SectionCard>
             </div>
 
             <SectionCard>
-              <h2 className="text-xs tracking-[0.3em] text-slate-400">TACTICAL AGENDA</h2>
-              <ul className="mt-3 space-y-1 text-xs text-slate-300">
-                {TACTICAL_AGENDA.map((item) => (
-                  <li key={item} className="flex items-center gap-2">
-                    <span className="text-accent">▸</span>
-                    {item}
-                  </li>
+              <h2 className="text-xs tracking-[0.3em] text-slate-400">OPS CHECKLIST</h2>
+              <div className="mt-3 flex flex-wrap gap-3">
+                {OPS_KEYS.map((item) => (
+                  <label key={item.key} className="flex items-center gap-2 text-xs text-slate-300">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(state.ops[item.key])}
+                      onChange={() =>
+                        dispatch({ type: 'SET_OPS', payload: { ...state.ops, [item.key]: !state.ops[item.key] } })
+                      }
+                    />
+                    {item.label}
+                  </label>
                 ))}
-              </ul>
+                <button
+                  onClick={() => handleSave('OPS', { ops: state.ops })}
+                  className="px-3 py-2 border border-slateborder rounded-lg text-xs hover:border-accent"
+                >
+                  SAVE OPS
+                </button>
+              </div>
             </SectionCard>
           </div>
 
@@ -827,33 +1011,11 @@ export default function Page() {
             </SectionCard>
 
             <SectionCard>
-              <h2 className="text-xs tracking-[0.3em] text-slate-400">METRICS</h2>
-              <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
-                <div>
-                  <p className="text-slate-400">Weight</p>
-                  <p className="text-base">{weightForCalc} kg</p>
-                </div>
-                <div>
-                  <p className="text-slate-400">Steps</p>
-                  <p className="text-base">{state.bio.steps}</p>
-                </div>
-                <div>
-                  <p className="text-slate-400">Water</p>
-                  <p className="text-base">{state.bio.water}/10</p>
-                </div>
-                <div>
-                  <p className="text-slate-400">Routine</p>
-                  <p className="text-base">{routineLabel}</p>
-                </div>
-              </div>
-            </SectionCard>
-
-            <SectionCard>
-              <h2 className="text-xs tracking-[0.3em] text-slate-400">DB STATUS</h2>
-              <p className="mt-2 text-xs text-slate-400">Último guardado: {dayLog.date}</p>
-              <p className="text-xs text-slate-500">
-                IN {calInLive} · OUT {calOutLive}
-              </p>
+              <h2 className="text-xs tracking-[0.3em] text-slate-400">CONTROL</h2>
+              <div className="mt-3 text-xs text-slate-300">Weigh-in streak: {weighInStreak} días</div>
+              <div className="mt-2 text-xs text-slate-300">Fasting avg 7d: {fastingAvg7}h</div>
+              <div className="mt-1 text-xs text-slate-300">Fasting streak 12h+: {fastingStreak} días</div>
+              <div className="mt-1 text-xs text-slate-300">Routine next: {routineLabel}</div>
             </SectionCard>
           </div>
         </section>
@@ -868,6 +1030,9 @@ export default function Page() {
                 TRASH
               </button>
             </div>
+            {hydrationReminder && (
+              <div className="text-xs text-warning border border-warning/60 rounded-lg p-2">WATER ALERT 18:00+</div>
+            )}
             <div className="grid grid-cols-2 gap-3">
               <label className="text-xs text-slate-400">
                 Weight (kg)
@@ -875,26 +1040,6 @@ export default function Page() {
                   type="number"
                   value={state.bio.weight}
                   onChange={(event) => dispatch({ type: 'SET_BIO', payload: { weight: Number(event.target.value) } })}
-                  className="mt-1 w-full rounded-lg border border-slateborder bg-slatebase px-3 py-2 text-slate-200"
-                />
-              </label>
-              <label className="text-xs text-slate-400">
-                Waist
-                <input
-                  type="number"
-                  value={state.bio.waist}
-                  onChange={(event) => dispatch({ type: 'SET_BIO', payload: { waist: Number(event.target.value) } })}
-                  className="mt-1 w-full rounded-lg border border-slateborder bg-slatebase px-3 py-2 text-slate-200"
-                />
-              </label>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <label className="text-xs text-slate-400">
-                Steps
-                <input
-                  type="number"
-                  value={state.bio.steps}
-                  onChange={(event) => dispatch({ type: 'SET_BIO', payload: { steps: Number(event.target.value) } })}
                   className="mt-1 w-full rounded-lg border border-slateborder bg-slatebase px-3 py-2 text-slate-200"
                 />
               </label>
@@ -915,6 +1060,20 @@ export default function Page() {
                     </button>
                   ))}
                 </div>
+                <div className="mt-2 flex gap-2">
+                  <button
+                    onClick={() => handleWaterSet(Math.min(10, state.bio.water + 2))}
+                    className="px-2 py-1 border border-slateborder rounded-lg text-xs"
+                  >
+                    +2 blocks
+                  </button>
+                  <button
+                    onClick={() => handleWaterSet(0)}
+                    className="px-2 py-1 border border-slateborder rounded-lg text-xs"
+                  >
+                    Reset water
+                  </button>
+                </div>
               </div>
             </div>
             <div>
@@ -922,24 +1081,33 @@ export default function Page() {
               <div className="mt-2 grid grid-cols-2 gap-2">
                 {SUPPS.map((supp) => (
                   <label key={supp.key} className="flex items-center gap-2 text-xs text-slate-300">
-                    <input
-                      type="checkbox"
-                      checked={Boolean(state.bio.supps[supp.key])}
-                      onChange={() => handleSuppToggle(supp.key)}
-                    />
+                    <input type="checkbox" checked={Boolean(state.bio.supps[supp.key])} onChange={() => handleSuppToggle(supp.key)} />
                     {supp.label}
                   </label>
                 ))}
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3 text-xs">
-              <div>
-                <p className="text-slate-400">BMI</p>
-                <p className="text-base">{bmiLive}</p>
-              </div>
-              <div>
-                <p className="text-slate-400">BMR</p>
-                <p className="text-base">{bmrLive}</p>
+            <div>
+              <p className="text-xs text-slate-400">OPS CHECKLIST</p>
+              <div className="mt-2 flex flex-wrap gap-3">
+                {OPS_KEYS.map((item) => (
+                  <label key={item.key} className="flex items-center gap-2 text-xs text-slate-300">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(state.ops[item.key])}
+                      onChange={() =>
+                        dispatch({ type: 'SET_OPS', payload: { ...state.ops, [item.key]: !state.ops[item.key] } })
+                      }
+                    />
+                    {item.label}
+                  </label>
+                ))}
+                <button
+                  onClick={() => handleSave('OPS', { ops: state.ops })}
+                  className="px-3 py-2 border border-slateborder rounded-lg text-xs hover:border-accent"
+                >
+                  SAVE OPS
+                </button>
               </div>
             </div>
             <button
@@ -948,9 +1116,6 @@ export default function Page() {
             >
               GUARDAR BIO
             </button>
-            <p className="text-xs text-slate-500">
-              STORAGE: weight {state.bio.weight} · steps {state.bio.steps} · water {state.bio.water}
-            </p>
           </SectionCard>
 
           <SectionCard>
@@ -988,10 +1153,7 @@ export default function Page() {
                   type="number"
                   value={state.gym.treadmill.speed}
                   onChange={(event) =>
-                    dispatch({
-                      type: 'SET_GYM',
-                      payload: { treadmill: { ...state.gym.treadmill, speed: Number(event.target.value) } },
-                    })
+                    dispatch({ type: 'SET_GYM', payload: { treadmill: { ...state.gym.treadmill, speed: Number(event.target.value) } } })
                   }
                   className="mt-1 w-full rounded-lg border border-slateborder bg-slatebase px-3 py-2 text-slate-200"
                 />
@@ -1002,10 +1164,7 @@ export default function Page() {
                   type="number"
                   value={state.gym.treadmill.incline}
                   onChange={(event) =>
-                    dispatch({
-                      type: 'SET_GYM',
-                      payload: { treadmill: { ...state.gym.treadmill, incline: Number(event.target.value) } },
-                    })
+                    dispatch({ type: 'SET_GYM', payload: { treadmill: { ...state.gym.treadmill, incline: Number(event.target.value) } } })
                   }
                   className="mt-1 w-full rounded-lg border border-slateborder bg-slatebase px-3 py-2 text-slate-200"
                 />
@@ -1016,10 +1175,7 @@ export default function Page() {
                   type="number"
                   value={state.gym.treadmill.minutes}
                   onChange={(event) =>
-                    dispatch({
-                      type: 'SET_GYM',
-                      payload: { treadmill: { ...state.gym.treadmill, minutes: Number(event.target.value) } },
-                    })
+                    dispatch({ type: 'SET_GYM', payload: { treadmill: { ...state.gym.treadmill, minutes: Number(event.target.value) } } })
                   }
                   className="mt-1 w-full rounded-lg border border-slateborder bg-slatebase px-3 py-2 text-slate-200"
                 />
@@ -1039,10 +1195,7 @@ export default function Page() {
                   </span>
                   <div className="flex items-center gap-2">
                     <span>{entry.kcal} kcal</span>
-                    <button
-                      onClick={() => handleDeleteActivity('treadmill', entry.id)}
-                      className="text-xs text-danger"
-                    >
+                    <button onClick={() => handleDeleteActivity('treadmill', entry.id)} className="text-xs text-danger">
                       DEL
                     </button>
                   </div>
@@ -1064,19 +1217,13 @@ export default function Page() {
                         dispatch({
                           type: 'SET_GYM',
                           payload: {
-                            manualMinutes: {
-                              ...state.gym.manualMinutes,
-                              [preset.key]: Number(event.target.value),
-                            },
+                            manualMinutes: { ...state.gym.manualMinutes, [preset.key]: Number(event.target.value) },
                           },
                         })
                       }
                       className="flex-1 rounded-lg border border-slateborder bg-slatebase px-2 py-1 text-xs text-slate-200"
                     />
-                    <button
-                      onClick={() => handleAddManual(preset)}
-                      className="px-3 py-2 border border-slateborder rounded-lg text-xs hover:border-accent"
-                    >
+                    <button onClick={() => handleAddManual(preset)} className="px-3 py-2 border border-slateborder rounded-lg text-xs hover:border-accent">
                       ADD
                     </button>
                   </div>
@@ -1090,10 +1237,7 @@ export default function Page() {
                     </span>
                     <div className="flex items-center gap-2">
                       <span>{entry.kcal} kcal</span>
-                      <button
-                        onClick={() => handleDeleteActivity('manual', entry.id)}
-                        className="text-xs text-danger"
-                      >
+                      <button onClick={() => handleDeleteActivity('manual', entry.id)} className="text-xs text-danger">
                         DEL
                       </button>
                     </div>
@@ -1108,7 +1252,6 @@ export default function Page() {
             >
               GUARDAR GYM
             </button>
-            <p className="text-xs text-slate-500">STORAGE: OUT {calOutLive} · extra {extraBurn} kcal</p>
           </SectionCard>
 
           <SectionCard className="space-y-3">
@@ -1178,7 +1321,6 @@ export default function Page() {
             >
               GUARDAR FUEL
             </button>
-            <p className="text-xs text-slate-500">STORAGE: IN {calInLive}</p>
           </SectionCard>
 
           <SectionCard>
@@ -1188,7 +1330,55 @@ export default function Page() {
               <li>Eggs × 75</li>
               <li>Butter g × 7.2</li>
             </ul>
-            <div className="mt-3 text-xs text-slate-400">Total IN (STORAGE): {calInLive}</div>
+            <div className="mt-3 text-xs text-slate-400">Total IN: {calInLive}</div>
+          </SectionCard>
+        </section>
+      )}
+
+      {state.activeTab === 'Sleep' && dayLog && (
+        <section className="mt-6 grid gap-4 lg:grid-cols-[2fr_1fr]">
+          <SectionCard className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xs tracking-[0.3em] text-slate-400">SLEEP MODULE</h2>
+              <button onClick={() => handleTrash('SLEEP')} className="text-xs text-danger">
+                TRASH
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <label className="text-xs text-slate-400">
+                Sleep Hours
+                <input
+                  type="number"
+                  value={state.sleep.sleepHours}
+                  onChange={(event) => dispatch({ type: 'SET_SLEEP', payload: { sleepHours: Number(event.target.value) } })}
+                  className="mt-1 w-full rounded-lg border border-slateborder bg-slatebase px-3 py-2 text-slate-200"
+                />
+              </label>
+              <label className="text-xs text-slate-400">
+                Quality (1-5)
+                <input
+                  type="number"
+                  min={1}
+                  max={5}
+                  value={state.sleep.sleepQuality}
+                  onChange={(event) => dispatch({ type: 'SET_SLEEP', payload: { sleepQuality: Number(event.target.value) } })}
+                  className="mt-1 w-full rounded-lg border border-slateborder bg-slatebase px-3 py-2 text-slate-200"
+                />
+              </label>
+            </div>
+            <button
+              onClick={() => handleSave('SLEEP', state.sleep)}
+              className="w-full rounded-lg border border-accent bg-accent/20 py-2 text-xs tracking-[0.3em] text-accent"
+            >
+              GUARDAR SLEEP
+            </button>
+          </SectionCard>
+
+          <SectionCard>
+            <h2 className="text-xs tracking-[0.3em] text-slate-400">SLEEP STATS</h2>
+            <div className="mt-3 text-xs text-slate-300">Avg 7d: {sleepAvg7}h</div>
+            <div className="mt-1 text-xs text-slate-300">Avg 30d: {sleepAvg30}h</div>
+            <div className="mt-1 text-xs text-slate-300">Debt: {sleepDebt.toFixed(1)}h</div>
           </SectionCard>
         </section>
       )}
@@ -1204,10 +1394,7 @@ export default function Page() {
                 onChange={(event) => dispatch({ type: 'SET_JUMP_DATE', payload: event.target.value })}
                 className="rounded-lg border border-slateborder bg-slatebase px-3 py-2 text-slate-200"
               />
-              <button
-                onClick={handleJumpToDate}
-                className="px-3 py-2 border border-slateborder rounded-lg hover:border-accent"
-              >
+              <button onClick={handleJumpToDate} className="px-3 py-2 border border-slateborder rounded-lg hover:border-accent">
                 IR A FECHA
               </button>
             </div>
@@ -1221,8 +1408,8 @@ export default function Page() {
                     <th className="text-left">OUT</th>
                     <th className="text-left">NET</th>
                     <th className="text-left">WTR</th>
-                    <th className="text-left">STP</th>
                     <th className="text-left">FAST</th>
+                    <th className="text-left">SLEEP</th>
                     <th className="text-left">SCORE</th>
                     <th className="text-left">ACTIONS</th>
                   </tr>
@@ -1236,8 +1423,8 @@ export default function Page() {
                       <td>{row.calOut}</td>
                       <td>{row.net}</td>
                       <td>{row.water}</td>
-                      <td>{row.steps}</td>
                       <td>{row.fastHours}</td>
+                      <td>{row.sleepHours}</td>
                       <td>{row.score}</td>
                       <td>
                         <button onClick={() => handleDeleteDay(row.date)} className="text-xs text-danger">
@@ -1255,33 +1442,45 @@ export default function Page() {
               <CalendarMonth
                 monthLabel={state.calendarMonth}
                 days={calendarDays}
-                onPrev={() => dispatch({ type: 'SET_CALENDAR_MONTH', payload: shiftMonth(state.calendarMonth, -1) })}
-                onNext={() => dispatch({ type: 'SET_CALENDAR_MONTH', payload: shiftMonth(state.calendarMonth, 1) })}
-                footer="PRE-SEASON / SEASON / POST-SEASON."
+                onPrev={async () => {
+                  const nextMonth = shiftMonth(state.calendarMonth, -1);
+                  dispatch({ type: 'SET_CALENDAR_MONTH', payload: nextMonth });
+                  await setSelectedMonth(nextMonth);
+                  await loadCalendarMonth(nextMonth);
+                }}
+                onNext={async () => {
+                  const nextMonth = shiftMonth(state.calendarMonth, 1);
+                  dispatch({ type: 'SET_CALENDAR_MONTH', payload: nextMonth });
+                  await setSelectedMonth(nextMonth);
+                  await loadCalendarMonth(nextMonth);
+                }}
+                onSelect={(date) => loadDashboard(date).catch(() => undefined)}
+                footer="Phase-first view with module dots."
               />
             </SectionCard>
             <SectionCard>
               <h2 className="text-xs tracking-[0.3em] text-slate-400">BACKUP</h2>
               <p className="mt-3 text-xs text-slate-400">Exporta o importa la base local completa.</p>
               <div className="mt-4 flex flex-wrap gap-2">
-                <button
-                  onClick={() => handleExport()}
-                  className="px-3 py-2 border border-slateborder rounded-lg text-xs hover:border-accent"
-                >
+                <button onClick={handleExport} className="px-3 py-2 border border-slateborder rounded-lg text-xs hover:border-accent">
                   EXPORT JSON
                 </button>
                 <label className="px-3 py-2 border border-slateborder rounded-lg text-xs hover:border-accent cursor-pointer">
                   IMPORT JSON
-                  <input
-                    type="file"
-                    accept="application/json"
-                    className="hidden"
-                    onChange={(event) => handleImport(event)}
-                  />
+                  <input type="file" accept="application/json" className="hidden" onChange={handleImport} />
                 </label>
+                <button onClick={handleHardReset} className="px-3 py-2 border border-danger/60 text-danger rounded-lg text-xs">
+                  HARD RESET
+                </button>
               </div>
             </SectionCard>
           </div>
+        </section>
+      )}
+
+      {state.activeTab === 'Intel' && (
+        <section className="mt-6">
+          <IntelSlides slides={intelSlides} activeIndex={state.intelSlide} onSelect={(idx) => dispatch({ type: 'SET_INTEL_SLIDE', payload: idx })} />
         </section>
       )}
 
@@ -1292,7 +1491,7 @@ export default function Page() {
             <p>1. Carnívoro estricto, sin procesados.</p>
             <p>2. 2MAD: dos comidas al día, sin snacks.</p>
             <p>3. Ayuno con timer persistente en local.</p>
-            <p>4. Score diario basado en déficit, agua, pasos y gasto.</p>
+            <p>4. Score diario basado en déficit, agua y gasto.</p>
             <p>5. Ledger es auditoría, no reporte.</p>
           </div>
         </section>

@@ -6,11 +6,12 @@ import {
   computeCaloriesOut,
   computeFlags,
   computeNet,
-  computeRoutineLabel,
   computeTitanScore,
 } from './analytics';
 import { addDays, getAgeFromDob, monthDays, nowIsoInTZ, todayISOInTZ } from './date';
-import type { ActivityLog, ActivityManualEntry, ActivityTreadmillEntry, TitanDay, TitanFlags } from './types';
+import { phaseForDate } from './phase';
+import { getRoutineLabel } from './routine';
+import type { ActivityLog, ActivityManualEntry, ActivityTreadmillEntry, OpsChecklist, TitanDay, TitanFlags } from './types';
 
 const TARGET_DATE = '2026-03-15';
 const SEASON_START = '2026-01-05';
@@ -57,30 +58,23 @@ function normalizeManual(entries: ActivityManualEntry[] | undefined) {
   }));
 }
 
-type Phase = 'PRE-SEASON' | 'SEASON' | 'POST-SEASON';
-
-function getPhase(date: string): Phase {
-  if (date < SEASON_START) return 'PRE-SEASON';
-  if (date <= TARGET_DATE) return 'SEASON';
-  return 'POST-SEASON';
-}
-
 export function createEmptyDay(date: string): TitanDay {
   return {
     date,
     tsUpdated: null,
     weight: 0,
-    waist: 0,
-    workout: '',
-    calIn: 0,
-    calOut: 0,
     water: 0,
     supps: { creat: false, sod: false, mag: false, omega: false },
-    macros: { m: 0, e: 0, b: 0 },
     fastHours: 0,
-    steps: 0,
-    notes: '',
+    workout: '',
     activity: emptyActivity(),
+    calIn: 0,
+    macros: { m: 0, e: 0, b: 0 },
+    notes: '',
+    sleepHours: 0,
+    sleepQuality: 0,
+    ops: { walk10: false, sunlight10: false, stretch10: false },
+    mood: { level: 0, note: '' },
     titanScore: 0,
     flags: { list: [], bmr: 0, net: 0 },
   };
@@ -92,6 +86,8 @@ function normalizeDay(day: TitanDay): TitanDay {
     ...day,
     supps: day.supps ?? { creat: false, sod: false, mag: false, omega: false },
     macros: day.macros ?? { m: 0, e: 0, b: 0 },
+    ops: day.ops ?? { walk10: false, sunlight10: false, stretch10: false },
+    mood: day.mood ?? { level: 0, note: '' },
     activity: {
       treadmill: normalizeTreadmill(day.activity?.treadmill),
       manual: normalizeManual(day.activity?.manual),
@@ -148,7 +144,7 @@ function computeDerived(day: TitanDay, days: TitanDay[]) {
   const weightForBmr = day.weight > 0 ? day.weight : getLastWeight(days, day.date);
   const calIn = computeCaloriesIn(day.macros);
   const calOut = computeCaloriesOut({ weight: weightForBmr, activity: day.activity });
-  const titanScore = computeTitanScore({ ...day, calIn, calOut });
+  const titanScore = computeTitanScore({ calIn, calOut, water: day.water });
   const flags = computeFlagsForDay({ ...day, calIn, calOut }, days);
   return { calIn, calOut, titanScore, flags, weightForBmr };
 }
@@ -162,16 +158,6 @@ function mapHistory(days: TitanDay[]) {
       net: computeNet(day.calIn, day.calOut),
       score: day.titanScore,
     }));
-}
-
-export async function getMonthCalendar(monthKey: string) {
-  const days = await readDays();
-  const monthDate = `${monthKey}-01`;
-  return monthDays(monthDate).map((iso) => ({
-    date: iso,
-    score: days.find((day) => day.date === iso)?.titanScore ?? 0,
-    phase: getPhase(iso),
-  }));
 }
 
 export async function ping() {
@@ -191,14 +177,37 @@ export async function getDashboardData(date?: string) {
   const normalized = normalizeDay(dayRow);
   const { calIn, calOut, titanScore, flags, weightForBmr } = computeDerived(normalized, days);
 
-  const calendar = monthDays(targetDate).map((iso) => ({
-    date: iso,
-    score: days.find((day) => day.date === iso)?.titanScore ?? 0,
-    phase: getPhase(iso),
-  }));
+  const calendar = monthDays(targetDate).map((iso) => {
+    const day = days.find((d) => d.date === iso);
+    return {
+      date: iso,
+      phase: phaseForDate(iso),
+      score: day?.titanScore ?? 0,
+      dots: {
+        bio: Boolean(day && (day.weight > 0 || day.water > 0 || Object.values(day.supps).some(Boolean))),
+        gym: Boolean(day && ((day.workout && day.workout.trim()) || day.activity.treadmill.length + day.activity.manual.length > 0)),
+        fuel: Boolean(day && (day.calIn > 0 || day.macros.m + day.macros.e + day.macros.b > 0)),
+        sleep: Boolean(day && day.sleepHours > 0),
+        ops: Boolean(day && Object.values(day.ops).some(Boolean)),
+      },
+    };
+  });
 
   const fastState = await db.state.get('fast_start_ms');
+  const lastModuleState = await db.state.get('last_module_today');
   const lastWeight = getLastWeight(days, targetDate);
+
+  const missingDays = (() => {
+    const start = '2025-12-30';
+    const set = new Set(days.map((day) => day.date));
+    let cursor = start;
+    let count = 0;
+    while (cursor <= todayStr) {
+      if (!set.has(cursor)) count += 1;
+      cursor = addDays(cursor, 1);
+    }
+    return count;
+  })();
 
   return {
     success: true,
@@ -207,10 +216,12 @@ export async function getDashboardData(date?: string) {
       targetDate,
       todayStr,
       daysLeft: diffDays(todayStr, TARGET_DATE),
-      season: todayStr < SEASON_START ? 'PRE-SEASON' : 'SEASON',
+      season: todayStr < SEASON_START ? 'PRE-SEASON' : todayStr <= TARGET_DATE ? 'SEASON' : 'POST-SEASON',
       fastStartMs: fastState?.value ? Number(fastState.value) : null,
       nowIso: nowIsoInTZ(),
-      routineLabel: computeRoutineLabel(days, targetDate),
+      routineLabel: getRoutineLabel(days, targetDate),
+      lastModuleToday: lastModuleState?.value ?? null,
+      missingDays,
     },
     user: {
       age: getAgeFromDob(DOB),
@@ -233,7 +244,7 @@ export async function getDashboardData(date?: string) {
   };
 }
 
-export async function saveModule(type: 'BIO' | 'GYM' | 'FUEL', payload: any) {
+export async function saveModule(type: 'BIO' | 'GYM' | 'FUEL' | 'SLEEP' | 'OPS', payload: any) {
   const targetDate = payload.targetDate ?? todayISOInTZ();
   const days = await readDays();
   const current = days.find((day) => day.date === targetDate) ?? createEmptyDay(targetDate);
@@ -243,10 +254,9 @@ export async function saveModule(type: 'BIO' | 'GYM' | 'FUEL', payload: any) {
     next = {
       ...next,
       weight: Number(payload.weight ?? next.weight ?? 0),
-      waist: Number(payload.waist ?? next.waist ?? 0),
-      steps: Number(payload.steps ?? next.steps ?? 0),
       water: Number(payload.water ?? next.water ?? 0),
       supps: payload.supps ?? next.supps,
+      fastHours: Number(payload.fastHours ?? next.fastHours ?? 0),
     };
   }
   if (type === 'GYM') {
@@ -263,6 +273,19 @@ export async function saveModule(type: 'BIO' | 'GYM' | 'FUEL', payload: any) {
       notes: String(payload.notes ?? next.notes ?? ''),
     };
   }
+  if (type === 'SLEEP') {
+    next = {
+      ...next,
+      sleepHours: Number(payload.sleepHours ?? next.sleepHours ?? 0),
+      sleepQuality: Number(payload.sleepQuality ?? next.sleepQuality ?? 0),
+    };
+  }
+  if (type === 'OPS') {
+    next = {
+      ...next,
+      ops: payload.ops ?? next.ops,
+    };
+  }
 
   const enriched = { ...next, tsUpdated: nowIsoInTZ() };
   const merged = days.filter((day) => day.date !== targetDate).concat(enriched);
@@ -275,6 +298,7 @@ export async function saveModule(type: 'BIO' | 'GYM' | 'FUEL', payload: any) {
     flags: derived.flags,
   };
   await db.days.put(toSave);
+  await db.state.put({ key: 'last_module_today', value: type });
   return getDashboardData(targetDate);
 }
 
@@ -282,10 +306,12 @@ export async function fastingOp(action: 'START' | 'STOP' | 'RESET') {
   const todayStr = todayISOInTZ();
   if (action === 'START') {
     await db.state.put({ key: 'fast_start_ms', value: String(Date.now()) });
+    await db.state.put({ key: 'last_module_today', value: 'FAST' });
     return getDashboardData(todayStr);
   }
   if (action === 'RESET') {
     await db.state.put({ key: 'fast_start_ms', value: null });
+    await db.state.put({ key: 'last_module_today', value: 'FAST' });
     return getDashboardData(todayStr);
   }
   const fastState = await db.state.get('fast_start_ms');
@@ -294,6 +320,7 @@ export async function fastingOp(action: 'START' | 'STOP' | 'RESET') {
   }
   const hours = Math.round(((Date.now() - Number(fastState.value)) / 3600000) * 100) / 100;
   await db.state.put({ key: 'fast_start_ms', value: null });
+  await db.state.put({ key: 'last_module_today', value: 'FAST' });
   const days = await readDays();
   const current = days.find((day) => day.date === todayStr) ?? createEmptyDay(todayStr);
   const updated = { ...normalizeDay(current), fastHours: hours, tsUpdated: nowIsoInTZ() };
@@ -338,4 +365,29 @@ export async function importAllData(payload: { days?: TitanDay[]; state?: { key:
 
 export async function deleteDay(date: string) {
   await db.days.delete(date);
+}
+
+export async function setSelectedMonth(monthKey: string) {
+  await db.state.put({ key: 'selected_month_iso', value: monthKey });
+}
+
+export async function getSelectedMonth() {
+  const state = await db.state.get('selected_month_iso');
+  return state?.value ?? '2025-12';
+}
+
+export async function hardReset() {
+  await db.delete();
+}
+
+export async function getDaysForMonth(monthKey: string) {
+  const days = await readDays();
+  const [year, month] = monthKey.split('-').map(Number);
+  const start = `${year}-${String(month).padStart(2, '0')}-01`;
+  const nextMonth = month === 12 ? { year: year + 1, month: 1 } : { year, month: month + 1 };
+  const endDate = new Date(Date.UTC(nextMonth.year, nextMonth.month - 1, 0));
+  const end = `${endDate.getUTCFullYear()}-${String(endDate.getUTCMonth() + 1).padStart(2, '0')}-${String(
+    endDate.getUTCDate(),
+  ).padStart(2, '0')}`;
+  return days.filter((day) => day.date >= start && day.date <= end);
 }

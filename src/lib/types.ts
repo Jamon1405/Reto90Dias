@@ -11,6 +11,17 @@ export type Macros = {
   b: number;
 };
 
+export type OpsChecklist = {
+  walk10: boolean;
+  sunlight10: boolean;
+  stretch10: boolean;
+};
+
+export type MoodEntry = {
+  level: number;
+  note: string;
+};
+
 export type ActivityTreadmillEntry = {
   id: string;
   speed: number;
@@ -45,17 +56,18 @@ export type TitanDay = {
   date: string;
   tsUpdated: string | null;
   weight: number;
-  waist: number;
-  workout: string;
-  calIn: number;
-  calOut: number;
   water: number;
   supps: SupplementStack;
-  macros: Macros;
   fastHours: number;
-  steps: number;
-  notes: string;
+  workout: string;
   activity: ActivityLog;
+  calIn: number;
+  macros: Macros;
+  notes: string;
+  sleepHours: number;
+  sleepQuality: number;
+  ops: OpsChecklist;
+  mood: MoodEntry;
   titanScore: number;
   flags: TitanFlags;
 };

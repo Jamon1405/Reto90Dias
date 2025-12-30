@@ -7,7 +7,7 @@ class TitanOmegaDB extends Dexie {
 
   constructor() {
     super('titanOmega');
-    this.version(1).stores({
+    this.version(2).stores({
       days: 'date',
       state: 'key',
     });

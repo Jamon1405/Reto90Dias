@@ -20,13 +20,12 @@ export function computeNet(calIn: number, calOut: number) {
   return Math.round(calIn - calOut);
 }
 
-export function computeTitanScore({ calIn, calOut, water, steps }: TitanDay) {
+export function computeTitanScore({ calIn, calOut, water }: Pick<TitanDay, 'calIn' | 'calOut' | 'water'>) {
   const net = computeNet(calIn, calOut);
   const base = net <= 0 ? 40 : 0;
   const waterScore = Math.min(20, Math.round((water / 8) * 20));
-  const stepScore = Math.min(20, Math.round((steps / 8000) * 20));
   const burnScore = calOut > 0 ? 20 : 0;
-  return Math.min(100, base + waterScore + stepScore + burnScore);
+  return Math.min(100, base + waterScore + burnScore);
 }
 
 export function computeCaloriesIn(macros: TitanDay['macros']) {
@@ -54,30 +53,6 @@ export function computeCaloriesOut({
   const bmr = computeBmr(weight, referenceDate);
   const extra = computeExtraBurn(activity);
   return Math.round(bmr + extra);
-}
-
-const ROUTINE_SEQUENCE = ['PECHO/BICEPS', 'ESPALDA/TRICEPS', 'PIERNA/HOMBRO'] as const;
-
-function isTrainingDay(day: TitanDay) {
-  const hasWorkout = Boolean(day.workout && day.workout.trim());
-  const treadmillCount = day.activity?.treadmill?.length ?? 0;
-  const manualCount = day.activity?.manual?.length ?? 0;
-  return hasWorkout || treadmillCount + manualCount > 0;
-}
-
-export function computeRoutineLabel(days: TitanDay[], targetDate: string) {
-  const trainingDays = [...days]
-    .filter((day) => day.date <= targetDate && isTrainingDay(day))
-    .sort((a, b) => (a.date < b.date ? -1 : 1));
-
-  if (trainingDays.length === 0) {
-    return ROUTINE_SEQUENCE[0];
-  }
-
-  const lastTraining = trainingDays[trainingDays.length - 1];
-  const lastIndex = trainingDays.length - 1;
-  const baseIndex = lastTraining.date === targetDate ? lastIndex : lastIndex + 1;
-  return ROUTINE_SEQUENCE[baseIndex % ROUTINE_SEQUENCE.length];
 }
 
 export function computeFlags({
@@ -130,4 +105,42 @@ export function computeFlags({
     net,
     bmr: computeBmr(weight),
   };
+}
+
+const ROUTINE_SEQUENCE = ['PECHO/BICEPS', 'ESPALDA/TRICEPS', 'PIERNA/HOMBRO'] as const;
+
+function isTrainingDay(day: TitanDay) {
+  const hasWorkout = Boolean(day.workout && day.workout.trim());
+  const treadmillCount = day.activity?.treadmill?.length ?? 0;
+  const manualCount = day.activity?.manual?.length ?? 0;
+  return hasWorkout || treadmillCount + manualCount > 0;
+}
+
+export function computeRoutineLabel(days: TitanDay[], targetDate: string) {
+  const trainingDays = [...days]
+    .filter((day) => day.date <= targetDate && isTrainingDay(day))
+    .sort((a, b) => (a.date < b.date ? -1 : 1));
+
+  if (trainingDays.length === 0) {
+    return ROUTINE_SEQUENCE[0];
+  }
+
+  const lastTraining = trainingDays[trainingDays.length - 1];
+  const lastIndex = trainingDays.length - 1;
+  const baseIndex = lastTraining.date === targetDate ? lastIndex : lastIndex + 1;
+  return ROUTINE_SEQUENCE[baseIndex % ROUTINE_SEQUENCE.length];
+}
+
+export function average(values: number[]) {
+  if (values.length === 0) return 0;
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
+export function movingAverage(values: number[], window: number) {
+  if (values.length === 0) return [] as number[];
+  return values.map((_, idx) => {
+    const start = Math.max(0, idx - window + 1);
+    const slice = values.slice(start, idx + 1);
+    return average(slice);
+  });
 }
