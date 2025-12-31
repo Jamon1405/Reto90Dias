@@ -87,7 +87,7 @@ type DashboardResponse = {
     score: number;
     dots: { bio: boolean; gym: boolean; fuel: boolean; sleep: boolean; ops: boolean };
   }[];
-  history: Array<DayLog & { net: number; score: number } & { fastHours: number }>;
+  history: Array<DayLog & { net: number; score: number }>;
 };
 
 const SUPPS: Array<{ label: string; key: keyof SupplementStack }> = [

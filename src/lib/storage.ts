@@ -153,11 +153,17 @@ function mapHistory(days: TitanDay[]) {
   return [...days]
     .sort((a, b) => (a.date < b.date ? 1 : -1))
     .slice(0, 30)
-    .map((day) => ({
-      ...day,
-      net: computeNet(day.calIn, day.calOut),
-      score: day.titanScore,
-    }));
+    .map((day) => {
+      const calIn = day.calIn ?? 0;
+      const calOut = day.calOut ?? 0;
+      return {
+        ...day,
+        calOut,
+        calIn,
+        net: computeNet(calIn, calOut),
+        score: day.titanScore,
+      };
+    });
 }
 
 export async function ping() {
