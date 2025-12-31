@@ -69,6 +69,7 @@ export function createEmptyDay(date: string): TitanDay {
     workout: '',
     activity: emptyActivity(),
     calIn: 0,
+    calOut: 0,
     macros: { m: 0, e: 0, b: 0 },
     notes: '',
     sleepHours: 0,
@@ -92,6 +93,7 @@ function normalizeDay(day: TitanDay): TitanDay {
       treadmill: normalizeTreadmill(day.activity?.treadmill),
       manual: normalizeManual(day.activity?.manual),
     },
+    calOut: day.calOut ?? 0,
     flags: day.flags ?? { list: [], bmr: 0, net: 0 },
   };
 }

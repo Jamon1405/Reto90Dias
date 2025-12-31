@@ -62,6 +62,7 @@ export type TitanDay = {
   workout: string;
   activity: ActivityLog;
   calIn: number;
+  calOut: number;
   macros: Macros;
   notes: string;
   sleepHours: number;
