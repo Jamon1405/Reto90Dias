@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model DailyLog {
+  id           String   @id @default(cuid())
+  dateISO      String   @unique
+  updatedAt    DateTime @updatedAt
+  weightKg     Float    @default(0)
+  waistCm      Float    @default(0)
+  steps        Int      @default(0)
+  waterCups    Int      @default(0)
+  suppsJson    String   @default("{}")
+  workout      String   @default("")
+  extraBurnJson String  @default("{}")
+  macrosJson   String   @default("{}")
+  calIn        Int      @default(0)
+  calOut       Int      @default(0)
+  fastingHours Float    @default(0)
+  sleepHours   Float    @default(0)
+  recoveryJson String   @default("{}")
+  checkinJson  String   @default("{}")
+  inbodyJson   String   @default("{}")
+  notes        String   @default("")
+  titanScore   Int      @default(0)
+  flagsJson    String   @default("{}")
+}
+
+model AppConfig {
+  key   String @id
+  value String?
+}
