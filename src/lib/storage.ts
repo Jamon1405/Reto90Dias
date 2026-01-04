@@ -100,7 +100,27 @@ function normalizeDay(day: TitanDay): TitanDay {
 
 async function readDays() {
   const rows = await db.days.toArray();
-  return rows.map(normalizeDay);
+  const normalized = rows.map(normalizeDay);
+  return normalized.map((day, index) => {
+    const row = rows[index];
+    const needsCalIn = row.calIn == null;
+    const needsCalOut = row.calOut == null;
+    const needsScore = row.titanScore == null;
+    const needsFlags = row.flags == null;
+    if (!needsCalIn && !needsCalOut && !needsScore && !needsFlags) {
+      return day;
+    }
+    const metrics = computeMetrics(day, normalized);
+    return {
+      ...day,
+      calIn: needsCalIn ? metrics.calIn : day.calIn,
+      calOut: needsCalOut ? metrics.calOut : day.calOut,
+      titanScore: needsScore ? metrics.titanScore : day.titanScore,
+      flags: needsFlags
+        ? computeFlagsForDay({ ...day, calIn: metrics.calIn, calOut: metrics.calOut }, normalized)
+        : day.flags,
+    };
+  });
 }
 
 function getLastWeight(days: TitanDay[], targetDate: string) {
@@ -143,12 +163,17 @@ function computeFlagsForDay(day: TitanDay, days: TitanDay[]): TitanFlags {
 }
 
 function computeDerived(day: TitanDay, days: TitanDay[]) {
+  const metrics = computeMetrics(day, days);
+  const flags = computeFlagsForDay({ ...day, calIn: metrics.calIn, calOut: metrics.calOut }, days);
+  return { ...metrics, flags };
+}
+
+function computeMetrics(day: TitanDay, days: TitanDay[]) {
   const weightForBmr = day.weight > 0 ? day.weight : getLastWeight(days, day.date);
   const calIn = computeCaloriesIn(day.macros);
   const calOut = computeCaloriesOut({ weight: weightForBmr, activity: day.activity });
   const titanScore = computeTitanScore({ calIn, calOut, water: day.water });
-  const flags = computeFlagsForDay({ ...day, calIn, calOut }, days);
-  return { calIn, calOut, titanScore, flags, weightForBmr };
+  return { calIn, calOut, titanScore, weightForBmr };
 }
 
 function mapHistory(days: TitanDay[]) {
