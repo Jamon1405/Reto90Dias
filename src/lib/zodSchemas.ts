@@ -52,17 +52,6 @@ const moduleBaseSchema = z.object({
   targetDate: z.string(),
 });
 
-export const modulePayloadSchema = z.discriminatedUnion('type', [
-  moduleBaseSchema.extend({ type: z.literal('BIO'), payload: bioSchema }),
-  moduleBaseSchema.extend({ type: z.literal('GYM'), payload: gymSchema }),
-  moduleBaseSchema.extend({ type: z.literal('EXTRA'), payload: extraSchema }),
-  moduleBaseSchema.extend({ type: z.literal('FUEL'), payload: fuelSchema }),
-  moduleBaseSchema.extend({ type: z.literal('SLEEP'), payload: sleepSchema }),
-  moduleBaseSchema.extend({ type: z.literal('RECOVERY'), payload: recoveryModuleSchema }),
-  moduleBaseSchema.extend({ type: z.literal('CHECKIN'), payload: checkinModuleSchema }),
-  moduleBaseSchema.extend({ type: z.literal('INBODY'), payload: inbodyModuleSchema }),
-]);
-
 export const bioSchema = z.object({
   weightKg: z.number().nonnegative(),
   waistCm: z.number().nonnegative(),
@@ -100,6 +89,17 @@ export const inbodyModuleSchema = z.object({
   inbodyJson: inbodySchema,
   waistCm: z.number().nonnegative().optional(),
 });
+
+export const modulePayloadSchema = z.discriminatedUnion('type', [
+  moduleBaseSchema.extend({ type: z.literal('BIO'), payload: bioSchema }),
+  moduleBaseSchema.extend({ type: z.literal('GYM'), payload: gymSchema }),
+  moduleBaseSchema.extend({ type: z.literal('EXTRA'), payload: extraSchema }),
+  moduleBaseSchema.extend({ type: z.literal('FUEL'), payload: fuelSchema }),
+  moduleBaseSchema.extend({ type: z.literal('SLEEP'), payload: sleepSchema }),
+  moduleBaseSchema.extend({ type: z.literal('RECOVERY'), payload: recoveryModuleSchema }),
+  moduleBaseSchema.extend({ type: z.literal('CHECKIN'), payload: checkinModuleSchema }),
+  moduleBaseSchema.extend({ type: z.literal('INBODY'), payload: inbodyModuleSchema }),
+]);
 
 export const defaultSupps = suppsSchema.parse({ creat: false, sod: false, mag: false, omega: false });
 export const defaultMacros = macrosSchema.parse({ p: 0, c: 0, f: 0 });
