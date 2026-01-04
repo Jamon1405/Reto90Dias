@@ -3,21 +3,13 @@ import { prisma } from '@/lib/prisma';
 import { computeBmr, computeCalIn, computeCalOut, computeFlags, computeNet, computeTitanScore, lastThreeDates } from '@/lib/calc';
 import { todayISO } from '@/lib/timezone';
 import {
-  bioSchema,
-  checkinModuleSchema,
   defaultCheckin,
   defaultExtraBurn,
   defaultInbody,
   defaultMacros,
   defaultRecovery,
   defaultSupps,
-  extraSchema,
-  fuelSchema,
-  gymSchema,
-  inbodyModuleSchema,
   modulePayloadSchema,
-  recoveryModuleSchema,
-  sleepSchema,
 } from '@/lib/zodSchemas';
 import { parseJson, stringifyJson } from '@/lib/json';
 
@@ -38,29 +30,6 @@ async function getOrCreate(dateISO: string) {
   });
 }
 
-function validatePayload(type: string, payload: unknown) {
-  switch (type) {
-    case 'BIO':
-      return bioSchema.parse(payload);
-    case 'GYM':
-      return gymSchema.parse(payload);
-    case 'EXTRA':
-      return extraSchema.parse(payload);
-    case 'FUEL':
-      return fuelSchema.parse(payload);
-    case 'SLEEP':
-      return sleepSchema.parse(payload);
-    case 'RECOVERY':
-      return recoveryModuleSchema.parse(payload);
-    case 'CHECKIN':
-      return checkinModuleSchema.parse(payload);
-    case 'INBODY':
-      return inbodyModuleSchema.parse(payload);
-    default:
-      throw new Error('Tipo inválido');
-  }
-}
-
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -71,38 +40,40 @@ export async function POST(request: Request) {
     }
 
     const current = await getOrCreate(parsed.targetDate);
-    const payload = validatePayload(parsed.type, parsed.payload);
 
     const data: Record<string, unknown> = {};
     if (parsed.type === 'BIO') {
       Object.assign(data, {
-        weightKg: payload.weightKg,
-        waistCm: payload.waistCm,
-        steps: payload.steps,
-        waterCups: payload.waterCups,
-        suppsJson: stringifyJson(payload.suppsJson),
+        weightKg: parsed.payload.weightKg,
+        waistCm: parsed.payload.waistCm,
+        steps: parsed.payload.steps,
+        waterCups: parsed.payload.waterCups,
+        suppsJson: stringifyJson(parsed.payload.suppsJson),
       });
     }
     if (parsed.type === 'GYM') {
-      Object.assign(data, payload);
+      Object.assign(data, parsed.payload);
     }
     if (parsed.type === 'EXTRA') {
-      Object.assign(data, { extraBurnJson: stringifyJson(payload.extraBurnJson) });
+      Object.assign(data, { extraBurnJson: stringifyJson(parsed.payload.extraBurnJson) });
     }
     if (parsed.type === 'FUEL') {
-      Object.assign(data, { macrosJson: stringifyJson(payload.macrosJson), notes: payload.notes });
+      Object.assign(data, { macrosJson: stringifyJson(parsed.payload.macrosJson), notes: parsed.payload.notes });
     }
     if (parsed.type === 'SLEEP') {
-      Object.assign(data, payload);
+      Object.assign(data, parsed.payload);
     }
     if (parsed.type === 'RECOVERY') {
-      Object.assign(data, { recoveryJson: stringifyJson(payload.recoveryJson) });
+      Object.assign(data, { recoveryJson: stringifyJson(parsed.payload.recoveryJson) });
     }
     if (parsed.type === 'CHECKIN') {
-      Object.assign(data, { checkinJson: stringifyJson(payload.checkinJson) });
+      Object.assign(data, { checkinJson: stringifyJson(parsed.payload.checkinJson) });
     }
     if (parsed.type === 'INBODY') {
-      Object.assign(data, { inbodyJson: stringifyJson(payload.inbodyJson), waistCm: payload.waistCm ?? current.waistCm });
+      Object.assign(data, {
+        inbodyJson: stringifyJson(parsed.payload.inbodyJson),
+        waistCm: parsed.payload.waistCm ?? current.waistCm,
+      });
     }
 
     const updated = await prisma.dailyLog.update({

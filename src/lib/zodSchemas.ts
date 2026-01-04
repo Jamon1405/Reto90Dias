@@ -48,11 +48,20 @@ export const inbodySchema = z.object({
   water: z.number().nonnegative(),
 });
 
-export const modulePayloadSchema = z.object({
-  type: z.enum(['BIO', 'GYM', 'EXTRA', 'FUEL', 'SLEEP', 'RECOVERY', 'CHECKIN', 'INBODY']),
+const moduleBaseSchema = z.object({
   targetDate: z.string(),
-  payload: z.record(z.unknown()),
 });
+
+export const modulePayloadSchema = z.discriminatedUnion('type', [
+  moduleBaseSchema.extend({ type: z.literal('BIO'), payload: bioSchema }),
+  moduleBaseSchema.extend({ type: z.literal('GYM'), payload: gymSchema }),
+  moduleBaseSchema.extend({ type: z.literal('EXTRA'), payload: extraSchema }),
+  moduleBaseSchema.extend({ type: z.literal('FUEL'), payload: fuelSchema }),
+  moduleBaseSchema.extend({ type: z.literal('SLEEP'), payload: sleepSchema }),
+  moduleBaseSchema.extend({ type: z.literal('RECOVERY'), payload: recoveryModuleSchema }),
+  moduleBaseSchema.extend({ type: z.literal('CHECKIN'), payload: checkinModuleSchema }),
+  moduleBaseSchema.extend({ type: z.literal('INBODY'), payload: inbodyModuleSchema }),
+]);
 
 export const bioSchema = z.object({
   weightKg: z.number().nonnegative(),
