@@ -141,12 +141,13 @@ export default function Page() {
   }, [activeDate, loadDashboard]);
 
   useEffect(() => {
-    if (!dashboard?.meta.fastingStartMs) {
+    const fastingStartMs = dashboard?.meta.fastingStartMs;
+    if (!fastingStartMs) {
       setFastingElapsed(0);
       return;
     }
     const updateElapsed = () => {
-      const hours = (Date.now() - dashboard.meta.fastingStartMs) / 3600000;
+      const hours = (Date.now() - fastingStartMs) / 3600000;
       setFastingElapsed(Math.round(hours * 100) / 100);
     };
     updateElapsed();
