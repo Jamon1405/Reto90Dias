@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getPrisma } from '@/lib/prisma';
+import type { PrismaClient } from '@prisma/client';
+
+export const dynamic = 'force-dynamic';
 import { parseJson, stringifyJson } from '@/lib/json';
 import {
   ageFromDob,
@@ -28,8 +31,7 @@ function coerceLog(log: any) {
   };
 }
 
-async function ensureLog(dateISO: string) {
-  const prisma = getPrisma();
+async function ensureLog(prisma: PrismaClient, dateISO: string) {
   const existing = await prisma.dailyLog.findUnique({ where: { dateISO } });
   if (existing) {
     return coerceLog(existing);
@@ -49,8 +51,7 @@ async function ensureLog(dateISO: string) {
   return coerceLog(created);
 }
 
-async function computeDerived(log: any, todayStr: string) {
-  const prisma = getPrisma();
+async function computeDerived(prisma: PrismaClient, log: any, todayStr: string) {
   const calIn = computeCalIn(log.macrosJson);
   const bmr = computeBmr(log.weightKg, log.dateISO);
   const calOut = computeCalOut({ bmr, extraBurn: log.extraBurnJson.totalCals ?? 0 });
@@ -77,13 +78,16 @@ async function computeDerived(log: any, todayStr: string) {
 
 export async function GET(request: Request) {
   const prisma = getPrisma();
+  if (!prisma) {
+    return NextResponse.json({ success: false, error: 'DATABASE_URL is not set' }, { status: 500 });
+  }
   const url = new URL(request.url);
   const dateParam = url.searchParams.get('date');
   const todayStr = todayISO();
   const targetDate = dateParam && dateParam <= todayStr ? dateParam : todayStr;
 
-  const log = await ensureLog(targetDate);
-  const derived = await computeDerived(log, todayStr);
+  const log = await ensureLog(prisma, targetDate);
+  const derived = await computeDerived(prisma, log, todayStr);
 
   const season = seasonForDate(todayStr);
   const daysLeft = diffDays(todayStr, '2026-03-15');

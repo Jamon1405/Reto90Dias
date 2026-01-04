@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getPrisma } from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic';
 import { computeBmr, computeCalIn, computeCalOut, computeFlags, computeNet, computeTitanScore, lastThreeDates } from '@/lib/calc';
 import { todayISO } from '@/lib/timezone';
 import {
@@ -34,6 +36,9 @@ async function getOrCreate(dateISO: string) {
 export async function POST(request: Request) {
   try {
     const prisma = getPrisma();
+    if (!prisma) {
+      return NextResponse.json({ success: false, error: 'DATABASE_URL is not set' }, { status: 500 });
+    }
     const body = await request.json();
     const parsed = modulePayloadSchema.parse(body);
     const today = todayISO();
