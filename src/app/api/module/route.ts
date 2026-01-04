@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getPrisma } from '@/lib/prisma';
+import type { PrismaClient } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 import { computeBmr, computeCalIn, computeCalOut, computeFlags, computeNet, computeTitanScore, lastThreeDates } from '@/lib/calc';
@@ -15,8 +16,7 @@ import {
 } from '@/lib/zodSchemas';
 import { parseJson, stringifyJson } from '@/lib/json';
 
-async function getOrCreate(dateISO: string) {
-  const prisma = getPrisma();
+async function getOrCreate(prisma: PrismaClient, dateISO: string) {
   const existing = await prisma.dailyLog.findUnique({ where: { dateISO } });
   if (existing) return existing;
   return prisma.dailyLog.create({
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: 'No se puede guardar en fechas futuras.' }, { status: 400 });
     }
 
-    const current = await getOrCreate(parsed.targetDate);
+    const current = await getOrCreate(prisma, parsed.targetDate);
 
     const data: Record<string, unknown> = {};
     if (parsed.type === 'BIO') {
