@@ -1,12 +1,13 @@
 import { PrismaClient } from '@prisma/client';
 
-declare global {
-  // eslint-disable-next-line no-var
-  var prisma: PrismaClient | undefined;
-}
+const globalForPrisma = globalThis as typeof globalThis & { prisma?: PrismaClient };
 
-export const prisma = global.prisma ?? new PrismaClient();
-
-if (process.env.NODE_ENV !== 'production') {
-  global.prisma = prisma;
+export function getPrisma() {
+  if (!globalForPrisma.prisma) {
+    if (!process.env.DATABASE_URL) {
+      throw new Error('DATABASE_URL is not set');
+    }
+    globalForPrisma.prisma = new PrismaClient();
+  }
+  return globalForPrisma.prisma;
 }

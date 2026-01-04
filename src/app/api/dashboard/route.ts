@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { getPrisma } from '@/lib/prisma';
 import { parseJson, stringifyJson } from '@/lib/json';
 import {
   ageFromDob,
@@ -29,6 +29,7 @@ function coerceLog(log: any) {
 }
 
 async function ensureLog(dateISO: string) {
+  const prisma = getPrisma();
   const existing = await prisma.dailyLog.findUnique({ where: { dateISO } });
   if (existing) {
     return coerceLog(existing);
@@ -49,6 +50,7 @@ async function ensureLog(dateISO: string) {
 }
 
 async function computeDerived(log: any, todayStr: string) {
+  const prisma = getPrisma();
   const calIn = computeCalIn(log.macrosJson);
   const bmr = computeBmr(log.weightKg, log.dateISO);
   const calOut = computeCalOut({ bmr, extraBurn: log.extraBurnJson.totalCals ?? 0 });
@@ -74,6 +76,7 @@ async function computeDerived(log: any, todayStr: string) {
 }
 
 export async function GET(request: Request) {
+  const prisma = getPrisma();
   const url = new URL(request.url);
   const dateParam = url.searchParams.get('date');
   const todayStr = todayISO();

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { getPrisma } from '@/lib/prisma';
 import { computeBmr, computeCalIn, computeCalOut, computeFlags, computeNet, computeTitanScore, lastThreeDates } from '@/lib/calc';
 import { todayISO } from '@/lib/timezone';
 import {
@@ -14,6 +14,7 @@ import {
 import { parseJson, stringifyJson } from '@/lib/json';
 
 async function getOrCreate(dateISO: string) {
+  const prisma = getPrisma();
   const existing = await prisma.dailyLog.findUnique({ where: { dateISO } });
   if (existing) return existing;
   return prisma.dailyLog.create({
@@ -32,6 +33,7 @@ async function getOrCreate(dateISO: string) {
 
 export async function POST(request: Request) {
   try {
+    const prisma = getPrisma();
     const body = await request.json();
     const parsed = modulePayloadSchema.parse(body);
     const today = todayISO();

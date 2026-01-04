@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { getPrisma } from '@/lib/prisma';
 
 export async function POST() {
+  const prisma = getPrisma();
   await prisma.appConfig.upsert({
     where: { key: 'fastingStartMs' },
     update: { value: String(Date.now()) },

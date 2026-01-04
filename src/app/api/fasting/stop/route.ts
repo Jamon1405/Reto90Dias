@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { getPrisma } from '@/lib/prisma';
 import { todayISO } from '@/lib/timezone';
 import { defaultCheckin, defaultExtraBurn, defaultInbody, defaultMacros, defaultRecovery, defaultSupps } from '@/lib/zodSchemas';
 import { stringifyJson } from '@/lib/json';
 
 export async function POST() {
+  const prisma = getPrisma();
   const config = await prisma.appConfig.findUnique({ where: { key: 'fastingStartMs' } });
   if (!config?.value) {
     return NextResponse.json({ success: false, error: 'No hay ayuno activo.' }, { status: 400 });
