@@ -28,12 +28,12 @@ export function todayISO_MX(date = new Date()) {
   return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
-export function nowMx(date = new Date()) {
+export function nowMX(date = new Date()) {
   const { year, month, day, hour, minute, second } = getZonedParts(date);
   return new Date(Date.UTC(year, month - 1, day, hour, minute, second));
 }
 
-export function formatTime_MX(date = new Date()) {
+export function formatTimeMX(date = new Date()) {
   const { hour, minute, second } = getZonedParts(date);
   return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')}`;
 }
@@ -44,6 +44,9 @@ export function formatDateTime_MX(date = new Date()) {
     minute,
   ).padStart(2, '0')}:${String(second).padStart(2, '0')}`;
 }
+
+export const nowMx = nowMX;
+export const formatTime_MX = formatTimeMX;
 
 export function diffDays(fromISO: string, toISO: string) {
   const [fromYear, fromMonth, fromDay] = fromISO.split('-').map(Number);

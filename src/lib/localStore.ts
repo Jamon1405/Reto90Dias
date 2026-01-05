@@ -1,12 +1,12 @@
 import Dexie, { type Table } from 'dexie';
 import type { DayLog } from './models';
-import { defaultCheckin, defaultExtraBurn, defaultInbody, defaultMacros, defaultRecovery, defaultSupps } from './zodSchemas';
-import { computeCalIn, computeFlags, computeNet, computeOutBreakdown, computeTitanScore } from './calc';
+import { defaultCheckin, defaultExtraBurn, defaultGym, defaultInbody, defaultMacros, defaultRecovery, defaultSupps } from './zodSchemas';
+import { computeCalIn, computeFlags, computeNet, computeOutBreakdown, computeTitanScore, formatRiskFlags } from './calc';
 import { addDays, formatDateTime_MX, todayISO_MX } from './timezone';
 
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 
-const emptyFlags = { list: [], bmr: 0, net: 0 };
+const emptyFlags = { list: [] as string[], bmr: 0, net: 0 };
 
 function createEmptyDay(dateISO: string): DayLog {
   return {
@@ -18,6 +18,9 @@ function createEmptyDay(dateISO: string): DayLog {
     waterCups: 0,
     suppsJson: defaultSupps,
     workout: '',
+    gymMinutes: defaultGym.gymMinutes,
+    gymType: defaultGym.gymType,
+    gymCals: defaultGym.gymCals,
     extraBurnJson: defaultExtraBurn,
     macrosJson: defaultMacros,
     calIn: 0,
@@ -38,14 +41,17 @@ function normalizeDay(day: DayLog): DayLog {
   return {
     ...base,
     ...day,
-    updatedAt: day.updatedAt ?? base.updatedAt,
+    updatedAt: typeof day.updatedAt === 'number' ? day.updatedAt : base.updatedAt,
     suppsJson: day.suppsJson ?? base.suppsJson,
+    gymMinutes: Number(day.gymMinutes ?? base.gymMinutes),
+    gymType: day.gymType ?? base.gymType,
+    gymCals: Number(day.gymCals ?? base.gymCals),
     extraBurnJson: day.extraBurnJson ?? base.extraBurnJson,
     macrosJson: day.macrosJson ?? base.macrosJson,
     recoveryJson: day.recoveryJson ?? base.recoveryJson,
     checkinJson: { ...base.checkinJson, ...day.checkinJson },
     inbodyJson: day.inbodyJson ?? base.inbodyJson,
-    flagsJson: day.flagsJson ?? base.flagsJson,
+    flagsJson: normalizeFlags(day.flagsJson ?? base.flagsJson),
   };
 }
 
@@ -73,6 +79,20 @@ class TitanOmegaDB extends Dexie {
           }),
         );
       });
+    this.version(3)
+      .stores({
+        days: 'dateISO',
+        meta: 'key',
+      })
+      .upgrade(async (tx) => {
+        const days = await tx.table('days').toArray();
+        await Promise.all(
+          days.map((day) => {
+            const normalized = normalizeDay(day as DayLog);
+            return tx.table('days').put(normalized);
+          }),
+        );
+      });
   }
 }
 
@@ -81,7 +101,13 @@ const db = new TitanOmegaDB();
 async function computeDerived(day: DayLog, allDays: DayLog[]) {
   const calIn = computeCalIn(day.macrosJson);
   const extraOut = Number(day.extraBurnJson.totalCals ?? 0);
-  const { bmr, totalOut } = computeOutBreakdown({ weightKg: day.weightKg, extraOut });
+  const weightFallback = day.weightKg > 0 ? day.weightKg : getLastKnownWeight(allDays) ?? 97;
+  const { bmr, totalOut, gymOut } = computeOutBreakdown({
+    weightKg: weightFallback,
+    gymMinutes: day.gymMinutes,
+    gymType: day.gymType,
+    extraOut,
+  });
   const calOut = totalOut;
   const net = computeNet(calIn, calOut);
   const titanScore = computeTitanScore({ net, waterCups: day.waterCups, steps: day.steps, calOut });
@@ -93,7 +119,7 @@ async function computeDerived(day: DayLog, allDays: DayLog[]) {
   const lastThree = allDays.filter((row) => requiredDates.includes(row.dateISO));
   const { flags } = computeFlags({ log: { ...day, calIn, calOut }, previousWeight, lastThree, nowIso: todayISO_MX() });
 
-  return { calIn, calOut, net, bmr, titanScore, flags };
+  return { calIn, calOut, net, bmr, titanScore, flags, gymOut };
 }
 
 export async function getDay(dateISO: string) {
@@ -104,7 +130,7 @@ export async function getDay(dateISO: string) {
 export async function upsertDay(dateISO: string, update: Partial<DayLog>) {
   const existing = await getDay(dateISO);
   const merged = normalizeDay({ ...existing, ...update, dateISO });
-  const updatedAt = formatDateTime_MX();
+  const updatedAt = Date.now();
   const allDays = (await db.days.toArray()).map(normalizeDay);
   const derived = await computeDerived(merged, allDays.concat(merged));
   const toSave: DayLog = {
@@ -112,8 +138,9 @@ export async function upsertDay(dateISO: string, update: Partial<DayLog>) {
     updatedAt,
     calIn: derived.calIn,
     calOut: derived.calOut,
+    gymCals: derived.gymOut,
     titanScore: derived.titanScore,
-    flagsJson: { list: derived.flags, bmr: derived.bmr, net: derived.net },
+    flagsJson: { list: formatRiskFlags(derived.flags), bmr: derived.bmr, net: derived.net },
   };
   await db.days.put(toSave);
   return toSave;
@@ -150,7 +177,8 @@ export async function importJSON(payload: { version?: number; days?: DayLog[] })
         calIn: derived.calIn,
         calOut: derived.calOut,
         titanScore: derived.titanScore,
-        flagsJson: { list: derived.flags, bmr: derived.bmr, net: derived.net },
+        gymCals: derived.gymOut,
+        flagsJson: { list: formatRiskFlags(derived.flags), bmr: derived.bmr, net: derived.net },
       };
     }),
   );
@@ -178,4 +206,18 @@ export async function setFastingStart(ms: number | null) {
 export async function getFastingStart() {
   const row = await db.meta.get('fastingStartMs');
   return row?.value ? Number(row.value) : null;
+}
+
+function getLastKnownWeight(days: DayLog[]) {
+  return [...days]
+    .filter((day) => day.weightKg > 0)
+    .sort((a, b) => (a.dateISO < b.dateISO ? 1 : -1))[0]?.weightKg ?? null;
+}
+
+function normalizeFlags(flags: DayLog['flagsJson']) {
+  if (!flags) return emptyFlags;
+  const list = Array.isArray(flags.list)
+    ? flags.list.map((item) => (typeof item === 'string' ? item : (item as { msg?: string }).msg ?? String(item)))
+    : [];
+  return { list, bmr: Number(flags.bmr ?? 0), net: Number(flags.net ?? 0) };
 }

@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { buildMonthGrid, diffDays, todayISO_MX } from '@/lib/timezone';
-import { computeBmr, computeCalOut, computeRiskFlags, computeTitanScore, getAssignedRoutine } from '@/lib/calc';
+import { computeBmr, computeCalOut, computeGymCals, computeRiskFlags, computeTitanScore, getAssignedRoutine } from '@/lib/calc';
 import type { DayLog } from '@/lib/models';
 
 function makeDay(dateISO: string, overrides: Partial<DayLog> = {}): DayLog {
@@ -46,7 +46,10 @@ export default function SelfCheckPage() {
     const bmr = computeBmr(80, today);
     results.push({ label: 'computeBmr returns number', pass: Number.isFinite(bmr), detail: String(bmr) });
 
-    const calOut = computeCalOut({ bmr, extraBurn: 200 });
+    const gymOut = computeGymCals({ weightKg: 80, minutes: 45, gymType: 'WEIGHTS' });
+    results.push({ label: 'computeGymCals returns number', pass: Number.isFinite(gymOut), detail: String(gymOut) });
+
+    const calOut = computeCalOut({ bmr, extraBurn: 200, gymOut });
     results.push({ label: 'computeCalOut returns number', pass: Number.isFinite(calOut), detail: String(calOut) });
 
     const score = computeTitanScore({ net: -200, waterCups: 8, steps: 8000, calOut });

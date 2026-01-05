@@ -115,3 +115,9 @@ export const defaultCheckin = checkinSchema.parse({
   notes: '',
 });
 export const defaultInbody = inbodySchema.parse({ weight: 0, smm: 0, bf_percent: 0, bf_mass: 0, water: 0 });
+
+export const defaultGym = {
+  gymMinutes: 0,
+  gymType: 'WEIGHTS' as const,
+  gymCals: 0,
+};

@@ -21,13 +21,16 @@ export type Inbody = { weight: number; smm: number; bf_percent: number; bf_mass:
 
 export type DayLog = {
   dateISO: string;
-  updatedAt: string | null;
+  updatedAt: number | null;
   weightKg: number;
   waistCm: number;
   steps: number;
   waterCups: number;
   suppsJson: Supps;
   workout: string;
+  gymMinutes: number;
+  gymType: 'WEIGHTS' | 'INCLINE_TREADMILL' | 'MIXED';
+  gymCals: number;
   extraBurnJson: ExtraBurn;
   macrosJson: Macros;
   calIn: number;
@@ -39,7 +42,7 @@ export type DayLog = {
   inbodyJson: Inbody;
   notes: string;
   titanScore: number;
-  flagsJson: { list: Array<{ code: string; msg: string }>; bmr: number; net: number };
+  flagsJson: { list: string[]; bmr: number; net: number };
   net?: number;
   bmr?: number;
 };

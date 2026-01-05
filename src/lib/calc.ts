@@ -4,7 +4,7 @@ import { addDays, diffDays, getZonedParts, todayISO_MX } from './timezone';
 const HEIGHT_CM = 173;
 const DOB = '1997-05-14';
 
-export type RiskFlag = { code: 'WEIGHT_UP_ON_DEFICIT' | 'NO_DEFICIT_3D' | 'LOW_WATER_18H'; msg: string };
+export type RiskFlag = 'WEIGHT_UP_ON_DEFICIT' | 'NO_DEFICIT_3D' | 'LOW_WATER_18H';
 
 export function ageFromDob(referenceIso: string) {
   const [year, month, day] = referenceIso.split('-').map(Number);
@@ -26,9 +26,9 @@ export function computeCalIn(macros: { p: number; c: number; f: number }) {
   return Math.round(macros.p * 4 + macros.c * 4 + macros.f * 9);
 }
 
-export function computeCalOut({ bmr, extraBurn }: { bmr: number; extraBurn: number }) {
+export function computeCalOut({ bmr, extraBurn, gymOut = 0 }: { bmr: number; extraBurn: number; gymOut?: number }) {
   const baseOut = Math.round(bmr * 1.2);
-  return Math.round(baseOut + extraBurn);
+  return Math.round(baseOut + extraBurn + gymOut);
 }
 
 export function computeNet(calIn: number, calOut: number) {
@@ -58,29 +58,20 @@ export function computeFlags({
   const net = computeNet(log.calIn, log.calOut);
 
   if (log.weightKg > 0 && previousWeight && net <= 0 && log.weightKg > previousWeight + 0.2) {
-    flags.push({
-      code: 'WEIGHT_UP_ON_DEFICIT',
-      msg: 'Peso subió ≥0.2kg con déficit activo.',
-    });
+    flags.push('WEIGHT_UP_ON_DEFICIT');
   }
 
   const requiredDates = lastThreeDates(log.dateISO);
   const lastThreeMap = new Map(lastThree.map((entry) => [entry.dateISO, entry]));
   const hasThreeConsecutive = requiredDates.every((date) => lastThreeMap.has(date));
   if (hasThreeConsecutive && requiredDates.every((date) => computeNet(lastThreeMap.get(date)!.calIn, lastThreeMap.get(date)!.calOut) > 0)) {
-    flags.push({
-      code: 'NO_DEFICIT_3D',
-      msg: '3 días consecutivos sin déficit.',
-    });
+    flags.push('NO_DEFICIT_3D');
   }
 
   if (log.dateISO === nowIso) {
     const { hour } = getZonedParts(new Date());
     if (hour >= 18 && log.waterCups < 6) {
-      flags.push({
-        code: 'LOW_WATER_18H',
-        msg: 'Agua baja después de las 18:00.',
-      });
+      flags.push('LOW_WATER_18H');
     }
   }
 
@@ -91,12 +82,40 @@ export function computeRiskFlags(args: Parameters<typeof computeFlags>[0]) {
   return computeFlags(args);
 }
 
+export function formatRiskFlags(flags: RiskFlag[]) {
+  return flags.map((flag) => {
+    if (flag === 'WEIGHT_UP_ON_DEFICIT') return 'Peso subió ≥0.2kg con déficit activo.';
+    if (flag === 'NO_DEFICIT_3D') return '3 días consecutivos sin déficit.';
+    if (flag === 'LOW_WATER_18H') return 'Agua baja después de las 18:00.';
+    return flag;
+  });
+}
+
+export function computeGymCals({
+  weightKg,
+  minutes,
+  gymType,
+}: {
+  weightKg: number;
+  minutes: number;
+  gymType: 'WEIGHTS' | 'INCLINE_TREADMILL' | 'MIXED';
+}) {
+  const met = 6.0;
+  const weight = Number(weightKg) || 97;
+  const mins = Number(minutes) || 0;
+  return Math.round((met * 3.5 * weight * mins) / 200);
+}
+
 export function computeOutBreakdown({
   weightKg,
+  gymMinutes,
+  gymType,
   extraOut,
   referenceIso = todayISO_MX(),
 }: {
   weightKg: number;
+  gymMinutes: number;
+  gymType: 'WEIGHTS' | 'INCLINE_TREADMILL' | 'MIXED';
   extraOut: number;
   referenceIso?: string;
 }) {
@@ -105,8 +124,9 @@ export function computeOutBreakdown({
   const age = ageFromDob(referenceIso);
   const bmr = computeBmr(safeWeight, referenceIso);
   const baseOut = Math.round(bmr * 1.2);
-  const totalOut = Math.round(baseOut + safeExtra);
-  return { age, bmr, baseOut, extraOut: safeExtra, totalOut };
+  const gymOut = computeGymCals({ weightKg: safeWeight, minutes: gymMinutes, gymType });
+  const totalOut = Math.round(baseOut + gymOut + safeExtra);
+  return { age, bmr, baseOut, gymOut, extraOut: safeExtra, totalOut };
 }
 
 export function lastThreeDates(targetDate: string) {
@@ -126,10 +146,19 @@ export function ensureTodayClamp(dateISO: string) {
   return dateISO > today ? today : dateISO;
 }
 
-const ROUTINE_SEQUENCE = ['PECHO/BICEPS', 'ESPALDA/TRICEPS', 'PIERNA/HOMBRO'] as const;
+const ROUTINE_SEQUENCE = [
+  'REST',
+  'CHEST / BICEPS',
+  'BACK / TRICEPS',
+  'LEGS / SHOULDERS',
+  'CHEST / BICEPS',
+  'BACK / TRICEPS',
+  'LEGS / SHOULDERS',
+] as const;
 
 export function getAssignedRoutine(dateISO: string) {
   const seasonStart = '2026-01-05';
-  const index = Math.max(0, diffDays(seasonStart, dateISO));
-  return ROUTINE_SEQUENCE[index % ROUTINE_SEQUENCE.length];
+  const index = diffDays(seasonStart, dateISO);
+  if (index < 0) return 'REST';
+  return ROUTINE_SEQUENCE[index % 7];
 }

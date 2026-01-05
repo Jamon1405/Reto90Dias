@@ -12,7 +12,7 @@ import { CheckinTab, type CheckinData } from '@/components/tabs/CheckinTab';
 import { InbodyTab, type InbodyData } from '@/components/tabs/InbodyTab';
 import { IntelTab } from '@/components/tabs/IntelTab';
 import { Button } from '@/components/ui/button';
-import { computeCalIn, computeNet, computeOutBreakdown, computeTitanScore, daysLeftToTarget, seasonForDate } from '@/lib/calc';
+import { computeCalIn, computeNet, computeOutBreakdown, computeTitanScore, daysLeftToTarget, getAssignedRoutine, seasonForDate } from '@/lib/calc';
 import { computeIntel } from '@/lib/intel';
 import type { DayLog } from '@/lib/models';
 import {
@@ -26,10 +26,11 @@ import {
   setFastingStart,
   upsertDay,
 } from '@/lib/localStore';
-import { addDays, buildMonthGrid, formatTime_MX, todayISO_MX } from '@/lib/timezone';
+import { addDays, buildMonthGrid, formatDateTime_MX, formatTimeMX, todayISO_MX } from '@/lib/timezone';
 import {
   defaultCheckin,
   defaultExtraBurn,
+  defaultGym,
   defaultInbody,
   defaultMacros,
   defaultRecovery,
@@ -49,6 +50,9 @@ const defaultDayLog: DayLog = {
   waterCups: 0,
   suppsJson: defaultSupps,
   workout: '',
+  gymMinutes: defaultGym.gymMinutes,
+  gymType: defaultGym.gymType,
+  gymCals: defaultGym.gymCals,
   extraBurnJson: defaultExtraBurn,
   macrosJson: defaultMacros,
   calIn: 0,
@@ -89,8 +93,8 @@ export default function Page() {
   const [toast, setToast] = useState<string | null>(null);
   const [fastingStartMs, setFastingStartMs] = useState<number | null>(null);
   const [fastingElapsed, setFastingElapsed] = useState<number>(0);
-  const [clock, setClock] = useState(formatTime_MX());
-  const [lastSaved, setLastSaved] = useState<string | null>(null);
+  const [clock, setClock] = useState(formatTimeMX());
+  const [lastSaved, setLastSaved] = useState<number | null>(null);
   const [saving, setSaving] = useState(emptySavingState);
 
   const [bio, setBio] = useState<BioData>({
@@ -179,7 +183,7 @@ export default function Page() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setClock(formatTime_MX());
+      setClock(formatTimeMX());
     }, 1000);
     return () => clearInterval(interval);
   }, []);
@@ -216,7 +220,7 @@ export default function Page() {
       setSaving((prev) => ({ ...prev, [tab]: true }));
       let update: Partial<DayLog> = {};
       if (tab === 'BIO') update = { ...bio };
-      if (tab === 'GYM') update = { ...gym };
+      if (tab === 'GYM') update = { ...gym, gymMinutes: dayLog.gymMinutes, gymType: dayLog.gymType };
       if (tab === 'EXTRA') update = { ...extra };
       if (tab === 'FUEL') update = { ...fuel };
       if (tab === 'SLEEP') update = { ...sleep };
@@ -293,10 +297,20 @@ export default function Page() {
 
   const calIn = useMemo(() => computeCalIn(fuel.macrosJson), [fuel.macrosJson]);
   const extraOut = Number(extra.extraBurnJson.totalCals ?? 0);
-  const weightForOut = Number(bio.weightKg || dayLog.weightKg || 0);
+  const lastKnownWeight = useMemo(() => {
+    const sorted = [...history].sort((a, b) => (a.dateISO < b.dateISO ? 1 : -1));
+    return sorted.find((entry) => entry.weightKg > 0)?.weightKg ?? 97;
+  }, [history]);
+  const weightForOut = Number(bio.weightKg || dayLog.weightKg || lastKnownWeight || 97);
   const outBreakdown = useMemo(
-    () => computeOutBreakdown({ weightKg: weightForOut, extraOut }),
-    [weightForOut, extraOut],
+    () =>
+      computeOutBreakdown({
+        weightKg: weightForOut,
+        gymMinutes: dayLog.gymMinutes,
+        gymType: dayLog.gymType,
+        extraOut,
+      }),
+    [dayLog.gymMinutes, dayLog.gymType, extraOut, weightForOut],
   );
   const totalOut = outBreakdown.totalOut;
   const net = useMemo(() => computeNet(calIn, totalOut), [calIn, totalOut]);
@@ -316,6 +330,7 @@ export default function Page() {
   const [calendarYear, calendarMonthNumber] = calendarMonth.split('-').map(Number);
   const calendarCells = buildMonthGrid(calendarYear, calendarMonthNumber);
   const intel = useMemo(() => (history.length ? computeIntel(history) : null), [history]);
+  const routineLabel = getAssignedRoutine(activeDate);
 
   return (
     <main className="min-h-screen bg-bg px-4 py-6 text-text md:px-8">
@@ -346,7 +361,7 @@ export default function Page() {
             <span className="text-xs text-muted">{daysLeft} días a HYROX</span>
             <div className="flex flex-col text-xs text-muted">
               <span>Hora MX: {clock}</span>
-              <span>Last saved: {lastSaved ?? '—'}</span>
+              <span>Last saved: {lastSaved ? formatDateTime_MX(new Date(lastSaved)) : '—'}</span>
             </div>
             <div className="flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs">
               <span>Ayuno:</span>
@@ -418,6 +433,17 @@ export default function Page() {
                   eventsCount: extra.extraBurnJson.events.length,
                   extraTotal: extraOut,
                   weightKg: weightForOut,
+                }}
+                routineLabel={routineLabel}
+                gymMinutes={dayLog.gymMinutes}
+                gymType={dayLog.gymType}
+                onCopyPlan={(text) => {
+                  setGym({ workout: `${gym.workout}${gym.workout ? '\n' : ''}${text}` });
+                  dirtyRef.current.GYM = true;
+                }}
+                onGymUpdate={(update) => {
+                  setDayLog((prev) => ({ ...prev, ...update }));
+                  dirtyRef.current.GYM = true;
                 }}
                 onChange={(next) => {
                   setGym(next);
@@ -560,8 +586,8 @@ export default function Page() {
                 <p className="text-muted">Sin flags activos.</p>
               ) : (
                 dayLog.flagsJson.list.map((flag) => (
-                  <div key={flag.code} className="rounded-md border border-danger/40 bg-danger/10 px-3 py-2 text-danger">
-                    {flag.msg}
+                  <div key={flag} className="rounded-md border border-danger/40 bg-danger/10 px-3 py-2 text-danger">
+                    {flag}
                   </div>
                 ))
               )}
