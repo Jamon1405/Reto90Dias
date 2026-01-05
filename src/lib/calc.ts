@@ -1,5 +1,5 @@
 import type { DayLog } from './models';
-import { addDays, getZonedParts, todayISO_MX } from './timezone';
+import { addDays, diffDays, getZonedParts, todayISO_MX } from './timezone';
 
 const HEIGHT_CM = 173;
 const DOB = '1997-05-14';
@@ -16,7 +16,7 @@ export function ageFromDob(referenceIso: string) {
   return age;
 }
 
-export function computeBmr(weightKg: number, referenceIso: string) {
+export function computeBmr(weightKg: number, referenceIso = todayISO_MX()) {
   const weight = weightKg > 0 ? weightKg : 97;
   const age = ageFromDob(referenceIso);
   return Math.round(10 * weight + 6.25 * HEIGHT_CM - 5 * age + 5);
@@ -27,7 +27,8 @@ export function computeCalIn(macros: { p: number; c: number; f: number }) {
 }
 
 export function computeCalOut({ bmr, extraBurn }: { bmr: number; extraBurn: number }) {
-  return Math.round(bmr * 1.2 + extraBurn);
+  const baseOut = Math.round(bmr * 1.2);
+  return Math.round(baseOut + extraBurn);
 }
 
 export function computeNet(calIn: number, calOut: number) {
@@ -86,6 +87,28 @@ export function computeFlags({
   return { flags, net };
 }
 
+export function computeRiskFlags(args: Parameters<typeof computeFlags>[0]) {
+  return computeFlags(args);
+}
+
+export function computeOutBreakdown({
+  weightKg,
+  extraOut,
+  referenceIso = todayISO_MX(),
+}: {
+  weightKg: number;
+  extraOut: number;
+  referenceIso?: string;
+}) {
+  const safeWeight = Number(weightKg) || 0;
+  const safeExtra = Number(extraOut) || 0;
+  const age = ageFromDob(referenceIso);
+  const bmr = computeBmr(safeWeight, referenceIso);
+  const baseOut = Math.round(bmr * 1.2);
+  const totalOut = Math.round(baseOut + safeExtra);
+  return { age, bmr, baseOut, extraOut: safeExtra, totalOut };
+}
+
 export function lastThreeDates(targetDate: string) {
   return [targetDate, addDays(targetDate, -1), addDays(targetDate, -2)];
 }
@@ -101,4 +124,12 @@ export function daysLeftToTarget(today: string, target = '2026-03-15') {
 export function ensureTodayClamp(dateISO: string) {
   const today = todayISO_MX();
   return dateISO > today ? today : dateISO;
+}
+
+const ROUTINE_SEQUENCE = ['PECHO/BICEPS', 'ESPALDA/TRICEPS', 'PIERNA/HOMBRO'] as const;
+
+export function getAssignedRoutine(dateISO: string) {
+  const seasonStart = '2026-01-05';
+  const index = Math.max(0, diffDays(seasonStart, dateISO));
+  return ROUTINE_SEQUENCE[index % ROUTINE_SEQUENCE.length];
 }

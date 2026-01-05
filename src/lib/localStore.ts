@@ -1,7 +1,7 @@
 import Dexie, { type Table } from 'dexie';
 import type { DayLog } from './models';
 import { defaultCheckin, defaultExtraBurn, defaultInbody, defaultMacros, defaultRecovery, defaultSupps } from './zodSchemas';
-import { computeBmr, computeCalIn, computeCalOut, computeFlags, computeNet, computeTitanScore } from './calc';
+import { computeCalIn, computeFlags, computeNet, computeOutBreakdown, computeTitanScore } from './calc';
 import { addDays, formatDateTime_MX, todayISO_MX } from './timezone';
 
 const SCHEMA_VERSION = 2;
@@ -80,8 +80,9 @@ const db = new TitanOmegaDB();
 
 async function computeDerived(day: DayLog, allDays: DayLog[]) {
   const calIn = computeCalIn(day.macrosJson);
-  const bmr = computeBmr(day.weightKg, day.dateISO);
-  const calOut = computeCalOut({ bmr, extraBurn: day.extraBurnJson.totalCals ?? 0 });
+  const extraOut = Number(day.extraBurnJson.totalCals ?? 0);
+  const { bmr, totalOut } = computeOutBreakdown({ weightKg: day.weightKg, extraOut });
+  const calOut = totalOut;
   const net = computeNet(calIn, calOut);
   const titanScore = computeTitanScore({ net, waterCups: day.waterCups, steps: day.steps, calOut });
 

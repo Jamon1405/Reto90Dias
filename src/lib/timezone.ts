@@ -77,3 +77,26 @@ export function monthDays(iso: string) {
   }
   return days;
 }
+
+export type CalendarCell = {
+  dateISO: string;
+  inMonth: boolean;
+};
+
+export function buildMonthGrid(year: number, month: number): CalendarCell[] {
+  const first = new Date(Date.UTC(year, month - 1, 1));
+  const firstWeekday = first.getUTCDay();
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const cells: CalendarCell[] = [];
+  const totalCells = 42;
+  for (let i = 0; i < totalCells; i += 1) {
+    const dayOffset = i - firstWeekday + 1;
+    const date = new Date(Date.UTC(year, month - 1, dayOffset));
+    const dateISO = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(
+      date.getUTCDate(),
+    ).padStart(2, '0')}`;
+    const inMonth = dayOffset >= 1 && dayOffset <= daysInMonth;
+    cells.push({ dateISO, inMonth });
+  }
+  return cells;
+}

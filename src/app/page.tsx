@@ -12,7 +12,7 @@ import { CheckinTab, type CheckinData } from '@/components/tabs/CheckinTab';
 import { InbodyTab, type InbodyData } from '@/components/tabs/InbodyTab';
 import { IntelTab } from '@/components/tabs/IntelTab';
 import { Button } from '@/components/ui/button';
-import { computeCalIn, computeNet, daysLeftToTarget, seasonForDate } from '@/lib/calc';
+import { computeCalIn, computeNet, computeOutBreakdown, computeTitanScore, daysLeftToTarget, seasonForDate } from '@/lib/calc';
 import { computeIntel } from '@/lib/intel';
 import type { DayLog } from '@/lib/models';
 import {
@@ -26,7 +26,7 @@ import {
   setFastingStart,
   upsertDay,
 } from '@/lib/localStore';
-import { addDays, formatTime_MX, todayISO_MX } from '@/lib/timezone';
+import { addDays, buildMonthGrid, formatTime_MX, todayISO_MX } from '@/lib/timezone';
 import {
   defaultCheckin,
   defaultExtraBurn,
@@ -39,11 +39,6 @@ import {
 const TAB_LABELS = ['BIO', 'GYM', 'EXTRA', 'FUEL', 'SLEEP', 'RECOVERY', 'CHECKIN', 'INBODY', 'INTEL'] as const;
 
 type TabKey = (typeof TAB_LABELS)[number];
-
-type CalendarCell = {
-  dateISO: string;
-  inMonth: boolean;
-};
 
 const defaultDayLog: DayLog = {
   dateISO: todayISO_MX(),
@@ -82,24 +77,6 @@ const emptySavingState: Record<TabKey, boolean> = {
 
 function monthKeyFromDate(dateISO: string) {
   return dateISO.slice(0, 7);
-}
-
-function buildMonthGrid(year: number, month: number): CalendarCell[] {
-  const first = new Date(Date.UTC(year, month - 1, 1));
-  const firstWeekday = first.getUTCDay();
-  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
-  const cells: CalendarCell[] = [];
-  const totalCells = 42;
-  for (let i = 0; i < totalCells; i += 1) {
-    const dayOffset = i - firstWeekday + 1;
-    const date = new Date(Date.UTC(year, month - 1, dayOffset));
-    const dateISO = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(
-      date.getUTCDate(),
-    ).padStart(2, '0')}`;
-    const inMonth = dayOffset >= 1 && dayOffset <= daysInMonth;
-    cells.push({ dateISO, inMonth });
-  }
-  return cells;
 }
 
 export default function Page() {
@@ -315,7 +292,24 @@ export default function Page() {
   };
 
   const calIn = useMemo(() => computeCalIn(fuel.macrosJson), [fuel.macrosJson]);
-  const net = useMemo(() => computeNet(dayLog.calIn, dayLog.calOut), [dayLog.calIn, dayLog.calOut]);
+  const extraOut = Number(extra.extraBurnJson.totalCals ?? 0);
+  const weightForOut = Number(bio.weightKg || dayLog.weightKg || 0);
+  const outBreakdown = useMemo(
+    () => computeOutBreakdown({ weightKg: weightForOut, extraOut }),
+    [weightForOut, extraOut],
+  );
+  const totalOut = outBreakdown.totalOut;
+  const net = useMemo(() => computeNet(calIn, totalOut), [calIn, totalOut]);
+  const liveScore = useMemo(
+    () =>
+      computeTitanScore({
+        net,
+        waterCups: Number(bio.waterCups ?? 0),
+        steps: Number(bio.steps ?? 0),
+        calOut: totalOut,
+      }),
+    [bio.steps, bio.waterCups, net, totalOut],
+  );
   const season = seasonForDate(todayStr);
   const daysLeft = daysLeftToTarget(todayStr);
 
@@ -372,12 +366,12 @@ export default function Page() {
 
         <section className="grid gap-4 rounded-xl border border-border bg-panel p-4 shadow-sm md:grid-cols-6">
           {[
-            { label: 'Weight', value: dayLog.weightKg.toFixed(1) },
-            { label: 'BMR', value: dayLog.flagsJson.bmr },
-            { label: 'IN', value: dayLog.calIn },
-            { label: 'OUT', value: dayLog.calOut },
+            { label: 'Weight', value: weightForOut.toFixed(1) },
+            { label: 'BMR', value: outBreakdown.bmr },
+            { label: 'IN', value: calIn },
+            { label: 'OUT', value: totalOut },
             { label: 'NET', value: net },
-            { label: 'TitanScore', value: dayLog.titanScore },
+            { label: 'TitanScore', value: liveScore },
           ].map((item) => (
             <div key={item.label} className="rounded-lg border border-border bg-surface px-3 py-3 text-center">
               <div className="text-xs text-muted">{item.label}</div>
@@ -419,6 +413,12 @@ export default function Page() {
             {activeTab === 'GYM' && (
               <GymTab
                 data={gym}
+                breakdown={{
+                  ...outBreakdown,
+                  eventsCount: extra.extraBurnJson.events.length,
+                  extraTotal: extraOut,
+                  weightKg: weightForOut,
+                }}
                 onChange={(next) => {
                   setGym(next);
                   dirtyRef.current.GYM = true;
